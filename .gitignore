@@ -8,16 +8,17 @@ venv/
 .env/
 *.egg-info/
 
-# Datasets (Do NOT track)
+# Datasets & computed data (Do NOT track)
 data/
-*.pt
-*.pth
-*.h5
-*.npz
-*.mat
+size_10/
+transmissions/
 *.csv
+*.npy
 
-# Model checkpoints
+# Precomputed leads
+leads/
+
+# Model checkpoints & weights
 models/
 checkpoints/
 *.pt
@@ -36,7 +37,3 @@ Thumbs.db
 
 # VS Code
 .vscode/
-data/
-models/
-*.pt
-*.pth
