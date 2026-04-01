@@ -86,18 +86,7 @@ Since the weights $w_i$ depend on $\hat{c}$, **gradients flow through the predic
 | **Validation split** | 20% of training data |
 | **Misfit weight** $\lambda$ | 0.1 (tunable) |
 
-### Key Improvements Over Original
 
-| Aspect | Original (`misfit_agnr.ipynb`) | Improved (`pinn_agnr.py`) |
-|--------|-------------------------------|--------------------------|
-| Misfit gradient | ❌ Zero (NumPy breaks graph) | ✅ Full gradient via soft indexing |
-| Architecture | Sequential Conv → ReLU → Pool | ResNet-1D with skip connections |
-| Normalisation | None | BatchNorm in every block |
-| Input | Raw transmission values | $T / T_{\text{pristine}} \in [0, 1]$ |
-| Augmentation | None | Multiplicative Gaussian noise |
-| Optimizer | Adam | AdamW with weight decay |
-| LR schedule | ReduceLROnPlateau | Cosine annealing |
-| Early stopping | None | Patience-based |
 
 ---
 
