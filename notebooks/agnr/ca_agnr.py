@@ -278,7 +278,7 @@ def compute_for_concentration(conc, size, nconfigs, out_dir):
 # 3. Main driver
 # ----------------------------------------------------------
 def main():
-    concs = np.arange(1, 50, 2)  # [1,3,5,...,49]
+    concs = np.arange(2, 100, 2)  # [1,3,5,...,49]
     nconfigs = 10000
     size = 7
 
