@@ -63,7 +63,7 @@ class InverseGNRDataset(Dataset):
 
             # Off-diagonal: pairwise Euclidean distances
             if conc > 1:
-                dists = squareform(pdist(imps.astype(np.float64), metric='euclidean'))
+                dists = squareform(pdist(imps.astype(np.float64), metric='sqeuclidean'))
                 mat[:conc, :conc] = dists.astype(np.float32)
 
             # Diagonal: site position within the unit cell
@@ -157,13 +157,22 @@ class MisfitLoss(nn.Module):
 # =============================================================================
 # 3. Model: Spatial 1D Encoder-Decoder
 # =============================================================================
+class LayerNorm1D(nn.Module):
+    """Applies LayerNorm over the channel dimension for 1D convolution outputs."""
+    def __init__(self, channels):
+        super().__init__()
+        self.norm = nn.LayerNorm(channels)
+        
+    def forward(self, x):
+        return self.norm(x.transpose(1, 2)).transpose(1, 2)
+
 class ResBlock1D(nn.Module):
     def __init__(self, channels):
         super().__init__()
         self.conv1 = nn.Conv1d(channels, channels, kernel_size=3, padding=1)
-        self.bn1 = nn.BatchNorm1d(channels)
+        self.bn1 = LayerNorm1D(channels)
         self.conv2 = nn.Conv1d(channels, channels, kernel_size=3, padding=1)
-        self.bn2 = nn.BatchNorm1d(channels)
+        self.bn2 = LayerNorm1D(channels)
 
     def forward(self, x):
         residual = x
@@ -177,7 +186,7 @@ class InverseModel(nn.Module):
         super().__init__()
         # --- ENCODER --- (Compresses T(E) [200] -> Latent [12])
         self.enc_conv1 = nn.Conv1d(1, 32, kernel_size=7, stride=2, padding=3)  # -> [32, 100]
-        self.enc_bn1 = nn.BatchNorm1d(32)
+        self.enc_bn1 = LayerNorm1D(32)
         
         self.enc_res1 = ResBlock1D(32)
         self.enc_pool1 = nn.MaxPool1d(2) # -> [32, 50]
@@ -192,22 +201,22 @@ class InverseModel(nn.Module):
         # 32 channels * 12 length = 384 exactly. 
         self.bottleneck = nn.Sequential(
             # Input: [Batch, 32, 12]
-            nn.Conv1d(32, 64, kernel_size=1), # Expands channels: [Batch, 64, 12]
+            nn.Conv1d(32, 64, kernel_size=3, padding=1), # Expands channels: [Batch, 64, 12]
             nn.ReLU(),
             nn.Dropout(0.3),
-            nn.Conv1d(64, 32, kernel_size=1), # Compresses channels: [Batch, 32, 12]
+            nn.Conv1d(64, 32, kernel_size=3, padding=1), # Compresses channels: [Batch, 32, 12]
             nn.ReLU()
             )
         
         # --- DECODER --- (Expands Latent [12] -> Spatial Map [100])
         self.dec_conv1 = nn.ConvTranspose1d(32, 32, kernel_size=5, stride=2, padding=1, output_padding=0) # -> [32, 25]
-        self.dec_bn1 = nn.BatchNorm1d(32)
+        self.dec_bn1 = LayerNorm1D(32)
         
         self.dec_conv2 = nn.ConvTranspose1d(32, 32, kernel_size=4, stride=2, padding=1, output_padding=0) # -> [32, 50]
-        self.dec_bn2 = nn.BatchNorm1d(32)
+        self.dec_bn2 = LayerNorm1D(32)
         
         self.dec_conv3 = nn.ConvTranspose1d(32, 16, kernel_size=4, stride=2, padding=1, output_padding=0) # -> [16, 100]
-        self.dec_bn3 = nn.BatchNorm1d(16)
+        self.dec_bn3 = LayerNorm1D(16)
         
         # POSITIONAL ENCODINGS
         # Adds spatial awareness to the 100 unit cells

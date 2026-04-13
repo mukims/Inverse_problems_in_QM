@@ -11,6 +11,7 @@ Improvements over the original misfit_agnr.ipynb:
 
 import os
 import copy
+from pathlib import Path
 from functools import lru_cache
 
 import numpy as np
@@ -533,3 +534,143 @@ def test_pinn(
     print(summary.to_string())
 
     return all_preds, all_labels, results
+
+
+# ======================================================================
+# 6. MAIN — run training end-to-end
+# ======================================================================
+
+def _build_misfit_from_files(data_dir, pristine, conc_range, spectrum_length, device,
+                             n_sample_configs=100):
+    """
+    Build DifferentiableMisfit by averaging raw .npy spectra files.
+
+    Args:
+        data_dir:          Path to transmission_results/
+        pristine:          1D numpy array, pristine transmission
+        conc_range:        array of concentration values
+        spectrum_length:   number of energy points
+        device:            torch device
+        n_sample_configs:  configs to average per concentration (speed vs accuracy)
+
+    Returns:
+        DifferentiableMisfit module on `device`
+    """
+    pristine_clip = pristine[:spectrum_length].astype(np.float32)
+    ref_list = []
+
+    for con in conc_range:
+        acc = []
+        for cfg in range(n_sample_configs):
+            fpath = Path(data_dir) / f"7_agnr_conc{int(con)}_cfg{cfg}.npy"
+            if fpath.exists():
+                spec = np.load(str(fpath)).astype(np.float32)[:spectrum_length]
+                spec = np.clip(spec, 0, pristine_clip)
+                acc.append(spec)
+        if len(acc) == 0:
+            raise FileNotFoundError(
+                f"No data files found for concentration {con} in {data_dir}"
+            )
+        avg_spec = np.mean(acc, axis=0)
+        ref_normalised = avg_spec / (pristine_clip + 1e-8)
+        ref_list.append(ref_normalised)
+
+    ref_spectra = torch.tensor(np.array(ref_list), dtype=torch.float32)
+    concentrations = torch.tensor(conc_range, dtype=torch.float32)
+    module = DifferentiableMisfit(ref_spectra, concentrations)
+    return module.to(device)
+
+
+def main():
+    """
+    Full training pipeline:
+      1. Load pristine spectrum
+      2. Build NormalizedTransmissionsDataset from the manifest
+      3. Build DifferentiableMisfit from file-averaged spectra
+      4. Train the PINN
+      5. Save the best model checkpoint (+ training curves)
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Train the Physics-Informed CNN for AGNR concentration prediction"
+    )
+    parser.add_argument("--epochs",       type=int,   default=200,   help="Max training epochs")
+    parser.add_argument("--batch-size",   type=int,   default=64,    help="Batch size")
+    parser.add_argument("--lr",           type=float, default=1e-3,  help="Initial learning rate")
+    parser.add_argument("--weight-decay", type=float, default=1e-4,  help="AdamW weight decay")
+    parser.add_argument("--misfit-weight",type=float, default=0.1,   help="λ for misfit term")
+    parser.add_argument("--val-split",    type=float, default=0.2,   help="Validation fraction")
+    parser.add_argument("--patience",     type=int,   default=20,    help="Early stopping patience")
+    parser.add_argument("--spectrum-len", type=int,   default=200,   help="Spectrum length")
+    parser.add_argument("--device",       type=str,   default=None,  help="cuda / cpu / auto")
+    parser.add_argument("--save-path",    type=str,   default="pinn_agnr_best.pt",
+                        help="Output checkpoint path")
+    args = parser.parse_args()
+
+    # ── Paths ──
+    script_dir   = Path(__file__).resolve().parent
+    project_root = script_dir.parents[1]
+    data_dir     = project_root / "data" / "raw" / "transmission_results"
+    manifest     = script_dir / "manifest_agnr.csv"
+    pristine_path = data_dir / "pristine.npy"
+
+    for p, label in [(data_dir, "Data dir"), (manifest, "Manifest"), (pristine_path, "Pristine")]:
+        if not p.exists():
+            raise FileNotFoundError(f"{label} not found: {p}")
+
+    device = (torch.device(args.device) if args.device
+              else torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+    print(f"Device: {device}")
+
+    # 1. Pristine spectrum
+    pristine = np.load(str(pristine_path))
+    print(f"Pristine spectrum loaded — shape: {pristine.shape}")
+
+    # 2. Dataset
+    dataset = NormalizedTransmissionsDataset(
+        manifest_file=str(manifest),
+        root_dir=str(data_dir),
+        pristine=pristine,
+        spectrum_length=args.spectrum_len,
+    )
+    print(f"Dataset size: {len(dataset)}")
+
+    # 3. Misfit module
+    conc_range = np.arange(1, 50, 2)
+    print("Building DifferentiableMisfit module (averaging 100 configs/conc)…")
+    misfit_module = _build_misfit_from_files(
+        data_dir, pristine, conc_range, args.spectrum_len, device
+    )
+    print("✓ Misfit module ready")
+
+    # 4. Train
+    model, train_losses, val_losses = train_pinn(
+        dataset=dataset,
+        misfit_module=misfit_module,
+        num_epochs=args.epochs,
+        val_split=args.val_split,
+        batch_size=args.batch_size,
+        lr=args.lr,
+        weight_decay=args.weight_decay,
+        misfit_weight=args.misfit_weight,
+        patience=args.patience,
+        input_length=args.spectrum_len,
+        device_str=str(device),
+    )
+
+    # 5. Save
+    save_path = Path(args.save_path)
+    torch.save({
+        "model_state_dict": model.state_dict(),
+        "train_losses": train_losses,
+        "val_losses": val_losses,
+        "args": vars(args),
+    }, save_path)
+    print(f"\n✓ Model checkpoint saved to: {save_path}")
+
+    return model, train_losses, val_losses
+
+
+if __name__ == "__main__":
+    main()
