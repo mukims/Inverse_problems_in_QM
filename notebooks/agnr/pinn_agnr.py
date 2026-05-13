@@ -93,7 +93,7 @@ def build_misfit_module(ca_fn, pristine, conc_range=None, spectrum_length=200, d
         device:           torch device
 
     Returns:
-        DifferentiableMisfit module
+        Differentiable Misfit module
     """
     if conc_range is None:
         conc_range = np.arange(1, 50, 2)
@@ -126,6 +126,7 @@ class ResBlock1D(nn.Module):
             nn.Conv1d(channels, channels, kernel_size=3, padding=1),
             nn.BatchNorm1d(channels),
             nn.ReLU(inplace=True),
+            nn.Dropout(0.3),
             nn.Conv1d(channels, channels, kernel_size=3, padding=1),
             nn.BatchNorm1d(channels),
         )
