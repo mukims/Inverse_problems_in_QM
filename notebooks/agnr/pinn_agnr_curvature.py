@@ -35,11 +35,12 @@ class CurvatureMisfit(nn.Module):
     If it is low, the physics signal is ambiguous and the penalty is smaller.
     """
 
-    def __init__(self, ref_spectra: torch.Tensor, concentrations: torch.Tensor,
+    def __init__(self, ref_spectra: torch.Tensor, concentrations: torch.Tensor, pristine: torch.Tensor,
                  temperature: float = 2.0, spectrum_start: int = 20, spectrum_end: int = 150):
         super().__init__()
         self.register_buffer('ref_spectra', ref_spectra)        # [C, L]
         self.register_buffer('concentrations', concentrations)  # [C]
+        self.register_buffer('pristine', pristine)              # [L]
         self.temperature = temperature
         self.spectrum_start = spectrum_start
         self.spectrum_end = spectrum_end
@@ -60,10 +61,20 @@ class CurvatureMisfit(nn.Module):
         # Crop the spectra to the region of interest [20:150]
         x_crop = x[:, self.spectrum_start:self.spectrum_end]
         ref_crop = self.ref_spectra[:, self.spectrum_start:self.spectrum_end]
+        pristine_crop = self.pristine[self.spectrum_start:self.spectrum_end]
+        
+        # Un-normalize back to original transmission values
+        x_unnorm = x_crop * pristine_crop.unsqueeze(0)
+        ref_unnorm = ref_crop * pristine_crop.unsqueeze(0)
+        
+        # Explicitly clip the input spectra between 0 and pristine values
+        # (This handles any values that might exceed pristine due to data augmentation noise)
+        x_unnorm = torch.clamp(x_unnorm, min=0.0)
+        x_unnorm = torch.min(x_unnorm, pristine_crop.unsqueeze(0))
         
         # 1. Calculate misfits for all concentrations
         # diff shape: [B, C, L_crop]
-        diff = x_crop.unsqueeze(1) - ref_crop.unsqueeze(0)
+        diff = x_unnorm.unsqueeze(1) - ref_unnorm.unsqueeze(0)
         
         # Sum squared differences and divide by 150 (matching the numpy code)
         mis_1 = torch.sum(diff ** 2, dim=2) / 150.0  # [B, C]
@@ -88,9 +99,9 @@ class CurvatureMisfit(nn.Module):
         
         # Gaussian-kernel soft weights (differentiable soft-argmin)
         weights = F.softmax(-diffs / self.temperature, dim=1)   # [B, C]
-        ref_selected = torch.matmul(weights, ref_crop)  # [B, L_crop]
+        ref_selected = torch.matmul(weights, ref_unnorm)  # [B, L_crop]
         
-        physical_misfit = ((x_crop - ref_selected) ** 2).mean(dim=1) # [B]
+        physical_misfit = ((x_unnorm - ref_selected) ** 2).mean(dim=1) # [B]
         
         # 6. Weight the physical misfit inversely by the curvature
         # We detach curvature so it acts purely as a constant weight per sample
@@ -105,74 +116,28 @@ class CurvatureMisfit(nn.Module):
 # 2. MODEL ARCHITECTURE
 # ======================================================================
 
-class LayerNorm1d(nn.Module):
-    """LayerNorm for 1D CNNs. Applies normalization over the channel dimension."""
-    def __init__(self, channels: int):
-        super().__init__()
-        self.norm = nn.LayerNorm(channels)
-
-    def forward(self, x):
-        return self.norm(x.transpose(1, 2)).transpose(1, 2)
-
-class ResBlock1D(nn.Module):
-    """Residual block with LayerNorm for 1D convolutions."""
-
-    def __init__(self, channels: int):
-        super().__init__()
-        self.block = nn.Sequential(
-            nn.Conv1d(channels, channels, kernel_size=3, padding=1),
-            LayerNorm1d(channels),
-            nn.ReLU(inplace=True),
-            nn.Dropout(0.3),
-            nn.Conv1d(channels, channels, kernel_size=3, padding=1),
-            LayerNorm1d(channels),
-        )
-
-    def forward(self, x):
-        return F.relu(x + self.block(x), inplace=True)
-
-
-class ImprovedConductanceCNN(nn.Module):
-    def __init__(self, input_length: int = 200, hidden_channels: int = 32,
-                 final_channels: int = 64, num_res_blocks: int = 3,
+class ConductanceMLP(nn.Module):
+    """Multi-Layer Perceptron for concentration prediction."""
+    def __init__(self, input_length: int = 200, hidden_dims: list = None,
                  dropout: float = 0.2, noise_std: float = 0.02):
         super().__init__()
 
+        if hidden_dims is None:
+            hidden_dims = [256, 128, 64, 32]
+
         self.noise_std = noise_std
 
-        # Stem
-        self.stem = nn.Sequential(
-            nn.Conv1d(1, hidden_channels, kernel_size=7, padding=3),
-            LayerNorm1d(hidden_channels),
-            nn.ReLU(inplace=True),
-            nn.MaxPool1d(2),
-        )
+        layers = []
+        in_dim = input_length
+        for h_dim in hidden_dims:
+            layers.append(nn.Linear(in_dim, h_dim))
+            layers.append(nn.LayerNorm(h_dim))
+            layers.append(nn.ReLU(inplace=True))
+            layers.append(nn.Dropout(dropout))
+            in_dim = h_dim
 
-        # Residual blocks
-        res_blocks = []
-        for _ in range(num_res_blocks):
-            res_blocks.append(ResBlock1D(hidden_channels))
-            res_blocks.append(nn.MaxPool1d(2))
-            res_blocks.append(nn.Dropout(dropout))
-        self.res_tower = nn.Sequential(*res_blocks)
-
-        # Projection
-        self.project = nn.Sequential(
-            nn.Conv1d(hidden_channels, final_channels, kernel_size=3, padding=1),
-            LayerNorm1d(final_channels),
-            nn.ReLU(inplace=True),
-        )
-
-        # Global pooling
-        self.pool = nn.AdaptiveAvgPool1d(1)
-
-        # Regression head
-        self.regressor = nn.Sequential(
-            nn.Linear(final_channels, 32),
-            nn.ReLU(inplace=True),
-            nn.Dropout(dropout),
-            nn.Linear(32, 1),
-        )
+        self.mlp = nn.Sequential(*layers)
+        self.regressor = nn.Linear(in_dim, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # Data augmentation
@@ -180,13 +145,7 @@ class ImprovedConductanceCNN(nn.Module):
             noise = 1.0 + torch.randn_like(x) * self.noise_std
             x = x * noise
 
-        x = x.unsqueeze(1)
-        x = self.stem(x)
-        x = self.res_tower(x)
-        x = self.project(x)
-        x = self.pool(x)
-        x = x.squeeze(-1)
-
+        x = self.mlp(x)
         return self.regressor(x)
 
 
@@ -243,7 +202,7 @@ def train_pinn(
         device = torch.device(device_str)
     print(f"Training on: {device}")
 
-    model = ImprovedConductanceCNN(input_length=input_length).to(device)
+    model = ConductanceMLP(input_length=input_length).to(device)
     misfit_module = misfit_module.to(device)
 
     optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -370,7 +329,8 @@ def _build_misfit_from_files(data_dir, pristine, conc_range, spectrum_length, de
 
     ref_spectra = torch.tensor(np.array(ref_list), dtype=torch.float32)
     concentrations = torch.tensor(conc_range, dtype=torch.float32)
-    module = CurvatureMisfit(ref_spectra, concentrations)
+    pristine_tensor = torch.tensor(pristine_clip, dtype=torch.float32)
+    module = CurvatureMisfit(ref_spectra, concentrations, pristine_tensor)
     return module.to(device)
 
 
@@ -382,9 +342,9 @@ def main():
     parser.add_argument("--batch-size",   type=int,   default=64)
     parser.add_argument("--lr",           type=float, default=1e-3)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
-    parser.add_argument("--misfit-weight",type=float, default=0.1, help="λ for curvature term")
+    parser.add_argument("--misfit-weight",type=float, default=0.001, help="λ for curvature term")
     parser.add_argument("--val-split",    type=float, default=0.2)
-    parser.add_argument("--patience",     type=int,   default=20)
+    parser.add_argument("--patience",     type=int,   default=50)
     parser.add_argument("--spectrum-len", type=int,   default=200)
     parser.add_argument("--device",       type=str,   default=None)
     parser.add_argument("--save-path",    type=str,   default="pinn_agnr_curvature.pt")

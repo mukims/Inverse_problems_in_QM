@@ -37,3 +37,6 @@ Thumbs.db
 
 # VS Code
 .vscode/
+
+# Generator scripts
+create_notebook.py
