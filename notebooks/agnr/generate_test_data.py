@@ -88,48 +88,66 @@ def import_leads(size):
 
 g_7 = import_leads(7)
 
-def device_transmission(w, d, t, e,size,config,concentration):
-    ene = int(w*100)
-    m = size    
+def rho_matrix(t, m):
+    dim = 2 * m
+    rho = np.zeros((dim, dim), dtype=complex)
+    for n in range(1, (m - 1) // 2 + 1):
+        idx = 2 * n - 1
+        rho[idx, idx] = t
+    return rho
+
+def device_transmission(w, d, t, e, size, config, concentration, x=None):
+    ene = int(w * 100)
+    m = size
+    dim = 2 * m
+    I = np.eye(dim, dtype=complex)
+
     global g_7
 
-    left = g_7[ene]
-    right = g_7[ene]
+    # 1. Lead Surface Green's Functions:
+    left = g_7[ene]                      # Left lead surface Green's function
 
-    T  = connection(t,m)
-    I = np.eye(2*m, dtype=complex)
-    Td = T.conj().T
-    
-    tin =  T1_matrix(t, m)
-    tin_d = tin.T
+    # 2. Hopping Matrices:
+    tin = T1_matrix(t, m)
+    tin_d = tin.T                         # Forward hopping T
+    rho = rho_matrix(t, m)                # Contact operator \[Rho]
 
-    combs_fn = possible_combs(concentration,size)
+    # 3. Device Propagation (100 Unit Cells):
+    combs_fn = possible_combs(concentration, size)
     g_new = left
 
     for i in range(100):
-        unit = unidevice(w, d, t, e, size, config, concentration, i, combs_fn=combs_fn)
-        gd = np.linalg.inv(unit)
+        unit_i = unidevice(w, d, t, e, size, config, concentration, i, combs_fn=combs_fn)
+        gd = np.linalg.inv(unit_i)
         G = np.linalg.solve(I - gd @ tin_d @ g_new @ tin, gd)
         g_new = G
 
     left_device = g_new
 
-    IL = np.linalg.solve(I - left_device @ Td @ right @ Td, left_device)
-    IR = np.linalg.solve(I - right @ Td @ left_device @ Td, right)
+    # 4. Connected Interface Green's Functions:
+    IL = np.linalg.solve(I - left_device @ rho @ left @ rho, left_device)
+    IR = np.linalg.solve(I - left @ rho @ left_device @ rho, left)
+
+    if x is not None:
+        return -np.imag(IL[x, x]) / np.pi
+
+    # 5. Spectral Functions & Non-local Cross Green's Function:
     gdd = IL - IL.conj().T
     grr = IR - IR.conj().T
 
-    Gnonlocal = right @ Td @ IL
+    Gnonlocal = left @ rho @ IR
     GNON = Gnonlocal - Gnonlocal.conj().T
 
-    term1 = gdd @ T @ grr @ Td
-    term2 = T @ GNON @ Td @ GNON
+    # 6. Mathematica Trace Calculation:
+    term1 = gdd @ rho @ grr @ rho
+    term2 = rho @ GNON @ rho @ GNON
 
     tr1 = np.abs(np.trace(term1 - term2))
-    return tr1
+
+    return np.abs(tr1)
 
 def transmission(config, conc, size):
-    trans = [device_transmission(i, 0.0001, 1, 0,size,config,conc) for i in np.arange(0,3,0.01)]
+    trans = [device_transmission(i, 1e-5, 1, 0,size,config,conc) for i in np.arange(0,3,0.01)]
     return trans
 
 def run_transmission(args):

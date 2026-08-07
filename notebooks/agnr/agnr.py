@@ -104,19 +104,20 @@ def connection(t,m):
 
     return base
 
-def infinite(w,d,t,e,m):
+def infinite(w, d, t, e, m):
+    ene = int(w * 100)
 
-    w = int(w*100)
+    left = g21[ene]
+    P = np.eye(2 * m)[::-1]
+    right = P @ left @ P     # right lead surface Green's function g_R = P g_L P
 
-    left = g21[int(w)]
+    T = T1_matrix(t, m)      # hopping from cell 0 to cell 1
+    TT = connection(t, m)    # hopping from cell 1 to cell 0 (T^T)
 
-    right = g21[int(w)]
-
-    Td = connection(t,m)
-
-    iden = np.eye(2*m, dtype=np.complex64)
+    iden = np.eye(2 * m, dtype=np.complex128)
     
-    return np.linalg.solve(iden - left @ Td.T @ right @ Td.T, left)
+    return np.linalg.solve(iden - left @ T @ right @ TT, left)
+
 
 
 
@@ -234,58 +235,64 @@ def unidevice(w, d, t, e, size, config, n, numberofunitcell, combs_fn=None):
 
 
 
-def device_transmission(w, d, t, e,size,config,concentration):
-    ene = int(w*100)
-    m = 21    
+def rho_matrix(t, m):
+    dim = 2 * m
+    rho = np.zeros((dim, dim), dtype=complex)
+    for n in range(1, (m - 1) // 2 + 1):
+        idx = 2 * n - 1
+        rho[idx, idx] = t
+    return rho
 
+def device_transmission(w, d, t, e, size, config, concentration, x=None):
+    ene = int(w * 100)
+    m = size
+    dim = 2 * m
+    I = np.eye(dim, dtype=complex)
 
+    # 1. Lead Surface Green's Functions:
+    left = g21[ene]                      # Left lead surface Green's function
 
-    left = g21[ene]     # left lead surface Green's function
-    right = g21[ene]     # right lead
+    # 2. Hopping Matrices:
+    tin = T1_matrix(t, m)
+    tin_d = tin.T                         # Forward hopping T
+    rho = rho_matrix(t, m)                # Contact operator \[Rho]
 
-    T  = connection(t,m)
-
-    I = np.eye(2*m, dtype=complex)
-    Td = T.conj().T
-    
-
-    tin =  T1_matrix(t, m)
-
-    tin_d = tin.T
-
-
-    combs_fn = possible_combs(concentration,size)
-
+    # 3. Device Propagation (100 Unit Cells):
+    combs_fn = possible_combs(concentration, size)
     g_new = left
 
-
     for i in range(100):
-        
-        unit = unidevice(w, d, t, e, size, config, concentration, i, combs_fn=combs_fn)
-#        print(unit.shape)
-        gd = np.linalg.inv(unit)
-
+        unit_i = unidevice(w, d, t, e, size, config, concentration, i, combs_fn=combs_fn)
+        gd = np.linalg.inv(unit_i)
         G = np.linalg.solve(I - gd @ tin_d @ g_new @ tin, gd)
-
         g_new = G
-
 
     left_device = g_new
 
-    IL = np.linalg.solve(I - left_device @ Td @ right @ Td, left_device)
-    IR = np.linalg.solve(I - right @ Td @ left_device @ Td, right)
+    # 4. Connected Interface Green's Functions:
+    IL = np.linalg.solve(I - left_device @ rho @ left @ rho, left_device)
+    IR = np.linalg.solve(I - left @ rho @ left_device @ rho, left)
+
+    if x is not None:
+        return -np.imag(IL[x, x]) / np.pi
+
+    # 5. Spectral Functions & Non-local Cross Green's Function:
     gdd = IL - IL.conj().T
     grr = IR - IR.conj().T
 
-    Gnonlocal = right @ Td @ IL
+    Gnonlocal = left @ rho @ IR
     GNON = Gnonlocal - Gnonlocal.conj().T
 
-    term1 = gdd @ T @ grr @ Td
-    term2 = T @ GNON @ Td @ GNON
+    # 6. Mathematica Trace Calculation:
+    term1 = gdd @ rho @ grr @ rho
+    term2 = rho @ GNON @ rho @ GNON
 
     tr1 = np.abs(np.trace(term1 - term2))
 
-    return tr1
+    return np.abs(tr1)
+
+
+
 
 
 

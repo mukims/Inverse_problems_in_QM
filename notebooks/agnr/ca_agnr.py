@@ -156,72 +156,75 @@ def unidevice(w, d, t, e, size, config, n, numberofunitcell, combs_fn=None):
 
 
 def import_leads(size):
-    arr = np.load(os.path.expanduser(f"~/machine_learning/transmission_github/transmissions/leads/agnr_7.npy"))
+    arr = np.load(os.path.expanduser(f"~/Desktop/backup/agnr/size_{size}/leads_{size}.npy"))
     #print(arr.shape)
     return arr
 
 g_7 = import_leads(7)
 print(g_7.shape)
-def device_transmission(w, d, t, e,size,config,concentration):
-    ene = int(w*100)
-    m = size    
+def rho_matrix(t, m):
+    dim = 2 * m
+    rho = np.zeros((dim, dim), dtype=complex)
+    for n in range(1, (m - 1) // 2 + 1):
+        idx = 2 * n - 1
+        rho[idx, idx] = t
+    return rho
 
-    
+def device_transmission(w, d, t, e, size, config, concentration, x=None):
+    ene = int(w * 100)
+    m = size
+    dim = 2 * m
+    I = np.eye(dim, dtype=complex)
+
     global g_7
-#    print(g_7.shape)
 
+    # 1. Lead Surface Green's Functions:
+    left = g_7[ene]                      # Left lead surface Green's function
 
-    left = g_7[ene]     # left lead surface Green's function
-    right = g_7[ene]     # right lead
+    # 2. Hopping Matrices:
+    tin = T1_matrix(t, m)
+    tin_d = tin.T                         # Forward hopping T
+    rho = rho_matrix(t, m)                # Contact operator \[Rho]
 
-    T  = connection(t,m)
-
-    I = np.eye(2*m, dtype=complex)
-    Td = T.conj().T
-    
-
-    tin =  T1_matrix(t, m)
-
-    tin_d = tin.T
-
-
-    combs_fn = possible_combs(concentration,size)
-
+    # 3. Device Propagation (100 Unit Cells):
+    combs_fn = possible_combs(concentration, size)
     g_new = left
 
-
     for i in range(100):
-        
-        unit = unidevice(w, d, t, e, size, config, concentration, i, combs_fn=combs_fn)
-#        print(unit.shape)
-        gd = np.linalg.inv(unit)
-
+        unit_i = unidevice(w, d, t, e, size, config, concentration, i, combs_fn=combs_fn)
+        gd = np.linalg.inv(unit_i)
         G = np.linalg.solve(I - gd @ tin_d @ g_new @ tin, gd)
-
         g_new = G
-
 
     left_device = g_new
 
-    IL = np.linalg.solve(I - left_device @ Td @ right @ Td, left_device)
-    IR = np.linalg.solve(I - right @ Td @ left_device @ Td, right)
+    # 4. Connected Interface Green's Functions:
+    IL = np.linalg.solve(I - left_device @ rho @ left @ rho, left_device)
+    IR = np.linalg.solve(I - left @ rho @ left_device @ rho, left)
+
+    if x is not None:
+        return -np.imag(IL[x, x]) / np.pi
+
+    # 5. Spectral Functions & Non-local Cross Green's Function:
     gdd = IL - IL.conj().T
     grr = IR - IR.conj().T
 
-    Gnonlocal = right @ Td @ IL
+    Gnonlocal = left @ rho @ IL
     GNON = Gnonlocal - Gnonlocal.conj().T
 
-    term1 = gdd @ T @ grr @ Td
-    term2 = T @ GNON @ Td @ GNON
+    # 6. Mathematica Trace Calculation:
+    term1 = gdd @ rho @ grr @ rho
+    term2 = rho @ GNON @ rho @ GNON
 
     tr1 = np.abs(np.trace(term1 - term2))
 
-    return tr1
+    return np.abs(tr1)
 
-print(device_transmission(1,0.0001,1,0,7,1,0))
+
+print(device_transmission(1,1e-5,1,0,7,1,0))
 
 def transmission(config, conc, size):
-    trans = [device_transmission(i, 0.0001, 1, 0,size,config,conc) for i in np.arange(0,3,0.01)]
+    trans = [device_transmission(i, 1e-5, 1, 0,size,config,conc) for i in np.arange(0,3,0.01)]
 
     return trans
 
@@ -248,7 +251,7 @@ def compute_for_one_config(args):
 
     # Each worker loops over energies (RAM safe)
     for i, w in enumerate(w_vals):
-        out[i] = device_transmission(w, 0.0001, 1, 0, size, cfg, conc)
+        out[i] = device_transmission(w, 1e-5, 1, 0, size, cfg, conc)
 
     return out
 
@@ -282,13 +285,14 @@ def main():
     nconfigs = 10000
     size = 7
 
-    out_dir = os.path.expanduser("~/transmission_results")
-    os.makedirs(out_dir, exist_ok=True)
+    
 
-    print(f"[INFO] Output directory: {out_dir}")
+    #print(f"[INFO] Output directory: {out_dir}")
     print(f"[INFO] Available CPU cores: {cpu_count()}")
 
     for conc in concs:
+        out_dir = os.path.expanduser(f"~/transmission_results/size_7_{conc}")
+        os.makedirs(out_dir, exist_ok=True)
         compute_for_concentration(conc, size, nconfigs, out_dir)
 
     print("\n[DONE] All concentrations complete!")
