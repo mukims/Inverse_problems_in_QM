@@ -9,7 +9,7 @@ Usage:
 ------
     python generate_test_data.py
     python generate_test_data.py --concs 3 5 7 9 11 13 15 17 19 21 --nconfigs 50
-    python generate_test_data.py --size 7 --nconfigs 100 --start-cfg 5000 --out-dir ../../data/test/transmission_results_new
+    python generate_test_data.py --size 7 --nconfigs 100 --start-cfg 5000 --out-dir ../../../data/test/transmission_results_new
 """
 
 import os
@@ -50,7 +50,7 @@ def generate_test_dataset(concs, size=7, nconfigs=100, start_cfg=0,
                           out_dir=None, leads_file=None, workers=None,
                           d=1e-4, nonlocal_mode="IR"):
     script_dir = Path(__file__).resolve().parent
-    project_root = script_dir.parents[1]
+    project_root = script_dir.parents[2]
 
     if out_dir is None:
         out_dir = project_root / "data" / "test" / "transmission_results"

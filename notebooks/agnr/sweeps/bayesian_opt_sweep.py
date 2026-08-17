@@ -56,6 +56,9 @@ matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 
 # ── Import from the existing PINN module ────────────────────────────────────
+import os as _os, sys as _sys  # noqa: E402
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+import _bootstrap  # noqa: F401,E402 - puts sibling topic folders on sys.path
 from pinn_agnr_curvature import (
     ConductanceMLP,
     CurvatureMisfit,
@@ -68,10 +71,10 @@ from pinn_agnr_curvature import (
 # ======================================================================
 
 SCRIPT_DIR   = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parents[1]
+PROJECT_ROOT = SCRIPT_DIR.parents[2]
 DATA_DIR     = PROJECT_ROOT / "data" / "raw" / "transmission_results"
 TEST_DIR     = PROJECT_ROOT / "data" / "test" / "transmission_results"
-MANIFEST     = SCRIPT_DIR / "manifest_agnr.csv"
+MANIFEST     = SCRIPT_DIR.parent / "manifest_agnr.csv"
 PRISTINE_PATH = DATA_DIR / "pristine.npy"
 OUTPUT_DIR   = SCRIPT_DIR / "bo_sweep_results"
 

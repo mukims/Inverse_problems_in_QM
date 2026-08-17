@@ -185,7 +185,7 @@ def predict_misfit(test_spectrum_norm, ref_spectra, concentrations, pristine,
 
 def main():
     script_dir = Path(__file__).resolve().parent
-    project_root = script_dir.parents[1]
+    project_root = script_dir.parents[2]
     data_dir = project_root / "data" / "raw" / "transmission_results"
     test_dir = project_root / "data" / "test" / "transmission_results"
 

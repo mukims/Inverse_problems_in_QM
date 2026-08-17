@@ -24,7 +24,7 @@ Artifacts (written to --out):
 
 Example
 -------
-    python train_conc_models.py --data-dir ../../transmission_results_combined \\
+    python train_conc_models.py --data-dir ../../../transmission_results_combined \\
         --pristine ~/agnr_infer/pristine_7.npy --models xgb mlp transformer
 """
 
@@ -209,7 +209,7 @@ TRAINERS = {"xgb": train_xgb, "mlp": train_mlp, "transformer": train_transformer
 # ----------------------------------------------------------------------
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--data-dir", default="../../transmission_results_combined")
+    ap.add_argument("--data-dir", default="../../../transmission_results_combined")
     ap.add_argument("--pristine", default="~/agnr_infer/pristine_7.npy")
     ap.add_argument("--out", default="~/agnr_infer/models")
     ap.add_argument("--models", nargs="+", default=["xgb", "mlp", "transformer"],

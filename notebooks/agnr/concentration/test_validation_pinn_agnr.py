@@ -50,6 +50,9 @@ from torch.utils.data import Dataset, DataLoader, random_split, Subset
 NOTEBOOK_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(NOTEBOOK_DIR))
 
+import os as _os, sys as _sys  # noqa: E402
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+import _bootstrap  # noqa: F401,E402 - puts sibling topic folders on sys.path
 from pinn_agnr import (
     ImprovedConductanceCNN,
     DifferentiableMisfit,
@@ -71,9 +74,9 @@ plt.rcParams.update({
 sns.set_palette("muted")
 
 # ── Paths ──
-PROJECT_ROOT = NOTEBOOK_DIR.parents[1]  # transmissions/
+PROJECT_ROOT = NOTEBOOK_DIR.parents[2]  # transmissions/
 DATA_DIR = PROJECT_ROOT / "data" / "raw" / "transmission_results"
-MANIFEST_PATH = NOTEBOOK_DIR / "manifest_agnr.csv"
+MANIFEST_PATH = NOTEBOOK_DIR.parent / "manifest_agnr.csv"
 LEADS_PATH = PROJECT_ROOT / "leads" / "agnr_7.npy"
 PRISTINE_PATH = DATA_DIR / "pristine.npy"
 

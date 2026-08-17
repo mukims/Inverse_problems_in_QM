@@ -9,6 +9,9 @@ from torch.utils.data import Dataset, DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from scipy.spatial.distance import pdist, squareform
 
+import os as _os, sys as _sys  # noqa: E402
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+import _bootstrap  # noqa: F401,E402 - puts sibling topic folders on sys.path
 try:
     import agnr  # Needs to run from notebooks/agnr
 except ImportError:
@@ -162,8 +165,8 @@ def train_forward_model(dataset, num_epochs=100, batch_size=64, lr=1e-3):
         
         if epoch_val_loss < best_loss:
             best_loss = epoch_val_loss
-            os.makedirs('../../models/trained', exist_ok=True)
-            torch.save(model.state_dict(), '../../models/trained/forward_model.pth')
+            os.makedirs('../../../models/trained', exist_ok=True)
+            torch.save(model.state_dict(), '../../../models/trained/forward_model.pth')
             
     return model, train_losses, val_losses
 

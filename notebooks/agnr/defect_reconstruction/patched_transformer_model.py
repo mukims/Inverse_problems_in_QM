@@ -26,6 +26,9 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
 # Reuse dataset and losses from the existing module
+import os as _os, sys as _sys  # noqa: E402
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+import _bootstrap  # noqa: F401,E402 - puts sibling topic folders on sys.path
 from inverse_model import InverseGNRDataset, MisfitLoss, get_reference_spectra
 
 
@@ -275,9 +278,9 @@ def train_patched_model(dataset, num_epochs=100, batch_size=64, lr=7e-4,
 
         if epoch_val_loss < best_loss:
             best_loss = epoch_val_loss
-            os.makedirs('../../models/trained', exist_ok=True)
+            os.makedirs('../../../models/trained', exist_ok=True)
             torch.save(model.state_dict(),
-                       '../../models/trained/patched_transformer.pth')
+                       '../../../models/trained/patched_transformer.pth')
 
     return model, train_losses, val_losses
 

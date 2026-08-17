@@ -611,9 +611,9 @@ def main():
 
     # ── Paths ──
     script_dir   = Path(__file__).resolve().parent
-    project_root = script_dir.parents[1]
+    project_root = script_dir.parents[2]
     data_dir     = project_root / "data" / "raw" / "transmission_results"
-    manifest     = script_dir / "manifest_agnr.csv"
+    manifest     = script_dir.parent / "manifest_agnr.csv"
     pristine_path = data_dir / "pristine.npy"
 
     for p, label in [(data_dir, "Data dir"), (manifest, "Manifest"), (pristine_path, "Pristine")]:

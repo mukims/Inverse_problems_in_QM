@@ -473,7 +473,7 @@ def main():
     args = parser.parse_args()
 
     script_dir = Path(__file__).resolve().parent
-    project_root = script_dir.parents[1]
+    project_root = script_dir.parents[2]
     pristine_path = project_root / "data" / "raw" / "transmission_results" / "pristine.npy"
 
     mlp_save_path = script_dir / "pinn_agnr_curvature.pt"

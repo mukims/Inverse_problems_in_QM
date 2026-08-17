@@ -225,7 +225,7 @@ def load_multi_width_data(consolidated_dir: str, pristine_dir: str,
 
     # 1. Load Pristine References (prefer newly calculated base directory files)
     script_dir = Path(__file__).resolve().parent
-    project_root = script_dir.parents[1]
+    project_root = script_dir.parents[2]
 
     cand_p7 = [
         project_root / "7_agnr_pris.npy",
@@ -775,7 +775,7 @@ def main():
     args = parser.parse_args()
 
     script_dir = Path(__file__).resolve().parent
-    project_root = script_dir.parents[1]
+    project_root = script_dir.parents[2]
     pristine_dir = project_root / "data" / "raw" / "transmission_results"
 
     mlp_save_path = script_dir / "multi_width_pinn_mlp.pt"

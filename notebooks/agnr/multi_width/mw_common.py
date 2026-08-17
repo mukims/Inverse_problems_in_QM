@@ -137,7 +137,7 @@ def load_data(consolidated_dir, samples_per_conc=3000, spectrum_len=150, seed=42
     script sees exactly the same test set.
     """
     script_dir = Path(__file__).resolve().parent
-    project_root = script_dir.parents[1]
+    project_root = script_dir.parents[2]
 
     p7 = np.load(str(project_root / "7_agnr_pris.npy"))[:spectrum_len].astype(np.float32)
     p9 = np.load(str(project_root / "9_agnr_pris.npy"))[:spectrum_len].astype(np.float32)

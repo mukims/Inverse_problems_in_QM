@@ -5,7 +5,7 @@ between Focal Loss and the physics-informed Misfit Loss constraint.
 Usage:
     python sweep_misfit_weight.py
 
-Results (models + loss curves) are saved to ../../models/trained/sweep/
+Results (models + loss curves) are saved to ../../../models/trained/sweep/
 """
 
 import os
@@ -13,6 +13,9 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import json
+import os as _os, sys as _sys  # noqa: E402
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+import _bootstrap  # noqa: F401,E402 - puts sibling topic folders on sys.path
 from inverse_model import InverseGNRDataset, InverseModel, FocalLoss, MisfitLoss, get_reference_spectra
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingLR
@@ -25,7 +28,7 @@ LR             = 7e-4
 MAX_CONC       = 10
 SPECTRUM_LEN   = 200
 DATA_DIR       = os.path.expanduser('~/transmission_results')
-OUTPUT_DIR     = '../../models/trained/sweep'
+OUTPUT_DIR     = '../../../models/trained/sweep'
 # ───────────────────────────────────────────────────────────────────────────────
 
 
@@ -172,13 +175,13 @@ def plot_best_val_loss(results):
 def main():
     # ── Load dataset ──
     try:
-        pristine = np.load('../../data/raw/transmission_results/pristine.npy')[:SPECTRUM_LEN]
+        pristine = np.load('../../../data/raw/transmission_results/pristine.npy')[:SPECTRUM_LEN]
     except Exception:
         print("Warning: Pristine file not found. Using array of ones for test.")
         pristine = np.ones(SPECTRUM_LEN)
 
     dataset = InverseGNRDataset(
-        manifest_file='manifest_agnr.csv',
+        manifest_file='../manifest_agnr.csv',
         root_dir=DATA_DIR,
         pristine=pristine,
         max_conc=MAX_CONC,

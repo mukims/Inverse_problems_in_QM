@@ -35,6 +35,9 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 from tqdm import tqdm
 
+import os as _os, sys as _sys  # noqa: E402
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+import _bootstrap  # noqa: F401,E402 - puts sibling topic folders on sys.path
 from pinn_agnr_curvature import (
     NormalizedTransmissionsDataset,
     CurvatureMisfit,
@@ -698,9 +701,9 @@ def main():
     args = parser.parse_args()
 
     script_dir = Path(__file__).resolve().parent
-    project_root = script_dir.parents[1]
+    project_root = script_dir.parents[2]
     data_dir = project_root / "data" / "raw" / "transmission_results"
-    manifest = script_dir / "manifest_agnr.csv"
+    manifest = script_dir.parent / "manifest_agnr.csv"
     pristine_path = data_dir / "pristine.npy"
 
     device = (torch.device(args.device) if args.device
