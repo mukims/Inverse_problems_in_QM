@@ -4,17 +4,17 @@
     "Width_Acc_Overall": 100.0,
     "Width_Acc_7": 100.0,
     "Width_Acc_9": 100.0,
-    "Conc_MAE_Overall": 2.3095344276377157,
-    "Conc_RMSE_Overall": 3.108456073916651,
-    "Conc_Max_Error": 20.620010375976562,
-    "Conc_MAE_7": 2.053409168794639,
-    "Conc_RMSE_7": 2.6918378841018495,
-    "Conc_MAE_9": 2.4869983641800766,
-    "Conc_RMSE_9": 3.3670236043367874,
-    "train_time_sec": 389.3,
-    "best_val_mae": 2.309
+    "Conc_MAE_Overall": 2.017684269334418,
+    "Conc_RMSE_Overall": 2.680162644035273,
+    "Conc_Max_Error": 17.2203369140625,
+    "Conc_MAE_7": 1.8821116888071592,
+    "Conc_RMSE_7": 2.440689234922885,
+    "Conc_MAE_9": 2.111619728633706,
+    "Conc_RMSE_9": 2.834246875378109,
+    "train_time_sec": 902.5,
+    "best_val_mae": 2.0176
   },
-  "written": "2026-08-17T18:21:32",
+  "written": "2026-08-17T19:08:36",
   "snap_grid": false,
   "width_condition": true
 }
