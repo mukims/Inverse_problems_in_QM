@@ -1,0 +1,54 @@
+{
+  "Physical Misfit": {
+    "Width_Acc_Overall": 99.64658634538152,
+    "Width_Acc_7": 99.47013802577354,
+    "Width_Acc_9": 99.76884376558039,
+    "Conc_MAE_Overall": 2.445194109772423,
+    "Conc_RMSE_Overall": 3.787586290276676,
+    "Conc_Max_Error": 34.0,
+    "Conc_MAE_7": 2.007588146791391,
+    "Conc_RMSE_7": 3.113390976960173,
+    "Conc_MAE_9": 2.748402302497394,
+    "Conc_RMSE_9": 4.191599397241744,
+    "eval_time_sec": 0.6
+  },
+  "XGBoost": {
+    "Width_Acc_Overall": 99.99732262382864,
+    "Width_Acc_7": 100.0,
+    "Width_Acc_9": 99.99546752481531,
+    "Conc_MAE_Overall": 1.9817603623882993,
+    "Conc_RMSE_Overall": 2.8038347723952017,
+    "Conc_Max_Error": 18.49573516845703,
+    "Conc_MAE_7": 1.7563257597875679,
+    "Conc_RMSE_7": 2.4593674987871967,
+    "Conc_MAE_9": 2.137959372947035,
+    "Conc_RMSE_9": 3.019549731320071,
+    "train_time_sec": 27.7
+  },
+  "ConductanceMLP": {
+    "Width_Acc_Overall": 100.0,
+    "Width_Acc_7": 100.0,
+    "Width_Acc_9": 100.0,
+    "Conc_MAE_Overall": 2.157560221009465,
+    "Conc_RMSE_Overall": 2.942070077436788,
+    "Conc_Max_Error": 18.947357177734375,
+    "Conc_MAE_7": 1.9168650617684955,
+    "Conc_RMSE_7": 2.558239655400969,
+    "Conc_MAE_9": 2.3243329581402588,
+    "Conc_RMSE_9": 3.180970597842352,
+    "train_time_sec": 704.6
+  },
+  "Patched Transformer v2": {
+    "Width_Acc_Overall": 99.99732262382864,
+    "Width_Acc_7": 100.0,
+    "Width_Acc_9": 99.99546752481531,
+    "Conc_MAE_Overall": 2.13861856019481,
+    "Conc_RMSE_Overall": 3.065354334330122,
+    "Conc_Max_Error": 21.30634307861328,
+    "Conc_MAE_7": 1.8383304432327896,
+    "Conc_RMSE_7": 2.5851709475494378,
+    "Conc_MAE_9": 2.3466820349715127,
+    "Conc_RMSE_9": 3.3580320176857517,
+    "train_time_sec": 3864.8
+  }
+}
