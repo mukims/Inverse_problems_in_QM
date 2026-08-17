@@ -99,6 +99,10 @@ def run(args, train_data, val_data, test_data, out_dir, results_dir):
         alpha_width=args.alpha_width, patience=args.patience,
         warmup_epochs=args.warmup_epochs, weight_decay=args.weight_decay,
         huber_beta=args.huber_beta,
+        lr_schedule=args.lr_schedule, sched_epochs=args.sched_epochs,
+        plateau_factor=args.plateau_factor, plateau_patience=args.plateau_patience,
+        swa=args.swa, swa_start=args.swa_start, swa_lr=args.swa_lr,
+        swa_anneal=args.swa_anneal,
     )
 
     ckpt_path = out_dir / "mw_mlp.pt"
@@ -132,7 +136,7 @@ def run(args, train_data, val_data, test_data, out_dir, results_dir):
 def main():
     parser = argparse.ArgumentParser(description="Multi-task ConductanceMLP.")
     mw.add_common_args(parser)
-    parser.add_argument("--epochs", type=int, default=100,
+    parser.add_argument("--epochs", type=int, default=1000,
                         help="Max epochs (default 100; BUILD-06 was still improving at 50)")
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--lr", type=float, default=1e-3)
@@ -140,10 +144,31 @@ def main():
                         help="MLPs rarely need warmup; kept for parity with the transformer")
     parser.add_argument("--alpha-width", type=float, default=1.0,
                         help="Weight on the width CE loss (default 1.0; see IMPROVEMENT 2)")
-    parser.add_argument("--patience", type=int, default=20)
-    parser.add_argument("--weight-decay", type=float, default=1e-4)
+    parser.add_argument("--patience", type=int, default=50)
+    parser.add_argument("--weight-decay", type=float, default=5e-5)
     parser.add_argument("--huber-beta", type=float, default=1.0)
-    parser.add_argument("--dropout", type=float, default=0.1)
+    parser.add_argument("--lr-schedule", choices=["cosine", "plateau", "none"], default="cosine",
+                        help="cosine: decay over --sched-epochs. plateau: ReduceLROnPlateau on val MAE "
+                             "(horizon-independent - use this when pairing a big --epochs with early stopping). "
+                             "none: constant LR.")
+    parser.add_argument("--sched-epochs", type=int, default=None,
+                        help="Cosine horizon (T_max). Defaults to --epochs. Set this when --epochs is only "
+                             "a safety cap, otherwise the LR barely decays before early stopping fires.")
+    parser.add_argument("--plateau-factor", type=float, default=0.5)
+    parser.add_argument("--plateau-patience", type=int, default=8)
+    parser.add_argument("--swa", action="store_true",
+                        help="Stochastic Weight Averaging: average weights over the tail of "
+                             "training instead of taking one epoch's snapshot. Targets the "
+                             "epoch-to-epoch val-MAE oscillation this model shows. The averaged "
+                             "model is kept only if it actually validates better.")
+    parser.add_argument("--swa-start", type=int, default=None,
+                        help="Epoch at which averaging begins (default: 75%% of --epochs). "
+                             "Must be reached before early stopping fires.")
+    parser.add_argument("--swa-lr", type=float, default=None,
+                        help="Constant LR during the SWA phase (default: --lr / 10)")
+    parser.add_argument("--swa-anneal", type=int, default=5,
+                        help="Epochs to anneal into swa_lr (default 5)")
+    parser.add_argument("--dropout", type=float, default=0.3)
     parser.add_argument("--noise-std", type=float, default=0.0,
                         help="Multiplicative input noise; 0 disables (was 0.01)")
     parser.add_argument("--hidden-dims", type=int, nargs="+", default=[256, 128, 64],

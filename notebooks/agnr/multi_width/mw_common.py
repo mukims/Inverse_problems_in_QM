@@ -292,7 +292,10 @@ def _make_loader(X, yw, yc_norm, batch_size, shuffle):
 
 def fit_multitask(model, train_data, val_data, scaler, *, tag, epochs, batch_size,
                   lr, alpha_width, patience, warmup_epochs=0, weight_decay=1e-4,
-                  grad_clip=None, huber_beta=1.0, device="cpu"):
+                  grad_clip=None, huber_beta=1.0, device="cpu",
+                  lr_schedule="cosine", sched_epochs=None,
+                  plateau_factor=0.5, plateau_patience=8,
+                  swa=False, swa_start=None, swa_lr=None, swa_anneal=5):
     """Train a dual-head model. Returns (best_state, history, best_val_mae).
 
     Embeds several of the improvements:
@@ -317,15 +320,74 @@ def fit_multitask(model, train_data, val_data, scaler, *, tag, epochs, batch_siz
 
     optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
 
-    def lr_lambda(ep):
+    # The cosine period is decoupled from the epoch CAP. Tying them means raising
+    # --epochs to "let it run longer" silently flattens the decay: with epochs=1000
+    # a run that early-stops at 127 never drops below ~96% of the peak LR, so the
+    # model stays in the high-LR regime and validation MAE just oscillates.
+    horizon = sched_epochs or epochs
+
+    def cosine_lambda(ep):
         if warmup_epochs and ep < warmup_epochs:
             return (ep + 1) / float(warmup_epochs)
-        prog = (ep - warmup_epochs) / max(1, epochs - warmup_epochs)
+        prog = (ep - warmup_epochs) / max(1, horizon - warmup_epochs)
         return 0.5 * (1.0 + math.cos(math.pi * min(1.0, prog)))
 
-    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+    plateau_sched = None
+    if lr_schedule == "cosine":
+        scheduler = optim.lr_scheduler.LambdaLR(optimizer, cosine_lambda)
+        preview = ", ".join(f"ep{e}:{lr*cosine_lambda(e-1):.1e}"
+                            for e in (1, horizon // 4, horizon // 2, horizon) if e >= 1)
+        log(f"  LR schedule: cosine over {horizon} epochs ({preview})")
+        if horizon > 2 * max(patience, 1) + 50:
+            log(f"  !! WARNING: cosine horizon {horizon} is long relative to patience "
+                f"{patience}. Early stopping will likely fire while the LR is still near "
+                f"peak, leaving the model un-annealed. Use --sched-epochs to set a "
+                f"realistic horizon, or --lr-schedule plateau.")
+    elif lr_schedule == "plateau":
+        scheduler = None
+        plateau_sched = optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode="min", factor=plateau_factor, patience=plateau_patience)
+        log(f"  LR schedule: ReduceLROnPlateau on val MAE "
+            f"(factor={plateau_factor}, patience={plateau_patience}) — horizon-independent")
+    else:
+        scheduler = None
+        log(f"  LR schedule: constant {lr:g}")
+    # ---- Stochastic Weight Averaging (opt-in) ----------------------------
+    # Averages weights over the tail of training instead of taking a single
+    # epoch's snapshot. Directly targets epoch-to-epoch oscillation in val MAE.
+    swa_model = swa_sched = None
+    swa_best_mae, swa_best_state = float("inf"), None
+    if swa:
+        from torch.optim.swa_utils import AveragedModel, SWALR
+        swa_start = swa_start or max(1, int(epochs * 0.75))
+        swa_lr = lr * 0.1 if swa_lr is None else swa_lr
+        swa_model = AveragedModel(model)
+        swa_sched = SWALR(optimizer, swa_lr=swa_lr, anneal_epochs=swa_anneal,
+                          anneal_strategy="cos")
+        log(f"  SWA: enabled — averaging from epoch {swa_start}, swa_lr={swa_lr:g}, "
+            f"anneal over {swa_anneal} epochs")
+        if swa_start > epochs:
+            log(f"  !! WARNING: swa_start ({swa_start}) exceeds epochs ({epochs}); "
+                f"SWA will never engage.")
+        else:
+            log(f"  !! NOTE: early stopping (patience {patience}) is evaluated on the live "
+                f"model. If it fires before epoch {swa_start}, SWA never engages — raise "
+                f"--patience or lower --swa-start.")
+
     ce_loss = nn.CrossEntropyLoss()
     reg_loss = nn.SmoothL1Loss(beta=huber_beta)
+
+    def _evaluate(m, desc):
+        """Validation pass. MAE is returned in ORIGINAL units, not normalised ones."""
+        m.eval()
+        vl, corr, abserr = 0.0, 0, 0.0
+        with torch.no_grad():
+            for xb, ywb, ycb in pbar(val_loader, desc, unit="b", total=len(val_loader)):
+                w_logits, c_pred = m(xb)
+                vl += (reg_loss(c_pred, ycb) + alpha_width * ce_loss(w_logits, ywb)).item() * len(xb)
+                corr += (torch.argmax(w_logits, dim=1) == ywb).sum().item()
+                abserr += torch.abs(scaler.inverse(c_pred) - scaler.inverse(ycb)).sum().item()
+        return vl / len(val_ds), corr / len(val_ds) * 100.0, abserr / len(val_ds)
 
     best_mae, best_state, no_improve = float("inf"), None, 0
     history = {"train_loss": [], "val_loss": [], "val_acc": [], "val_mae": []}
@@ -355,25 +417,30 @@ def fit_multitask(model, train_data, val_data, scaler, *, tag, epochs, batch_siz
             batch_bar.set_postfix(loss=f"{loss.item():.4f}", reg=f"{l_reg.item():.4f}")
 
         tr_loss /= len(train_ds); tr_reg /= len(train_ds); tr_ce /= len(train_ds)
-        scheduler.step()
 
-        model.eval()
-        va_loss, correct, abs_err_sum = 0.0, 0, 0.0
-        with torch.no_grad():
-            for xb, ywb, ycb in pbar(val_loader, f"  ep {epoch:03d}/{epochs:03d} val",
-                                     unit="b", total=len(val_loader)):
-                w_logits, c_pred = model(xb)
-                loss = reg_loss(c_pred, ycb) + alpha_width * ce_loss(w_logits, ywb)
-                va_loss += loss.item() * len(xb)
-                correct += (torch.argmax(w_logits, dim=1) == ywb).sum().item()
-                # MAE reported in ORIGINAL units, not normalised ones
-                abs_err_sum += torch.abs(scaler.inverse(c_pred) - scaler.inverse(ycb)).sum().item()
+        # Once SWA engages, SWALR owns the learning rate and the main schedule stops.
+        in_swa = swa_model is not None and epoch >= swa_start
+        if in_swa:
+            swa_model.update_parameters(model)
+            swa_sched.step()
+        elif scheduler is not None:
+            scheduler.step()
 
-        va_loss /= len(val_ds)
-        va_acc = correct / len(val_ds) * 100.0
-        va_mae = abs_err_sum / len(val_ds)
+        va_loss, va_acc, va_mae = _evaluate(model, f"  ep {epoch:03d}/{epochs:03d} val")
         for k, v in zip(history, (tr_loss, va_loss, va_acc, va_mae)):
             history[k].append(v)
+
+        if plateau_sched is not None and not in_swa:   # steps on the metric, not the epoch
+            plateau_sched.step(va_mae)
+
+        swa_note = ""
+        if in_swa:
+            _, swa_acc, swa_mae = _evaluate(swa_model, f"  ep {epoch:03d}/{epochs:03d} swa")
+            if swa_mae < swa_best_mae:
+                swa_best_mae = swa_mae
+                swa_best_state = {k: v.cpu().clone()
+                                  for k, v in swa_model.module.state_dict().items()}
+            swa_note = f" | SWA MAE {swa_mae:.3f} (best {swa_best_mae:.3f})"
 
         if va_mae < best_mae:                      # selection on the reported metric
             best_mae = va_mae
@@ -386,12 +453,23 @@ def fit_multitask(model, train_data, val_data, scaler, *, tag, epochs, batch_siz
         epoch_bar.set_postfix(mae=f"{va_mae:.3f}", acc=f"{va_acc:.2f}%", best=f"{best_mae:.3f}")
         log(f"Epoch {epoch:03d}/{epochs:03d} | Train {tr_loss:.4f} (reg {tr_reg:.4f}, ce {tr_ce:.4f}) | "
             f"Val {va_loss:.4f} (Acc {va_acc:.2f}%, MAE {va_mae:.3f}) | "
-            f"LR {scheduler.get_last_lr()[0]:.2e} | {time.time()-ep_t0:.1f}s/ep | "
-            f"ETA {fmt_eta(epoch, epochs, time.time()-t0)}{star}")
+            f"LR {optimizer.param_groups[0]['lr']:.2e} | {time.time()-ep_t0:.1f}s/ep | "
+            f"ETA {fmt_eta(epoch, epochs, time.time()-t0)}{star}{swa_note}")
 
         if no_improve >= patience:
             log(f"Early stopping at epoch {epoch} (no val-MAE improvement for {patience} epochs)")
             break
+
+    # Pick whichever candidate actually validates better — never assume SWA wins.
+    if swa_best_state is not None and swa_best_mae < best_mae:
+        log(f"  SWA average WINS: {swa_best_mae:.4f} vs best single epoch {best_mae:.4f} "
+            f"(improvement {best_mae - swa_best_mae:.4f})")
+        best_state, best_mae = swa_best_state, swa_best_mae
+    elif swa_best_state is not None:
+        log(f"  SWA average did NOT help: {swa_best_mae:.4f} vs best single epoch "
+            f"{best_mae:.4f} — keeping the single-epoch weights")
+    elif swa:
+        log("  SWA never engaged (training ended before swa_start)")
 
     if best_state is not None:
         model.load_state_dict(best_state)

@@ -1,0 +1,22 @@
+{
+  "display_name": "Physical Misfit",
+  "metrics": {
+    "Width_Acc_Overall": 99.64658634538152,
+    "Width_Acc_7": 99.47013802577354,
+    "Width_Acc_9": 99.76884376558039,
+    "Conc_MAE_Overall": 2.445194109772423,
+    "Conc_RMSE_Overall": 3.787586290276676,
+    "Conc_Max_Error": 34.0,
+    "Conc_MAE_7": 2.007588146791391,
+    "Conc_RMSE_7": 3.113390976960173,
+    "Conc_MAE_9": 2.748402302497394,
+    "Conc_RMSE_9": 4.191599397241744,
+    "eval_time_sec": 0.6
+  },
+  "written": "2026-08-17T17:21:25",
+  "crop": [
+    20,
+    150
+  ],
+  "snap_grid": false
+}

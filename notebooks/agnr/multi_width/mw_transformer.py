@@ -182,6 +182,8 @@ def run(args, train_data, val_data, test_data, out_dir, results_dir):
         alpha_width=args.alpha_width, patience=args.patience,
         warmup_epochs=args.warmup_epochs, weight_decay=args.weight_decay,
         grad_clip=args.grad_clip, huber_beta=args.huber_beta,
+        lr_schedule=args.lr_schedule, sched_epochs=args.sched_epochs,
+        plateau_factor=args.plateau_factor, plateau_patience=args.plateau_patience,
     )
 
     ckpt_path = out_dir / "mw_transformer.pt"
@@ -229,6 +231,15 @@ def main():
     parser.add_argument("--weight-decay", type=float, default=1e-4)
     parser.add_argument("--grad-clip", type=float, default=1.0)
     parser.add_argument("--huber-beta", type=float, default=1.0)
+    parser.add_argument("--lr-schedule", choices=["cosine", "plateau", "none"], default="cosine",
+                        help="cosine: decay over --sched-epochs. plateau: ReduceLROnPlateau on val MAE "
+                             "(horizon-independent - use this when pairing a big --epochs with early stopping). "
+                             "none: constant LR.")
+    parser.add_argument("--sched-epochs", type=int, default=None,
+                        help="Cosine horizon (T_max). Defaults to --epochs. Set this when --epochs is only "
+                             "a safety cap, otherwise the LR barely decays before early stopping fires.")
+    parser.add_argument("--plateau-factor", type=float, default=0.5)
+    parser.add_argument("--plateau-patience", type=int, default=8)
     parser.add_argument("--patch-size", type=int, default=10)
     parser.add_argument("--stem-channels", type=int, default=32)
     parser.add_argument("--embed-dim", type=int, default=128)

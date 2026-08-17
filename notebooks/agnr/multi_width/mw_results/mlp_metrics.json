@@ -1,0 +1,20 @@
+{
+  "display_name": "ConductanceMLP",
+  "metrics": {
+    "Width_Acc_Overall": 100.0,
+    "Width_Acc_7": 100.0,
+    "Width_Acc_9": 100.0,
+    "Conc_MAE_Overall": 2.3095344276377157,
+    "Conc_RMSE_Overall": 3.108456073916651,
+    "Conc_Max_Error": 20.620010375976562,
+    "Conc_MAE_7": 2.053409168794639,
+    "Conc_RMSE_7": 2.6918378841018495,
+    "Conc_MAE_9": 2.4869983641800766,
+    "Conc_RMSE_9": 3.3670236043367874,
+    "train_time_sec": 389.3,
+    "best_val_mae": 2.309
+  },
+  "written": "2026-08-17T18:21:32",
+  "snap_grid": false,
+  "width_condition": true
+}
