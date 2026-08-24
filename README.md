@@ -83,7 +83,7 @@ Normalized Spectrum T(E) [B, 200] ──┼─► Patched Transformer (Global At
 ```
 
 ### 1. Physics-Informed MLP (PINN with Curvature Misfit)
-* **Code**: [`notebooks/agnr/pinn_agnr_curvature.py`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/pinn_agnr_curvature.py)
+* **Code**: [`notebooks/agnr/concentration/pinn_agnr_curvature.py`](notebooks/agnr/concentration/pinn_agnr_curvature.py)
 * **Checkpoint**: `pinn_agnr_curvature.pt`
 * **Architecture**: Fully connected MLP with `LayerNorm`, `ReLU`, and `Dropout(0.2)`:
   $$\text{Linear}(200 \to 256) \to \text{Linear}(256 \to 128) \to \text{Linear}(128 \to 64) \to \text{Linear}(64 \to 32) \to \text{Linear}(32 \to 1)$$
@@ -96,8 +96,8 @@ Normalized Spectrum T(E) [B, 200] ──┼─► Patched Transformer (Global At
 ---
 
 ### 2. 1D-Patched Vision Transformer (`PatchedTransformerV2`)
-* **Code**: [`notebooks/agnr/patched_transformer_v2.py`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/patched_transformer_v2.py) & [`notebooks/agnr/patched_transformer_model.py`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/patched_transformer_model.py)
-* **Documentation**: [`notebooks/agnr/patched_transformer_explanation.md`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/patched_transformer_explanation.md)
+* **Code**: [`notebooks/agnr/concentration/patched_transformer_v2.py`](notebooks/agnr/concentration/patched_transformer_v2.py) & [`notebooks/agnr/defect_reconstruction/patched_transformer_model.py`](notebooks/agnr/defect_reconstruction/patched_transformer_model.py)
+* **Documentation**: [`notebooks/agnr/docs/patched_transformer_explanation.md`](notebooks/agnr/docs/patched_transformer_explanation.md)
 * **Checkpoint**: `patched_transformer_v2.pt`
 * **Motivation**: Standard 1D CNNs have local receptive fields and require deep hierarchies to correlate distant spectral features (e.g. Fano resonance dips and band-edge shifts). The Patched Transformer directly models long-range cross-band correlations using global self-attention.
 * **Architecture**:
@@ -110,8 +110,8 @@ Normalized Spectrum T(E) [B, 200] ──┼─► Patched Transformer (Global At
 ---
 
 ### 3. Spatial Defect Reconstruction (Distance Matrix CNN)
-* **Code**: [`notebooks/agnr/inverse_model.py`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/inverse_model.py)
-* **Documentation**: [`notebooks/agnr/walkthrough.md`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/walkthrough.md) & [`notebooks/agnr/inverse_model_explanation.md`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/inverse_model_explanation.md)
+* **Code**: [`notebooks/agnr/defect_reconstruction/inverse_model.py`](notebooks/agnr/defect_reconstruction/inverse_model.py)
+* **Documentation**: [`notebooks/agnr/docs/walkthrough.md`](notebooks/agnr/docs/walkthrough.md) & [`notebooks/agnr/docs/inverse_model_explanation.md`](notebooks/agnr/docs/inverse_model_explanation.md)
 * **Checkpoint**: `distance_matrix_model.pth`
 * **Target Output**: $10 \times 10$ matrix representing spatial distribution of up to 10 impurities:
   - **Diagonal $M[i,i]$**: Transverse site index within the unit cell ($0–13$).
@@ -122,11 +122,11 @@ Normalized Spectrum T(E) [B, 200] ──┼─► Patched Transformer (Global At
 ---
 
 ### 4. Tree-Based Baselines (XGBoost)
-* **Code**: [`notebooks/agnr/xgb.ipynb`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/xgb.ipynb) & [`notebooks/agnr/train_conc_models.py`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/train_conc_models.py)
+* **Code**: [`notebooks/agnr/nb/xgb.ipynb`](notebooks/agnr/nb/xgb.ipynb) & [`notebooks/agnr/concentration/train_conc_models.py`](notebooks/agnr/concentration/train_conc_models.py)
 * **Architecture & Training**:
   - Uses `xgboost.XGBRegressor` with the hardware-accelerated histogram algorithm (`tree_method="hist"`), `n_estimators=500`, `max_depth=6`, `learning_rate=0.03`, stochastic row subsampling (`0.8`), column subsampling (`0.8`), and $L_2$ regularization (`reg_lambda=1.0`).
   - Explored in `xgb.ipynb` with **Optuna Bayesian optimization** for hyperparameter tuning across both raw 1D transmission curves and statistical feature representations (band-edge onset, spectral variance, mean suppression).
-  - Integrated into [`train_conc_models.py`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/train_conc_models.py) as one of the three primary model backends and queryable by [`agnr_agent.py`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/agnr_agent.py).
+  - Integrated into [`train_conc_models.py`](notebooks/agnr/concentration/train_conc_models.py) as one of the three primary model backends and queryable by [`agnr_agent.py`](notebooks/agnr/agent/agnr_agent.py).
 
 ---
 
@@ -164,11 +164,11 @@ Normalized Spectrum T(E) [B, 200] ──┼─► Patched Transformer (Global At
 ```
 
 ### Inference Agent (`agnr_agent.py`)
-- **Code**: [`notebooks/agnr/agnr_agent.py`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/agnr_agent.py)
-- **Design**: Separates deterministic physical computation from high-level reasoning. The agent extracts the physical band gap, filters out incompatible pristine geometries from a width library ([`width_id.py`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/width_id.py)), queries the appropriate machine learning model, and flags out-of-domain/unfeasible predictions.
+- **Code**: [`notebooks/agnr/agent/agnr_agent.py`](notebooks/agnr/agent/agnr_agent.py)
+- **Design**: Separates deterministic physical computation from high-level reasoning. The agent extracts the physical band gap, filters out incompatible pristine geometries from a width library ([`width_id.py`](notebooks/agnr/agent/width_id.py)), queries the appropriate machine learning model, and flags out-of-domain/unfeasible predictions.
 
 ### Reinforcement Learning Scheme (`RL_SCHEME.md`)
-- **Specification**: [`notebooks/agnr/RL_SCHEME.md`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/RL_SCHEME.md)
+- **Specification**: [`notebooks/agnr/agent/RL_SCHEME.md`](notebooks/agnr/agent/RL_SCHEME.md)
 - Casts device identification into a sequential Markov Decision Process (MDP) under an execution budget:
   - **State $s_t$**: Signature summary, band gap probes, candidate width posterior belief $b_t$, and remaining compute budget.
   - **Discrete Actions $a_t$**: `PROBE_GAP(\theta)`, `REJECT_IMPOSSIBLE`, `SIMULATE(m, c)` (high-cost RGF forward call), `CALL_MODEL(k, m)`, `COMMIT(m, c)`, `ABSTAIN`.
@@ -178,7 +178,7 @@ Normalized Spectrum T(E) [B, 200] ──┼─► Patched Transformer (Global At
 
 ## Benchmark Results & Comparative Analysis
 
-Evaluated on **2,100 held-out test spectra** across concentrations $c \in \{3, 5, \ldots, 43\}$ (generated with [`generate_test_data.py`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/generate_test_data.py) and evaluated in [`compare_all_models.py`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/compare_all_models.py) and [`compare_analysis.ipynb`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/compare_analysis.ipynb)).
+Evaluated on **2,100 held-out test spectra** across concentrations $c \in \{3, 5, \ldots, 43\}$ (generated with [`generate_test_data.py`](notebooks/agnr/physics/generate_test_data.py) and evaluated in [`compare_all_models.py`](notebooks/agnr/concentration/compare_all_models.py) and [`compare_analysis.ipynb`](notebooks/agnr/nb/compare_analysis.ipynb)).
 
 | Model / Method | MAE (impurities) | RMSE (impurities) | Max Error | Type |
 |---|---|---|---|---|
@@ -193,7 +193,7 @@ Evaluated on **2,100 held-out test spectra** across concentrations $c \in \{3, 5
 
 ## Datasets & Data Infrastructure
 
-The repository contains consolidated dataset pipelines managing over **1,000,000+ simulation configurations**. See [**`README_COMBINED.md`**](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/README_COMBINED.md) for full dataset specifications.
+The repository contains consolidated dataset pipelines managing over **1,000,000+ simulation configurations**. See [**`README_COMBINED.md`**](README_COMBINED.md) for full dataset specifications.
 
 1. **7-AGNR Combined Dataset** (`transmission_results_combined/`):
    - 740,352 stacked `.npy` transmission curves across 74 concentrations ($c = 1 \dots 98$).
@@ -204,7 +204,7 @@ The repository contains consolidated dataset pipelines managing over **1,000,000
    - 17,218 simulations merged across 9 concentrations.
 4. **Precomputed Leads** (`leads_combined/`):
    - 4,400 complex matrices consolidated into `(400, S, S)` arrays (`complex128`) for system sizes $S \in \{5, 10, 15, \ldots, 60\}$.
-5. **Data Merge Script** ([`scripts/combine_storage_data.py`](file:///run/media/shardul/storage/machine_learning/transmission_github/transmissions/scripts/combine_storage_data.py)):
+5. **Data Merge Script** ([`scripts/combine_storage_data.py`](scripts/combine_storage_data.py)):
    - Parallel multi-threaded merger and validator for processing raw simulation folders.
 
 ---
@@ -212,33 +212,53 @@ The repository contains consolidated dataset pipelines managing over **1,000,000
 ## Repository Structure
 
 ```
-transmissions/
+Inverse_problems_in_QM/
 ├── README.md                      # Primary repository documentation
 ├── README_COMBINED.md             # Dataset catalog and NumPy/Pandas loading guide
-├── distance_matrix_model.pth      # Pretrained weights for 10x10 defect distance model
+├── distance_matrix_model.pth      # Pretrained 10x10 defect distance weights (gitignored)
 │
 ├── notebooks/
 │   ├── agnr/                      # 7-AGNR Physics, Models & Analysis
-│   │   ├── agnr.py                # Tight-binding Hamiltonian & RGF Green's function solver
-│   │   ├── agnr_lib.py            # Physics utility library (band gap, pristine spectra)
-│   │   ├── agnr_agent.py          # Autonomous inference agent (LLM / deterministic)
-│   │   ├── width_id.py            # Pristine width matching and possibility filter
-│   │   ├── pinn_agnr_curvature.py # ConductanceMLP + CurvatureMisfit regularizer
-│   │   ├── pinn_agnr_curvature.pt # Pretrained PINN checkpoint
-│   │   ├── patched_transformer_v2.py # 1D Patched Transformer architecture & training
-│   │   ├── patched_transformer_v2.pt # Pretrained Transformer checkpoint
-│   │   ├── inverse_model.py       # Spatial defect distance matrix CNN model
-│   │   ├── compare_all_models.py  # 4-way evaluation benchmark script
-│   │   ├── compare_analysis.ipynb # Comparative benchmark analysis & plotting
-│   │   ├── train_conc_models.py   # Multi-width concentration model training script
-│   │   ├── bayesian_opt_sweep.py  # Bayesian hyperparameter optimization
-│   │   ├── sweep_misfit_weight.py # Physics loss weight (λ) parameter sweep
-│   │   ├── build_leads_agnr.py    # Lead surface Green's function generator
-│   │   ├── build_pristine_library.py # Pristine library generator for widths 5-21
-│   │   ├── generate_test_data.py  # Held-out 2100 test dataset generator
-│   │   ├── RL_SCHEME.md           # Reinforcement Learning MDP specification
-│   │   ├── walkthrough.md         # Inverse distance matrix model deep-dive
-│   │   └── patched_transformer_explanation.md # Transformer architecture notes
+│   │   ├── manifest_agnr.csv      # Training manifest (gitignored - generated locally)
+│   │   │
+│   │   ├── physics/               # Forward simulation & dataset generation
+│   │   │   ├── agnr.py            # Tight-binding Hamiltonian & RGF Green's function solver
+│   │   │   ├── agnr_lib.py        # Physics utility library (band gap, pristine spectra)
+│   │   │   ├── build_leads_agnr.py # Lead surface Green's function generator
+│   │   │   ├── build_pristine_library.py # Pristine library generator for widths 5-21
+│   │   │   └── generate_test_data.py # Held-out 2100 test dataset generator
+│   │   │
+│   │   ├── concentration/         # Concentration-inference models & benchmarks
+│   │   │   ├── pinn_agnr_curvature.py # ConductanceMLP + CurvatureMisfit regularizer
+│   │   │   ├── pinn_agnr_curvature.pt # Pretrained PINN checkpoint (gitignored)
+│   │   │   ├── patched_transformer_v2.py # 1D Patched Transformer architecture & training
+│   │   │   ├── patched_transformer_v2.pt # Pretrained Transformer checkpoint (gitignored)
+│   │   │   ├── train_conc_models.py # Multi-width concentration model training script
+│   │   │   └── compare_all_models.py # 4-way evaluation benchmark script
+│   │   │
+│   │   ├── defect_reconstruction/ # Spatial defect recovery models
+│   │   │   ├── inverse_model.py   # Spatial defect distance matrix CNN model
+│   │   │   └── patched_transformer_model.py # Transformer backbone for reconstruction
+│   │   │
+│   │   ├── agent/                 # Autonomous inference agent
+│   │   │   ├── agnr_agent.py      # Autonomous inference agent (LLM / deterministic)
+│   │   │   ├── width_id.py        # Pristine width matching and possibility filter
+│   │   │   └── RL_SCHEME.md       # Reinforcement Learning MDP specification
+│   │   │
+│   │   ├── sweeps/                # Hyperparameter sweeps
+│   │   │   ├── bayesian_opt_sweep.py # Bayesian hyperparameter optimization
+│   │   │   └── sweep_misfit_weight.py # Physics loss weight (lambda) parameter sweep
+│   │   │
+│   │   ├── multi_width/           # Multi-width generalization study & checkpoints
+│   │   │
+│   │   ├── nb/                    # Analysis notebooks
+│   │   │   ├── compare_analysis.ipynb # Comparative benchmark analysis & plotting
+│   │   │   └── xgb.ipynb          # XGBoost baseline exploration
+│   │   │
+│   │   └── docs/                  # Model deep-dives
+│   │       ├── walkthrough.md     # Inverse distance matrix model deep-dive
+│   │       ├── inverse_model_explanation.md # Distance matrix CNN notes
+│   │       └── patched_transformer_explanation.md # Transformer architecture notes
 │   │
 │   ├── square_lattice/            # 2D Square Lattice Transport Pipeline
 │   │   ├── compute_leads_sq.py    # Vectorized lead calculation for square lattices
@@ -258,9 +278,13 @@ transmissions/
 │   └── combine_storage_data.py    # Production script for merging large simulation dumps
 │
 ├── leads_combined/                # Merged lead Green's functions (sizes 5-60)
-├── size_10_combined/              # Merged size 10 datasets
-├── transmission_results_combined/ # Merged 7-AGNR datasets (c=1..98)
-└── transmissions_combined/        # Merged size 25 datasets
+│
+└── (local only - not tracked in git; see .gitignore)
+    ├── data/                      # Raw, processed and held-out test spectra
+    ├── models/                    # Trained model checkpoints
+    ├── size_10_combined/          # Merged size 10 datasets
+    ├── transmission_results_combined/ # Merged 7-AGNR datasets (c=1..98)
+    └── transmissions_combined/    # Merged size 25 datasets
 ```
 
 ---
@@ -270,8 +294,8 @@ transmissions/
 ### 1. Prerequisites & Environment Setup
 ```bash
 # Clone the repository
-git clone https://github.com/mukims/transmissions.git
-cd transmissions
+git clone https://github.com/mukims/Inverse_problems_in_QM.git
+cd Inverse_problems_in_QM
 
 # Install core dependencies
 pip install torch numpy scipy pandas matplotlib tqdm xgboost scikit-learn
@@ -281,22 +305,22 @@ pip install torch numpy scipy pandas matplotlib tqdm xgboost scikit-learn
 Classify an unknown transmission spectrum file (`.npy`):
 ```bash
 # Full agent with deterministic physics validation
-python notebooks/agnr/agnr_agent.py data/test/transmission_results/7_agnr_conc21_cfg0.npy --no-llm
+python notebooks/agnr/agent/agnr_agent.py data/test/transmission_results/7_agnr_conc21_cfg0_test.npy --no-llm
 
 # Evaluate with true ground-truth comparison
-python notebooks/agnr/agnr_agent.py data/test/transmission_results/7_agnr_conc21_cfg0.npy --true-width 7 --true-conc 21
+python notebooks/agnr/agent/agnr_agent.py data/test/transmission_results/7_agnr_conc21_cfg0_test.npy --true-width 7 --true-conc 21
 ```
 
 ### 3. Evaluating Model Benchmarks
 Run the full comparative benchmark (MLP vs Patched Transformer vs XGBoost vs Misfit):
 ```bash
-python notebooks/agnr/compare_all_models.py
+python notebooks/agnr/concentration/compare_all_models.py
 ```
 
 ### 4. Training the Physics-Informed MLP (PINN)
 ```python
 import numpy as np
-import notebooks.agnr.pinn_agnr_curvature as pinn
+import notebooks.agnr.concentration.pinn_agnr_curvature as pinn
 
 # 1. Initialize dataset
 pristine = np.load("data/raw/transmission_results/pristine.npy")
