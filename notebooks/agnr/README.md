@@ -20,6 +20,7 @@ you need.
 | [`defect_reconstruction/`](defect_reconstruction/) | Recover *where* impurities sit (10×10 distance matrix) | `inverse_model.py` |
 | [`agent/`](agent/) | Inference agent that diagnoses an unknown spectrum end-to-end | `agnr_agent.py` |
 | [`sweeps/`](sweeps/) | Hyperparameter optimisation (Optuna, misfit-weight sweeps) | `bayesian_opt_sweep.py` |
+| [`time_series/`](time_series/) | Time-series & multi-output spectral sequence continuation | `time_series_nn.ipynb` |
 | [`nb/`](nb/) | Exploratory Jupyter notebooks | — |
 | [`docs/`](docs/) | Long-form explanations of the models | `walkthrough.md` |
 
@@ -37,6 +38,7 @@ you need.
      INVERSE  (everything else)
                                      ┌──► ribbon width  (7 vs 9)      multi_width/, agent/
      T(E) [150 energy channels] ─────┼──► impurity concentration ĉ    multi_width/, concentration/
+                                     ├──► high-energy continuation    time_series/
                                      └──► impurity positions          defect_reconstruction/
 ```
 

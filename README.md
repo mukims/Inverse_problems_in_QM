@@ -251,6 +251,10 @@ Inverse_problems_in_QM/
 │   │   │
 │   │   ├── multi_width/           # Multi-width generalization study & checkpoints
 │   │   │
+│   │   ├── time_series/           # Spectral sequence continuation & extrapolation
+│   │   │   ├── time_series.ipynb      # Autoregressive & tree-based spectral continuation
+│   │   │   └── time_series_nn.ipynb   # Deep neural network multi-output spectral prediction
+│   │   │
 │   │   ├── nb/                    # Analysis notebooks
 │   │   │   ├── compare_analysis.ipynb # Comparative benchmark analysis & plotting
 │   │   │   └── xgb.ipynb          # XGBoost baseline exploration
