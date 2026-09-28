@@ -1,0 +1,104 @@
+{
+  "args": {
+    "agnr_dir": "/run/media/shardul/storage/machine_learning/transmission_data/transmission_results/consolidated_data",
+    "square_dir": "~/transmissions_sq/size_10_combined",
+    "square_pristine": "~/transmissions_sq/pristine_10.npy",
+    "square_concs": [
+      5,
+      10,
+      15,
+      20,
+      25,
+      30,
+      35,
+      40,
+      45,
+      50,
+      55,
+      60,
+      65,
+      70,
+      75,
+      80,
+      85,
+      90
+    ],
+    "per_conc": 3000,
+    "spectrum_len": 150,
+    "latent": 64,
+    "epochs": 60,
+    "patience": 8,
+    "batch_size": 256,
+    "lr": 0.001,
+    "threads": 16,
+    "out_dir": "/run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/joint_autoencoder/results"
+  },
+  "counts": {
+    "7-AGNR": 102000,
+    "9-AGNR": 147000,
+    "Square-10": 54000
+  },
+  "train_time_s": 885.4,
+  "epochs_run": 60,
+  "reconstruction": {
+    "7-AGNR": {
+      "MSE": 0.00514045637100935,
+      "R2": 0.9476264395623681
+    },
+    "9-AGNR": {
+      "MSE": 0.0048331464640796185,
+      "R2": 0.9494915363078816
+    },
+    "Square-10": {
+      "MSE": 0.007946244440972805,
+      "R2": 0.9109950828630337
+    }
+  },
+  "probes": {
+    "AE latent (64-d)": {
+      "system_acc": 99.99669966996699,
+      "conc_MAE_no_system_label": {
+        "all": 2.7242905377539985,
+        "7-AGNR": 2.1186161725507775,
+        "9-AGNR": 2.8030468115266602,
+        "Square-10": 3.653950037867838
+      },
+      "conc_MAE_with_system_label": {
+        "all": 2.698994721655165,
+        "7-AGNR": 2.073768345571707,
+        "9-AGNR": 2.787070242188268,
+        "Square-10": 3.640216737250472
+      }
+    },
+    "PCA (64-d)": {
+      "system_acc": 99.9950495049505,
+      "conc_MAE_no_system_label": {
+        "all": 2.4583938893855235,
+        "7-AGNR": 1.9029475897448078,
+        "9-AGNR": 2.5796750790792404,
+        "Square-10": 3.1774158834295343
+      },
+      "conc_MAE_with_system_label": {
+        "all": 2.4567059806445326,
+        "7-AGNR": 1.8962124107923528,
+        "9-AGNR": 2.5807936897010713,
+        "Square-10": 3.1776217379336287
+      }
+    },
+    "Spectrum (150 ch)": {
+      "system_acc": 99.9983498349835,
+      "conc_MAE_no_system_label": {
+        "all": 2.7174397531665297,
+        "7-AGNR": 2.182943077079909,
+        "9-AGNR": 2.864667155984696,
+        "Square-10": 3.3262588781029154
+      },
+      "conc_MAE_with_system_label": {
+        "all": 2.7038108490931254,
+        "7-AGNR": 2.1699075912536343,
+        "9-AGNR": 2.845224988399686,
+        "Square-10": 3.3273340680109715
+      }
+    }
+  }
+}
