@@ -104,6 +104,17 @@ Framing quantum transmission spectrum prediction as an autoregressive / sequence
   dev = "mps" if torch.backends.mps.is_available() else ("cuda" if torch.cuda.is_available() else "cpu")
   ```
 
+### Bug #6: Band-Gap Channels Pinned at 1.0 After Pristine Normalization
+* **Symptom**: In the model inputs, the band-gap channels ($E < 0.24\,\text{eV}$ for 7-AGNR, $E < 0.18\,\text{eV}$ for 9-AGNR) jumped between 0 and exactly 1.0. 73% (7-AGNR) and 78% (9-AGNR) of gap inputs were pinned at 1.0, which is about 10–12% of every 150-channel input vector.
+* **Root Cause**: Inside the gap the pristine spectrum is $\sim 10^{-6}$, not 0, so the `p > 1e-12` guard never fired. Dividing tiny disordered values ($T \le 0.29$) by $10^{-6}$ and then clipping produced a noisy 0/1 flag instead of the physical $T \approx 0$. `xgb.ipynb` and `time_series_nn.ipynb` had no guard at all.
+* **Resolution**: Round every transmission value (pristine and disordered) to 3 decimals at load time, so gap pristine values become exact zeros and the guard divides by 1:
+  ```python
+  p   = np.round(np.load(pristine_path)[:L], 3); p_safe = np.where(p > 0, p, 1.0)
+  raw = np.round(raw, 3); X = np.clip(raw / p_safe, 0, 1)
+  ```
+  Applied in `mw_common.py`, `train_multi_width.py`, `run_sequential_pipeline.py`, `universal_data.py`, `xgb.ipynb`, `time_series.ipynb` and `time_series_nn.ipynb`. Gap inputs pinned at 1.0 dropped to 0%, and in-band inputs changed by at most $5\times10^{-4}$. The source `.npy` files are unchanged. Results logged before this fix (BUILD-01 to BUILD-08) used the old inputs.
+* **Related, not fixed**: 0.36% of in-band points exceed pristine (numerical spikes of the trace formula at subband openings, up to 13.5 $G_0$ for 7-AGNR and 21.9 $G_0$ for 9-AGNR). The existing clip to $[0, 1]$ caps them.
+
 ---
 
 ## 4. Generated Artifacts & Visualizations

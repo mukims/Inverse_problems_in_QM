@@ -1,0 +1,32 @@
+{
+  "Overall": {
+    "Type_Accuracy": 100.0,
+    "Width_Accuracy": 100.0,
+    "Conc_MAE": 6.580894900800011,
+    "Conc_RMSE": 12.092982477328366,
+    "Conc_Max_Error": 79.31891632080078,
+    "Test_Samples": 9825
+  },
+  "7-AGNR": {
+    "MAE": 1.8132439893350933,
+    "RMSE": 2.5187396964928452,
+    "Max_Error": 11.653976440429688,
+    "Width_Accuracy": 100.0,
+    "Type_Accuracy": 100.0
+  },
+  "9-AGNR": {
+    "MAE": 2.2746614554186873,
+    "RMSE": 3.2813504093031978,
+    "Max_Error": 18.187240600585938,
+    "Width_Accuracy": 100.0,
+    "Type_Accuracy": 100.0
+  },
+  "Square-10": {
+    "MAE": 14.50008162883751,
+    "RMSE": 19.70120231522077,
+    "Max_Error": 79.31891632080078,
+    "Width_Accuracy": 100.0,
+    "Type_Accuracy": 100.0
+  },
+  "Training_Time_Sec": 520.9
+}
