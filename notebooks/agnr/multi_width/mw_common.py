@@ -139,8 +139,8 @@ def load_data(consolidated_dir, samples_per_conc=3000, spectrum_len=150, seed=42
     script_dir = Path(__file__).resolve().parent
     project_root = script_dir.parents[2]
 
-    p7 = np.load(str(project_root / "7_agnr_pris.npy"))[:spectrum_len].astype(np.float32)
-    p9 = np.load(str(project_root / "9_agnr_pris.npy"))[:spectrum_len].astype(np.float32)
+    p7 = np.round(np.load(str(project_root / "7_agnr_pris.npy"))[:spectrum_len], 3).astype(np.float32)
+    p9 = np.round(np.load(str(project_root / "9_agnr_pris.npy"))[:spectrum_len], 3).astype(np.float32)
     p7_safe = np.where(p7 > 1e-12, p7, 1.0)
     p9_safe = np.where(p9 > 1e-12, p9, 1.0)
     log(f"  Pristine refs: 7-AGNR max={p7.max():.2f} G0 | 9-AGNR max={p9.max():.2f} G0")
@@ -157,7 +157,7 @@ def load_data(consolidated_dir, samples_per_conc=3000, spectrum_len=150, seed=42
         for idx, c in enumerate(pbar(concs, f"Loading {name}", unit="conc")):
             if idx >= mmap.shape[0]:
                 break
-            raw = np.array(mmap[idx, :samples_per_conc, :spectrum_len], dtype=np.float32)
+            raw = np.round(np.array(mmap[idx, :samples_per_conc, :spectrum_len], dtype=np.float32), 3)
             X_all.append(np.clip(raw / pris_safe, 0.0, 1.0))
             raw_all.append(raw)
             yw_all.append(np.full(len(raw), wlabel, dtype=np.int64))

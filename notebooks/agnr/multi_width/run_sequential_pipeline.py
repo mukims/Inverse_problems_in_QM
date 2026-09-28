@@ -252,8 +252,8 @@ def load_data(consolidated_dir, samples_per_conc=3000, spectrum_len=150, seed=42
     p7_path = project_root / "7_agnr_pris.npy"
     p9_path = project_root / "9_agnr_pris.npy"
 
-    p7 = np.load(str(p7_path))[:spectrum_len].astype(np.float32)
-    p9 = np.load(str(p9_path))[:spectrum_len].astype(np.float32)
+    p7 = np.round(np.load(str(p7_path))[:spectrum_len], 3).astype(np.float32)
+    p9 = np.round(np.load(str(p9_path))[:spectrum_len], 3).astype(np.float32)
     p7_safe = np.where(p7 > 1e-12, p7, 1.0)
     p9_safe = np.where(p9 > 1e-12, p9, 1.0)
 
@@ -270,7 +270,7 @@ def load_data(consolidated_dir, samples_per_conc=3000, spectrum_len=150, seed=42
     for idx, c in enumerate(pbar(concs_7, "Loading 7-AGNR", unit="conc")):
         if idx >= s7_mmap.shape[0]:
             break
-        raw = np.array(s7_mmap[idx, :samples_per_conc, :spectrum_len], dtype=np.float32)
+        raw = np.round(np.array(s7_mmap[idx, :samples_per_conc, :spectrum_len], dtype=np.float32), 3)
         norm = np.clip(raw / p7_safe, 0.0, 1.0)
         X_all.append(norm)
         raw_all.append(raw)
@@ -282,7 +282,7 @@ def load_data(consolidated_dir, samples_per_conc=3000, spectrum_len=150, seed=42
     for idx, c in enumerate(pbar(concs_9, "Loading 9-AGNR", unit="conc")):
         if idx >= s9_mmap.shape[0]:
             break
-        raw = np.array(s9_mmap[idx, :samples_per_conc, :spectrum_len], dtype=np.float32)
+        raw = np.round(np.array(s9_mmap[idx, :samples_per_conc, :spectrum_len], dtype=np.float32), 3)
         norm = np.clip(raw / p9_safe, 0.0, 1.0)
         X_all.append(norm)
         raw_all.append(raw)
