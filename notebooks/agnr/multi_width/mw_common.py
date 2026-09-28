@@ -95,6 +95,9 @@ def add_common_args(parser):
                         help="Samples per concentration (default 3000). Changing this changes the split.")
     parser.add_argument("--spectrum-len", type=int, default=150,
                         help="Energy channels (default 150). Changing this changes the split.")
+    parser.add_argument("--split", choices=["seed", "random"], default="seed",
+                        help="seed (default): hold out whole config seeds (no leakage, Bug #7); "
+                             "random: the original BUILD-06 row split. Changing this changes the split.")
     parser.add_argument("--out-dir", type=str, default=None,
                         help="Where checkpoints/metrics land (default: this script's dir). "
                              "Point test runs at a scratch dir so they cannot clobber real results.")
@@ -130,8 +133,13 @@ def setup_run(args, tag):
 # DATA
 # ======================================================================
 
-def load_data(consolidated_dir, samples_per_conc=3000, spectrum_len=150, seed=42):
+def load_data(consolidated_dir, samples_per_conc=3000, spectrum_len=150, seed=42, split="seed"):
     """Load both widths, normalise by pristine, and split 70/15/15.
+
+    split="seed" (default) holds out whole configuration seeds: row i of every
+    concentration is config seed i, and one seed gives nested impurity sets across
+    concentrations, so a random row split leaks near-twins into the test set
+    (LOGBOOK Bug #7). split="random" reproduces the original BUILD-06 split.
 
     Deterministic given (samples_per_conc, spectrum_len, seed) so every technique
     script sees exactly the same test set.
@@ -149,7 +157,7 @@ def load_data(consolidated_dir, samples_per_conc=3000, spectrum_len=150, seed=42
     s9 = np.load(os.path.join(consolidated_dir, "size_9.npy"), mmap_mode="r")
     log(f"  Memory-mapped size_7 {s7.shape} | size_9 {s9.shape}")
 
-    X_all, yw_all, yc_all, raw_all = [], [], [], []
+    X_all, yw_all, yc_all, raw_all, cfg_all = [], [], [], [], []
     for mmap, concs, pris_safe, wlabel, name in (
         (s7, CONCS_7, p7_safe, 0, "7-AGNR"),
         (s9, CONCS_9, p9_safe, 1, "9-AGNR"),
@@ -162,19 +170,29 @@ def load_data(consolidated_dir, samples_per_conc=3000, spectrum_len=150, seed=42
             raw_all.append(raw)
             yw_all.append(np.full(len(raw), wlabel, dtype=np.int64))
             yc_all.append(np.full(len(raw), c, dtype=np.float32))
+            cfg_all.append(np.arange(len(raw)))
 
     X = np.concatenate(X_all, axis=0)
     raw_arr = np.concatenate(raw_all, axis=0)
     y_width = np.concatenate(yw_all, axis=0)
     y_conc = np.concatenate(yc_all, axis=0)
 
-    rng = np.random.RandomState(seed)
-    perm = rng.permutation(len(X))
-    n_tr, n_va = int(len(X) * 0.70), int(len(X) * 0.15)
-    tr, va, te = perm[:n_tr], perm[n_tr:n_tr + n_va], perm[n_tr + n_va:]
+    if split == "seed":
+        cfg = np.concatenate(cfg_all)
+        n_tr_cfg, n_va_cfg = int(samples_per_conc * 0.70), int(samples_per_conc * 0.85)
+        tr = np.where(cfg < n_tr_cfg)[0]
+        va = np.where((cfg >= n_tr_cfg) & (cfg < n_va_cfg))[0]
+        te = np.where(cfg >= n_va_cfg)[0]
+    elif split == "random":
+        rng = np.random.RandomState(seed)
+        perm = rng.permutation(len(X))
+        n_tr, n_va = int(len(X) * 0.70), int(len(X) * 0.15)
+        tr, va, te = perm[:n_tr], perm[n_tr:n_tr + n_va], perm[n_tr + n_va:]
+    else:
+        raise ValueError(f"split must be 'seed' or 'random', got {split!r}")
 
-    log(f"  Split: train {len(tr):,} | val {len(va):,} | test {len(te):,} "
-        f"(seed={seed}, identical across all technique scripts)")
+    log(f"  Split ({split}): train {len(tr):,} | val {len(va):,} | test {len(te):,} "
+        f"(identical across all technique scripts)")
     log(f"  Footprint X={X.nbytes/1e9:.2f} GB | conc range [{y_conc.min():.0f}, {y_conc.max():.0f}] "
         f"| 7-AGNR {(y_width==0).sum():,} / 9-AGNR {(y_width==1).sum():,}")
 

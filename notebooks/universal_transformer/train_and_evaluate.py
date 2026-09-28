@@ -33,15 +33,21 @@ from universal_transformer import UniversalPatchedTransformer
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train Universal Multi-Task Patched Transformer.")
-    parser.add_argument("--epochs", type=int, default=30, help="Number of training epochs")
+    parser.add_argument("--epochs", type=int, default=200, help="Maximum epochs (training stops earlier on convergence)")
+    parser.add_argument("--patience", type=int, default=12, help="Stop after this many epochs without a val-MAE improvement")
+    parser.add_argument("--plateau-patience", type=int, default=4, help="Halve the LR after this many epochs without improvement")
     parser.add_argument("--batch-size", type=int, default=256, help="Batch size")
     parser.add_argument("--lr", type=float, default=5e-4, help="Peak learning rate")
     parser.add_argument("--warmup-epochs", type=int, default=3, help="Warmup epochs")
     parser.add_argument("--weight-decay", type=float, default=1e-4, help="Weight decay")
-    parser.add_argument("--samples-per-conc", type=int, default=500, help="Samples per conc")
+    parser.add_argument("--samples-per-conc", type=int, default=3000, help="Config seeds per concentration per system")
     parser.add_argument("--threads", type=int, default=16, help="Torch CPU threads")
-    parser.add_argument("--cache-path", type=str, default=str(SCRIPT_DIR / "universal_cache_500.pt"))
-    return parser.parse_args()
+    parser.add_argument("--out-dir", type=str, default=str(SCRIPT_DIR), help="where checkpoint, metrics and plots are written")
+    parser.add_argument("--cache-path", type=str, default=None, help="default: universal_cache_seed_<samples-per-conc>.pt")
+    args = parser.parse_args()
+    if args.cache_path is None:
+        args.cache_path = str(SCRIPT_DIR / f"universal_cache_seed_{args.samples_per_conc}.pt")
+    return args
 
 
 def compute_metrics(preds_c, true_c):
@@ -55,6 +61,8 @@ def compute_metrics(preds_c, true_c):
 
 def main():
     args = parse_args()
+    global OUT_DIR
+    OUT_DIR = Path(args.out_dir); OUT_DIR.mkdir(parents=True, exist_ok=True)
     torch.set_num_threads(args.threads)
     print(f"Setting PyTorch threads: {args.threads}")
 
@@ -106,13 +114,10 @@ def main():
     # 3. Optimizer & Schedulers
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
-    def lr_lambda(epoch):
-        if epoch < args.warmup_epochs:
-            return float(epoch + 1) / float(args.warmup_epochs)
-        progress = float(epoch - args.warmup_epochs) / float(max(1, args.epochs - args.warmup_epochs))
-        return 0.5 * (1.0 + np.cos(np.pi * progress))
-
-    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+    # Linear warmup, then halve the LR whenever val MAE plateaus; stop once it stops improving.
+    warmup = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda e: min(1.0, float(e + 1) / args.warmup_epochs))
+    plateau = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode="min", factor=0.5,
+                                                         patience=args.plateau_patience, min_lr=1e-6)
     huber_loss_fn = nn.SmoothL1Loss(beta=0.05)
     ce_loss_fn = nn.CrossEntropyLoss()
 
@@ -124,6 +129,7 @@ def main():
 
     best_val_mae = float("inf")
     best_state = None
+    epochs_since_best = 0
 
     print("\n" + "=" * 80)
     print(f"{'Epoch':<8} {'Train Loss':<12} {'Val Loss':<10} {'Type Acc':<10} {'Width Acc':<10} {'Conc MAE':<10} {'LR':<10} {'Time':<8}")
@@ -152,8 +158,7 @@ def main():
             total_loss += loss.item() * len(bx)
 
         train_loss = total_loss / len(train_ds)
-        current_lr = scheduler.get_last_lr()[0]
-        scheduler.step()
+        current_lr = optimizer.param_groups[0]["lr"]
 
         # Validation
         model.eval()
@@ -196,20 +201,30 @@ def main():
         history["val_conc_mae"].append(val_conc_mae)
 
         ep_time = time.time() - t_ep_start
-        is_best = val_conc_mae < best_val_mae
+        if epoch < args.warmup_epochs:
+            warmup.step()
+        else:
+            plateau.step(val_conc_mae)
+        is_best = val_conc_mae < best_val_mae - 1e-4
         if is_best:
             best_val_mae = val_conc_mae
             best_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
+            epochs_since_best = 0
+        else:
+            epochs_since_best += 1
 
         mark = " *" if is_best else ""
-        print(f"{epoch:02d}/{args.epochs:02d}    {train_loss:<12.4f} {val_loss:<10.4f} {val_type_acc:>6.2f}%    {val_width_acc:>6.2f}%    {val_conc_mae:>6.3f}    {current_lr:<10.2e} {ep_time:>5.1f}s{mark}")
+        print(f"{epoch:02d}/{args.epochs:02d}    {train_loss:<12.4f} {val_loss:<10.4f} {val_type_acc:>6.2f}%    {val_width_acc:>6.2f}%    {val_conc_mae:>6.3f}    {current_lr:<10.2e} {ep_time:>5.1f}s{mark}", flush=True)
+        if epochs_since_best >= args.patience:
+            print(f"Converged: no val-MAE improvement for {args.patience} epochs (stopped at epoch {epoch}).")
+            break
 
     total_train_time = time.time() - t_train_start
     print("=" * 80)
     print(f"Training completed in {total_train_time/60:.2f} min. Best Val Conc MAE: {best_val_mae:.3f}")
 
     # Save Checkpoint
-    ckpt_path = SCRIPT_DIR / "universal_transformer.pt"
+    ckpt_path = OUT_DIR / "universal_transformer.pt"
     torch.save({
         "model_state_dict": best_state,
         "scaler": scaler.as_dict(),
@@ -221,7 +236,7 @@ def main():
 
     # 5. Full Evaluation on Held-Out Test Set
     print("\n" + "=" * 80)
-    print("EVALUATING ON HELD-OUT TEST SET (9,825 Spectra)")
+    print(f"EVALUATING ON HELD-OUT TEST SET ({len(test_ds):,} spectra, unseen config seeds)")
     print("=" * 80)
 
     model.load_state_dict(best_state)
@@ -284,6 +299,9 @@ def main():
         "9-AGNR": metrics_9,
         "Square-10": metrics_sq,
         "Training_Time_Sec": round(total_train_time, 1),
+        "Epochs_Run": len(history["val_conc_mae"]),
+        "Best_Val_Conc_MAE": float(best_val_mae),
+        "Split": "config-seed 70/15/15",
     }
 
     # Print Summary Table
@@ -297,7 +315,7 @@ def main():
     print("=" * 78)
 
     # Save Metrics JSON
-    metrics_file = SCRIPT_DIR / "universal_metrics.json"
+    metrics_file = OUT_DIR / "universal_metrics.json"
     with open(metrics_file, "w") as f:
         json.dump(full_results, f, indent=2)
     print(f"✓ Saved numerical benchmark metrics to {metrics_file}")
@@ -330,7 +348,7 @@ def main():
 
     plt.suptitle("Universal Multi-Task Transformer: Concentration Prediction Across 3 Quantum Systems", fontsize=13, y=1.02)
     plt.tight_layout()
-    scatter_path = SCRIPT_DIR / "universal_scatter.png"
+    scatter_path = OUT_DIR / "universal_scatter.png"
     plt.savefig(scatter_path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"✓ Saved scatter plot to {scatter_path}")
@@ -362,7 +380,7 @@ def main():
     axes[2].grid(True, alpha=0.25)
 
     plt.tight_layout()
-    training_path = SCRIPT_DIR / "universal_training_curves.png"
+    training_path = OUT_DIR / "universal_training_curves.png"
     plt.savefig(training_path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"✓ Saved training curves to {training_path}")
@@ -403,7 +421,7 @@ def main():
             axes[1].text(j, i, f"{width_cm[i, j]:,}", ha="center", va="center", color="white" if width_cm[i, j] > width_cm.max()/2 else "black")
 
     plt.tight_layout()
-    confusion_path = SCRIPT_DIR / "universal_confusion.png"
+    confusion_path = OUT_DIR / "universal_confusion.png"
     plt.savefig(confusion_path, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"✓ Saved confusion matrices to {confusion_path}")

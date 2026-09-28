@@ -113,7 +113,13 @@ Framing quantum transmission spectrum prediction as an autoregressive / sequence
   raw = np.round(raw, 3); X = np.clip(raw / p_safe, 0, 1)
   ```
   Applied in `mw_common.py`, `train_multi_width.py`, `run_sequential_pipeline.py`, `universal_data.py`, `xgb.ipynb`, `time_series.ipynb` and `time_series_nn.ipynb`. Gap inputs pinned at 1.0 dropped to 0%, and in-band inputs changed by at most $5\times10^{-4}$. The source `.npy` files are unchanged. Results logged before this fix (BUILD-01 to BUILD-08) used the old inputs.
-* **Related, not fixed**: 0.36% of in-band points exceed pristine (numerical spikes of the trace formula at subband openings, up to 13.5 $G_0$ for 7-AGNR and 21.9 $G_0$ for 9-AGNR). The existing clip to $[0, 1]$ caps them.
+* **Related, not fixed (spikes)**: 0.36% of in-band points exceed pristine (numerical spikes of the trace formula at subband openings, up to 13.5 $G_0$ for 7-AGNR and 21.9 $G_0$ for 9-AGNR). The existing clip to $[0, 1]$ caps them.
+
+### Bug #7: Seed Leakage in the Random Row Split
+* **Symptom**: The same gradient-boosting model scored MAE 1.96 on a random 80/20 row split but 2.48 when whole configuration seeds were held out (7-AGNR 1.77 vs 2.08, 9-AGNR 2.08 vs 2.75), on identical data.
+* **Root Cause**: Impurities are drawn with `RandomState(config).choice(..., replace=False)`, which takes a prefix of one fixed permutation. Config seed $k$ at $c = 42$ therefore contains all the impurities of seed $k$ at $c = 40$, plus two more. Their spectra are 2.7× closer than those of different seeds (mean distance 0.92 vs 2.44 at 9-AGNR, $c = 40$ vs $42$). A random row split puts these near-twins on both sides, so test error comes out about 25–30% too low.
+* **Affected**: Every result on the BUILD-06 split (all four multi-width techniques) and the universal transformer, which used a random permutation too. Rankings may survive, since every model shared the advantage, but the absolute MAEs are optimistic.
+* **Resolution**: `mw_common.load_data` now takes `split="seed"` (default; also `--split` on every `mw_*.py`). Row $i$ of each concentration is config seed $i$; seeds $[0, 0.7K)$ train, $[0.7K, 0.85K)$ validate, $[0.85K, K)$ test, so test size is unchanged. `--split random` reproduces the original BUILD-06 numbers. The autoencoder studies (square, joint) already split by seed.
 
 ---
 

@@ -5,7 +5,7 @@ universal_data.py — Unified Dataset Loader for 7-AGNR, 9-AGNR, and Square Latt
 Loads, normalizes, and splits transmission spectra across:
   - 7-AGNR: 34 concentrations (c in {2, 4, ..., 68})
   - 9-AGNR: 49 concentrations (c in {2, 4, ..., 98})
-  - Square Lattice (Size 10): 48 concentrations (c in [5, 98])
+  - Square Lattice (Size 10): 18 concentrations (c in {5, 10, ..., 90}), clean ca_sq.py data
 
 Each sample contains:
   - x: Normalized transmission spectrum (first L channels, clipped to [0, 1])
@@ -17,11 +17,8 @@ Each sample contains:
 
 import os
 import sys
-import re
-import glob
 import time
 from pathlib import Path
-from concurrent.futures import ProcessPoolExecutor
 
 # Ensure project root is on sys.path
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -29,28 +26,19 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 import numpy as np
-import pandas as pd
 import torch
 
 # Default data directories
-AGNR_CONSOLIDATED_DIR = "/run/media/shardul/storage1/machine_learning/transmission_data/transmission_results/consolidated_data"
-SQUARE_DATA_DIR = "/run/media/shardul/storage1/machine_learning/transmission_data/size_10"
+AGNR_CONSOLIDATED_DIR = "/run/media/shardul/storage/machine_learning/transmission_data/transmission_results/consolidated_data"
+# Clean square data from ca_sq.py, stacked by combine_sq.py. The old CSVs in
+# transmission_data/size_10 came from CA.ipynb's cache-mutation bug and are unusable.
+SQUARE_DATA_DIR = os.path.expanduser("~/transmissions_sq/size_10_combined")
+SQUARE_PRISTINE = os.path.expanduser("~/transmissions_sq/pristine_10.npy")
 
 # Target concentration grids
 CONCS_7 = np.arange(2, 70, 2)
 CONCS_9 = np.arange(2, 100, 2)
-CONCS_SQ = [5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39,
-            41, 43, 45, 47, 49, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72,
-            74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98]
-
-
-def _read_sq_file(path_and_len):
-    path, length = path_and_len
-    try:
-        df = pd.read_csv(path)
-        return df["G"].values[:length].astype(np.float32)
-    except Exception:
-        return None
+CONCS_SQ = list(range(5, 91, 5))
 
 
 class TargetScaler:
@@ -91,6 +79,9 @@ def load_universal_data(
 ):
     """
     Loads and compiles the universal dataset across 7-AGNR, 9-AGNR, and Square-10.
+
+    Split 70/15/15 by CONFIG SEED (LOGBOOK Bug #7): one seed gives nested impurity
+    sets across concentrations, so whole seeds are held out in every system.
     """
     if cache_path and os.path.exists(cache_path):
         print(f"Loading cached dataset from {cache_path} ...")
@@ -108,24 +99,23 @@ def load_universal_data(
     print("ASSEMBLING UNIVERSAL MULTI-SYSTEM DATASET")
     print(f"  7-AGNR (width 7)   | 34 concentrations ({len(CONCS_7)})")
     print(f"  9-AGNR (width 9)   | 49 concentrations ({len(CONCS_9)})")
-    print(f"  Square-10 (size 10)| 48 concentrations ({len(CONCS_SQ)})")
+    print(f"  Square-10 (size 10)| {len(CONCS_SQ)} concentrations (c = {CONCS_SQ[0]}..{CONCS_SQ[-1]})")
     print(f"  Channels: {spectrum_len} | Samples per conc: {samples_per_conc}")
     print("=" * 70)
 
     # 1. Load Pristine References
     p7_path = repo_root / "7_agnr_pris.npy"
     p9_path = repo_root / "9_agnr_pris.npy"
-    psq_path = Path(SQUARE_DATA_DIR) / "size_10_pris.csv"
 
     p7 = np.round(np.load(str(p7_path))[:spectrum_len], 3).astype(np.float32)
     p9 = np.round(np.load(str(p9_path))[:spectrum_len], 3).astype(np.float32)
-    psq = pd.read_csv(str(psq_path), header=None).values.squeeze()[:spectrum_len].astype(np.float32)
+    psq = np.round(np.load(SQUARE_PRISTINE)[:spectrum_len], 3).astype(np.float32)
 
     p7_safe = np.where(p7 > 1e-12, p7, 1.0)
     p9_safe = np.where(p9 > 1e-12, p9, 1.0)
     psq_safe = np.where(psq > 1e-12, psq, 1.0)
 
-    X_list, y_type_list, y_width_list, y_conc_list, raw_list = [], [], [], [], []
+    X_list, y_type_list, y_width_list, y_conc_list, raw_list, cfg_list = [], [], [], [], [], []
 
     # 2. Load 7-AGNR & 9-AGNR from memory-mapped files
     print("\n[1/3] Loading 7-AGNR & 9-AGNR memory maps...")
@@ -144,6 +134,7 @@ def load_universal_data(
         y_type_list.append(np.full(n, 0, dtype=np.int64))
         y_width_list.append(np.full(n, 0, dtype=np.int64))  # 0 -> width 7
         y_conc_list.append(np.full(n, c, dtype=np.float32))
+        cfg_list.append(np.arange(n))  # row index == config seed
 
     # 9-AGNR: type=0 (AGNR), width=1 (9)
     for idx, c in enumerate(CONCS_9):
@@ -157,47 +148,26 @@ def load_universal_data(
         y_type_list.append(np.full(n, 0, dtype=np.int64))
         y_width_list.append(np.full(n, 1, dtype=np.int64))  # 1 -> width 9
         y_conc_list.append(np.full(n, c, dtype=np.float32))
+        cfg_list.append(np.arange(n))
 
     print(f"  Loaded AGNR samples: {sum(len(x) for x in X_list):,}")
 
     # 3. Load Square Lattice (Size 10): type=1 (Square), width=2 (10)
-    print("\n[2/3] Loading Square Lattice (Size 10) CSV files...")
+    print("\n[2/3] Loading Square Lattice (Size 10) stacked arrays...")
     t0_sq = time.time()
-    sq_tasks = []
-    sq_concs_tracked = []
-    pattern = re.compile(r"lead_size_10_conc_(\d+)_config_(\d+)\.csv")
-
+    n_sq = 0
     for c in CONCS_SQ:
-        files = glob.glob(os.path.join(SQUARE_DATA_DIR, f"lead_size_10_conc_{c}_config_*.csv"))
-        def cfg_id(p):
-            m = pattern.search(p)
-            return int(m.group(2)) if m else -1
-        files.sort(key=cfg_id)
-        selected_files = files[:samples_per_conc]
-        for f in selected_files:
-            sq_tasks.append((f, spectrum_len))
-            sq_concs_tracked.append(c)
-
-    print(f"  Reading {len(sq_tasks):,} square lattice files with {num_workers} processes...")
-    with ProcessPoolExecutor(max_workers=num_workers) as executor:
-        sq_results = list(executor.map(_read_sq_file, sq_tasks, chunksize=200))
-
-    sq_raw = []
-    sq_valid_concs = []
-    for raw, c in zip(sq_results, sq_concs_tracked):
-        if raw is not None and len(raw) == spectrum_len:
-            sq_raw.append(raw)
-            sq_valid_concs.append(c)
-
-    sq_raw = np.array(sq_raw, dtype=np.float32)
-    sq_normed = np.clip(sq_raw / psq_safe, 0.0, 1.0)
-    n_sq = len(sq_raw)
-
-    X_list.append(sq_normed)
-    raw_list.append(sq_raw)
-    y_type_list.append(np.full(n_sq, 1, dtype=np.int64))     # 1 -> Square Lattice
-    y_width_list.append(np.full(n_sq, 2, dtype=np.int64))    # 2 -> Size 10
-    y_conc_list.append(np.array(sq_valid_concs, dtype=np.float32))
+        rows = np.load(os.path.join(SQUARE_DATA_DIR, f"conc_{c}.npy"), mmap_mode="r")
+        cfg = np.loadtxt(os.path.join(SQUARE_DATA_DIR, f"conc_{c}_meta.csv"), delimiter=",", skiprows=1, dtype=int)[:, 1]
+        pick = np.where(cfg < samples_per_conc)[0]
+        raw = np.round(np.asarray(rows[pick, :spectrum_len], dtype=np.float32), 3)
+        n = len(raw); n_sq += n
+        X_list.append(np.clip(raw / psq_safe, 0.0, 1.0))
+        raw_list.append(raw)
+        y_type_list.append(np.full(n, 1, dtype=np.int64))     # 1 -> Square Lattice
+        y_width_list.append(np.full(n, 2, dtype=np.int64))    # 2 -> Size 10
+        y_conc_list.append(np.full(n, c, dtype=np.float32))
+        cfg_list.append(cfg[pick])
 
     print(f"  Loaded Square-10 samples: {n_sq:,} in {time.time() - t0_sq:.2f}s")
 
@@ -208,6 +178,7 @@ def load_universal_data(
     y_type = np.concatenate(y_type_list, axis=0)
     y_width = np.concatenate(y_width_list, axis=0)
     y_conc = np.concatenate(y_conc_list, axis=0)
+    cfg = np.concatenate(cfg_list, axis=0)
 
     total_samples = len(X)
     print(f"  Total assembled samples: {total_samples:,}")
@@ -215,15 +186,11 @@ def load_universal_data(
     print(f"    - Type 1 (Square Lattice): {(y_type == 1).sum():,}  (Size 10: {(y_width == 2).sum():,})")
     print(f"    - Concentration range:     [{y_conc.min():.0f}, {y_conc.max():.0f}]")
 
-    # Deterministic Split
-    rng = np.random.RandomState(seed)
-    perm = rng.permutation(total_samples)
-
-    n_tr = int(0.70 * total_samples)
-    n_va = int(0.15 * total_samples)
-    idx_tr = perm[:n_tr]
-    idx_va = perm[n_tr:n_tr + n_va]
-    idx_te = perm[n_tr + n_va:]
+    # Deterministic split by config seed (Bug #7): seeds [0, 0.7K) train, [0.7K, 0.85K) val, rest test
+    n_tr_cfg, n_va_cfg = int(0.70 * samples_per_conc), int(0.85 * samples_per_conc)
+    idx_tr = np.where(cfg < n_tr_cfg)[0]
+    idx_va = np.where((cfg >= n_tr_cfg) & (cfg < n_va_cfg))[0]
+    idx_te = np.where(cfg >= n_va_cfg)[0]
 
     print(f"  Split counts: Train {len(idx_tr):,} | Val {len(idx_va):,} | Test {len(idx_te):,}")
 
@@ -246,6 +213,7 @@ def load_universal_data(
         "samples_per_conc": samples_per_conc,
         "spectrum_len": spectrum_len,
         "seed": seed,
+        "split": "config-seed",
         "total_samples": total_samples,
         "type_labels": {0: "AGNR", 1: "Square Lattice"},
         "width_labels": {0: "7-AGNR", 1: "9-AGNR", 2: "Square-10"},

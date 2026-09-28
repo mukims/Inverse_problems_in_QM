@@ -106,7 +106,7 @@ def main():
     log(f"Out dir:  {out_dir}")
 
     train_data, _, test_data, p7, p9 = mw.load_data(
-        args.data_dir, args.samples_per_conc, args.spectrum_len)
+        args.data_dir, args.samples_per_conc, args.spectrum_len, split=args.split)
 
     run(args, train_data, test_data, p7, p9, results_dir)
     log(f"[DONE] misfit baseline finished in {(time.time() - mw._T_START)/60:.1f} min")
