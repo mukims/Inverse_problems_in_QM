@@ -1,0 +1,31 @@
+{
+  "args": {
+    "data_dir": "/run/media/shardul/storage/machine_learning/transmission_data/transmission_results/consolidated_data",
+    "nconfigs": 10000,
+    "lgbm_trees": 1000,
+    "mlp_epochs": 100,
+    "threads": 22,
+    "out": "/run/media/shardul/storage/machine_learning/transmission_github/transmissions/notebooks/agnr/time_series/build08_baselines.json"
+  },
+  "n_train": 464000,
+  "n_test": 116000,
+  "results": {
+    "persistence": {
+      "MSE": 0.04767844080924988,
+      "RMSE": 0.21835394203662872,
+      "MAE": 0.16246025264263153
+    },
+    "lightgbm": {
+      "MSE": 0.021311582997441292,
+      "RMSE": 0.14598487317562103,
+      "MAE": 0.10739259421825409,
+      "time_s": 211
+    },
+    "mlp": {
+      "MSE": 0.021815339103341103,
+      "RMSE": 0.14770016074180603,
+      "MAE": 0.10811024904251099,
+      "time_s": 604
+    }
+  }
+}
