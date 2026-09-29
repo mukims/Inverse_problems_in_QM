@@ -14,6 +14,7 @@ size_10/
 transmissions/
 *.csv
 *.npy
+*.npz
 
 # Precomputed leads
 leads/
@@ -23,6 +24,7 @@ models/
 checkpoints/
 *.pt
 *.pth
+notebooks/agnr/multi_width/seed_split_10k/*.json
 
 # Jupyter
 .ipynb_checkpoints/
@@ -40,3 +42,7 @@ Thumbs.db
 
 # Generator scripts
 create_notebook.py
+
+# Agent scratch & notes
+.agents/
+ORIGINAL_REQUEST.md

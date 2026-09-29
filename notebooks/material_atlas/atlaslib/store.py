@@ -36,7 +36,7 @@ class CloudStore:
         else:
             np.save(p, energies_t)
 
-    def write_pristine(self, model_id, energies_t, T):
+    def write_pristine(self, model_id, energies_t, T, formula=None):
         energies_t = np.asarray(energies_t, dtype=np.float64)
         self._check_energies(model_id, energies_t)
         T = np.asarray(T, dtype=np.float64)
@@ -45,12 +45,16 @@ class CloudStore:
         if not np.all(np.isfinite(T)):
             raise ValueError("pristine spectrum is not finite")
         np.save(self._dir(model_id) / "pristine.npy", T)
+        if formula is not None:
+            meta = self._meta(model_id)
+            meta["pristine_formula"] = str(formula)
+            self._save_meta(model_id, meta)
 
     def read_pristine(self, model_id):
         d = self._dir(model_id)
         return np.load(d / "energies_t.npy"), np.load(d / "pristine.npy")
 
-    def write_cloud(self, model_id, density, n_impurities, spectra, seeds, energies_t):
+    def write_cloud(self, model_id, density, n_impurities, spectra, seeds, energies_t, formula=None):
         spectra = np.asarray(spectra, dtype=np.float64)
         seeds = np.asarray(seeds, dtype=np.int64)
         energies_t = np.asarray(energies_t, dtype=np.float64)
@@ -74,7 +78,13 @@ class CloudStore:
         np.save(d / f"cloud_{k}.npy", spectra)
         np.save(d / f"cloud_{k}_seeds.npy", seeds)
         meta = self._meta(model_id)
-        meta["clouds"][k] = {"density": float(density), "n_impurities": int(n_impurities), "n": int(seeds.size)}
+        if formula is not None:
+            pris_f = meta.get("pristine_formula")
+            if pris_f is not None and pris_f != str(formula):
+                raise ValueError(f"cloud formula {formula!r} does not match pristine formula {pris_f!r} for {model_id}")
+            meta["clouds"][k] = {"density": float(density), "n_impurities": int(n_impurities), "n": int(seeds.size), "formula": str(formula)}
+        else:
+            meta["clouds"][k] = {"density": float(density), "n_impurities": int(n_impurities), "n": int(seeds.size)}
         self._save_meta(model_id, meta)
 
     def read_cloud(self, model_id, density):

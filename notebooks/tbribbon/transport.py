@@ -17,7 +17,9 @@ def _caroli(z, H0, H1, shifts, gL, gR):
 
 
 def _legacy_trace(z, H0, H1, shifts, gL, gR):
-    """Formula of ca_sq.device / agnr_lib.device_transmission (unbounded; clip downstream)."""
+    """Formula of ca_sq.device (unbounded; only valid for symmetric H1, e.g. square strip)."""
+    if not np.allclose(H1, H1.T):
+        raise ValueError("_legacy_trace requires symmetric H1 (e.g. square strip); honeycomb H1 is non-symmetric. Use agnr_lib for AGNR.")
     I = np.eye(H0.shape[0])
     G = gL
     for s in shifts:

@@ -52,3 +52,13 @@ def test_idealised_7agnr_pristine_matches_legacy_file():
     T = spectrum(h.H0, h.H1, E, np.zeros((20, 14)), LeadCache(h.H0, h.H1, E))
     stable = np.array([len(set(open_channels(h.H0, h.H1, [e - 0.02, e, e + 0.02]))) == 1 for e in E])
     assert np.allclose(T[stable], leg[stable], atol=1e-2)
+
+
+def test_legacy_trace_rejects_non_symmetric_honeycomb_h1():
+    h = honeycomb_ribbon(7, "armchair")
+    E = np.array([0.5])
+    leads = LeadCache(h.H0, h.H1, E)
+    shifts = np.zeros((1, 14))
+    with pytest.raises(ValueError, match="symmetric H1"):
+        spectrum(h.H0, h.H1, E, shifts, leads, formula="legacy_trace")
+

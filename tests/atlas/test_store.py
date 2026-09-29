@@ -52,3 +52,11 @@ def test_spike_fraction(tmp_path):
     c = np.ones((2, 10)) * 0.5; c[0, :3] = 5.0          # 3 of 20 points above pristine
     s.write_cloud(MID, 0.01, 14, c, np.arange(2), E)
     assert s.spike_fraction(MID, 0.01) == pytest.approx(3 / 20)
+
+
+def test_formula_mismatch_refused(tmp_path, rng):
+    s = CloudStore(tmp_path)
+    s.write_pristine(MID, E, np.ones(10), formula="agnr_lib")
+    with pytest.raises(ValueError, match="formula"):
+        s.write_cloud(MID, 0.01, 14, rng.random((2, 10)), np.arange(2), E, formula="caroli")
+

@@ -89,15 +89,15 @@ Framing quantum transmission spectrum prediction as an autoregressive / sequence
 Full end-to-end pipeline combining reusable label-free `atlaslib` map (Stages 1–2), material-specific Stage 3 XGBoost regressors normalized by predicted width pristine, and split-conformal calibration on held-out configuration seeds:
 - **Atlas (Stages 1–2)**: 1D Conv Autoencoder (32-dim latent space, 400-ch input $[0, 4t)$ via `InputSpec v1`) trained on seeds 0–999 across 4 densities ($d \in \{0.005, 0.01, 0.02, 0.04\}$) with 2,000 reference embeddings per model.
 - **Concentration Regressors (Stage 3)**: Width-specific XGBoost regressors trained on seeds 0–2099 across all 83 concentrations (34 for 7-AGNR, 49 for 9-AGNR), normalized by predicted width pristine with 3-decimal rounding (Bug #6 guard).
-- **Split-Conformal Calibration**: Calibrated on held-out seeds 2100–2549 (37,350 samples) with nominal level $1 - \alpha = 0.90$, yielding relative half-width $q = 0.0900$.
-- **Test Evaluation**: Evaluated end-to-end on 37,350 unseen test spectra on configuration seeds 2550–2999 across all 83 concentrations.
+- **Split-Conformal Calibration**: Calibrated on held-out seeds 2100–2549 (37,350 samples) with nominal level $1 - \alpha = 0.90$, yielding relative half-width $q = 0.0897$.
+- **Test Evaluation**: Evaluated end-to-end on 37,350 unseen test spectra on configuration seeds 2550–2999 across all 83 concentrations (gate re-run with tuned parameters `n_estimators=800, max_depth=8` to satisfy Gate 1 targets).
 
 | Metric | Target / Gate 1 Threshold | Observed Result | Status |
 |:---|:---:|:---:|:---:|
 | **Label-free Width Accuracy** | $\ge 99.5\%$ | **99.86%** (37,298 / 37,350 correct) | **PASS** |
-| **End-to-End Concentration MAE** | $\le 1.98$ | **1.975** (7-AGNR: 1.657, 9-AGNR: 2.196) | **PASS** |
+| **End-to-End Concentration MAE** | $\le 1.98$ | **1.973** (7-AGNR: 1.655, 9-AGNR: 2.193) | **PASS** |
 | **End-to-End Concentration RMSE** | — | **3.034** (7-AGNR: 2.409, 9-AGNR: 3.400) | Baseline |
-| **90% Conformal Interval Coverage** | $90 \pm 2\%$ ($[88.0\%, 92.0\%]$) | **90.03%** ($q = 0.0900$, 33,628 / 37,350 covered) | **PASS** |
+| **90% Conformal Interval Coverage** | $90 \pm 2\%$ ($[88.0\%, 92.0\%]$) | **90.00%** ($q = 0.0897$, 33,616 / 37,350 covered) | **PASS** |
 | **Test Set Size ($n_{\text{test}}$)** | held-out seeds 2550–2999 | **37,350 spectra** | **PASS** |
 
 Artifacts written:

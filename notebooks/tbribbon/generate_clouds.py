@@ -2,8 +2,10 @@
 """Parallel, resumable generation of disorder clouds into a CloudStore.
 Set OMP_NUM_THREADS=1 before launching to avoid BLAS oversubscription."""
 import argparse
+import multiprocessing as mp
 import os
-from multiprocessing import Pool
+import sys
+from pathlib import Path
 
 import numpy as np
 
@@ -13,7 +15,12 @@ from tbribbon.leads import LeadCache
 from tbribbon.materials import hamiltonian_for, make_model
 from tbribbon.transport import spectrum
 
-DEFAULT_FORMULA = "legacy_trace"          # D1: settled as legacy_trace
+REPO = Path(__file__).resolve().parents[2]
+AGNR_PHYSICS = REPO / "notebooks" / "agnr" / "physics"
+if str(AGNR_PHYSICS) not in sys.path:
+    sys.path.insert(0, str(AGNR_PHYSICS))
+import agnr_lib
+
 _W = {}
 
 
@@ -33,36 +40,77 @@ def _one(seed):
     return spectrum(_W["H0"], _W["H1"], _W["E"], s, _W["leads"], formula=_W["formula"])
 
 
-def generate(store, models, densities, spec, n_jobs=20, formula=DEFAULT_FORMULA, seeds=None):
+def _init_agnr(m_width, n_imp, leads):
+    _W.update(m_width=m_width, n_imp=n_imp, leads=leads)
+
+
+def _one_agnr(seed):
+    m_width, n_imp, leads = _W["m_width"], _W["n_imp"], _W["leads"]
+    return np.array([
+        agnr_lib.device_transmission(w, 1e-5, 1.0, 0.0, m_width, seed, n_imp, leads, nonlocal_mode="IL")
+        for w in agnr_lib.energy_grid()
+    ])
+
+
+def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", seeds=None):
+    ctx = mp.get_context("spawn")
     e_t, wrote = spec.energies_t(), []
     for m in models:
-        h = hamiltonian_for(m)
-        leads = LeadCache(h.H0, h.H1, e_t)
-        pristine_path = store._dir(m.model_id) / "pristine.npy"
-        if not pristine_path.exists():
-            with Pool(1, _init, (h.H0, h.H1, e_t, 1, h.H0.shape[0], 0, 0.0, formula, leads)) as p:
-                store.write_pristine(m.model_id, e_t, p.map(_one, [0])[0])
-        for d in densities:
-            n_imp = m.impurities_for_density(d)
-            actual = n_imp / m.n_sites
-            if store.has_cloud(m.model_id, actual):
-                continue
-            sd = np.arange(seeds_for_width(m.width)) if seeds is None else np.asarray(list(seeds))
-            with Pool(n_jobs, _init, (h.H0, h.H1, e_t, m.n_cells, h.H0.shape[0], n_imp, m.impurity_v_t, formula, leads)) as p:
-                spectra = np.array(p.map(_one, sd, chunksize=4))
-            store.write_cloud(m.model_id, actual, n_imp, spectra, sd, e_t)
-            wrote.append((m.model_id, actual))
-            print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra", flush=True)
+        is_agnr = (m.material == "graphene-ideal" and m.edge == "armchair")
+        is_zgnr = (m.material == "graphene-ideal" and m.edge == "zigzag")
+        if is_zgnr:
+            raise NotImplementedError(
+                f"No validated trace formula for ZGNR ({m.model_id}). "
+                "See docs/superpowers/plans/2026-09-29-review-notes-for-implementing-agent.md"
+            )
+
+        if is_agnr:
+            model_formula = "agnr_lib_IL_1e-5"
+            leads = agnr_lib.load_leads(m.width)
+            grid_e = agnr_lib.energy_grid()
+            pristine_path = store._dir(m.model_id) / "pristine.npy"
+            if not pristine_path.exists():
+                pris = agnr_lib.spectrum(m.width, leads, config=0, concentration=0, nonlocal_mode="IL", d=1e-5)
+                store.write_pristine(m.model_id, grid_e, pris, formula=model_formula)
+            for d in densities:
+                n_imp = m.impurities_for_density(d)
+                actual = n_imp / m.n_sites
+                if store.has_cloud(m.model_id, actual):
+                    continue
+                sd = np.arange(seeds_for_width(m.width)) if seeds is None else np.asarray(list(seeds))
+                with ctx.Pool(n_jobs, _init_agnr, (m.width, n_imp, leads)) as p:
+                    spectra = np.array(p.map(_one_agnr, sd, chunksize=4))
+                store.write_cloud(m.model_id, actual, n_imp, spectra, sd, grid_e, formula=model_formula)
+                wrote.append((m.model_id, actual))
+                print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula})", flush=True)
+        else:
+            h = hamiltonian_for(m)
+            leads = LeadCache(h.H0, h.H1, e_t)
+            model_formula = formula
+            pristine_path = store._dir(m.model_id) / "pristine.npy"
+            if not pristine_path.exists():
+                with ctx.Pool(1, _init, (h.H0, h.H1, e_t, 1, h.H0.shape[0], 0, 0.0, model_formula, leads)) as p:
+                    store.write_pristine(m.model_id, e_t, p.map(_one, [0])[0], formula=model_formula)
+            for d in densities:
+                n_imp = m.impurities_for_density(d)
+                actual = n_imp / m.n_sites
+                if store.has_cloud(m.model_id, actual):
+                    continue
+                sd = np.arange(seeds_for_width(m.width)) if seeds is None else np.asarray(list(seeds))
+                with ctx.Pool(n_jobs, _init, (h.H0, h.H1, e_t, m.n_cells, h.H0.shape[0], n_imp, m.impurity_v_t, model_formula, leads)) as p:
+                    spectra = np.array(p.map(_one, sd, chunksize=4))
+                store.write_cloud(m.model_id, actual, n_imp, spectra, sd, e_t, formula=model_formula)
+                wrote.append((m.model_id, actual))
+                print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula})", flush=True)
     return wrote
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--store", default="~/atlas_store/engine_v1")
-    ap.add_argument("--n-jobs", type=int, default=20)
-    ap.add_argument("--formula", default=DEFAULT_FORMULA)
+    ap.add_argument("--n-jobs", type=int, default=4)
+    ap.add_argument("--formula", default="legacy_trace")
     a = ap.parse_args()
     os.environ.setdefault("OMP_NUM_THREADS", "1")
-    ms = ([make_model("graphene-ideal", "armchair", n) for n in range(5, 17)]
-          + [make_model("graphene-ideal", "zigzag", n) for n in range(4, 13)])
+    ms = [make_model("graphene-ideal", "armchair", n) for n in range(5, 17)]
     generate(CloudStore(a.store), ms, [0.005, 0.01, 0.02, 0.04], InputSpec(), n_jobs=a.n_jobs, formula=a.formula)
