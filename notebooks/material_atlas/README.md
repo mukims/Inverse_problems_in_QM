@@ -32,7 +32,17 @@ atlas.locate(T)   # T: raw transmission from E = 0 at 0.01 eV steps, >= 300 chan
 # -> [{"material", "type", "confidence", "novelty_score", "unknown", "rough_concentration", "reconstruction_error"}]
 ```
 
-## Status
-First full run in progress (2026-09-29); results will be recorded here and in the LOGBOOK.
-A 1%-data smoke test identified an unseen square lattice 100% of the time, but an unseen 9-AGNR only
-weakly (AUROC 0.71): a similar material may reconstruct well and escape the novelty flag.
+## Results (BUILD-12, held-out seeds, `results/atlas_metrics.json`)
+
+| | Result |
+|---|---|
+| Material and width, atlas (AE + k-NN) | **100.00%** on 45,450 test spectra, every concentration band |
+| Baselines on the same input | logistic 99.97%, PCA-32 k-NN 99.96%, onset + plateau tree 99.45%, library matching 99.37% |
+| False alarms on known materials | 1.05% |
+| Unseen Square-10 (trained without it) | AUROC 1.00 by reconstruction error, 0.95 by k-NN distance; the k-NN threshold flags only 0.6% |
+| Unseen 9-AGNR (trained without it) | AUROC 0.79 / 0.51: a new width of a known material looks familiar |
+| Rough concentration from neighbours | MAE 3.15 / 4.57 / 4.91 (only 4 reference densities) |
+
+Consequences: flag unknown *materials* by reconstruction error (this script's `unknown` still uses k-NN
+distance; the plan's `atlaslib.Atlas` uses reconstruction error); place new *widths* on the continuous width
+axis rather than expecting a novelty flag.

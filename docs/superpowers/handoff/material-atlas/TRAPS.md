@@ -18,6 +18,8 @@ Each entry: symptom → cause → what to do.
 
 **Different test sets.** Comparing MAEs across builds with different concentration ranges or splits. → Compare only on a common test set; state the range and split beside every number.
 
+**Novelty by the wrong score.** An unseen material is ranked as unusual yet almost never flagged. In BUILD-12 the k-NN-distance threshold (99th percentile of known spectra) flagged 0.6% of an unseen square lattice despite AUROC 0.95, while reconstruction error separated it with AUROC 1.00. → Flag unknowns by reconstruction error; expect new widths of a known material to look familiar and be placed, not flagged.
+
 ## Compute
 
 **Thread oversubscription.** Epochs 3–6× slower than expected. This CPU (i7-13700) has 8 performance cores and 8 efficiency cores; PyTorch with more threads than free performance cores, or two trainings sharing cores, stalls on the slowest thread. BLAS inside multiprocessing workers multiplies threads again. → 16 PyTorch threads when alone, ≤ 4 beside another training; `OMP_NUM_THREADS=1` in generator workers; benchmark one epoch before a long run.

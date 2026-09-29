@@ -28,7 +28,7 @@
 1. **A spectrum on a different energy grid, not starting at 0, or ending before its band top** — expected: `InputSpec.to_input` refuses it instead of zero-filling real signal (tests in Task 1).
 2. **NaN/inf spectra from a singular inversion, or byte-identical spectra across densities** (the square-lattice generator bug) — expected: `CloudStore.write_cloud` refuses them (Task 3).
 3. **A width outside the trained range** (e.g. N = 50 when the map knows N ≤ 14) — expected: the width estimate stays inside the known range and is flagged `width_extrapolated` (Task 5).
-4. **A spectrum from a material the map has never seen** — expected: `unknown = True` rather than a confident wrong label (Task 5).
+4. **A spectrum from a material the map has never seen** — expected: `unknown = True` rather than a confident wrong label (Task 5). Flag by reconstruction error: in BUILD-12 it separated an unseen material perfectly (AUROC 1.00) while k-NN distance did not. A new *width* of a known material is not flagged (AUROC 0.79 at best); it is placed on the continuous width axis instead.
 5. **Adding a material to an existing map** — expected: existing references and existing answers are unchanged, and the call reports what fraction of the new spectra the frozen encoder finds unfamiliar (Task 6).
 
 ## Open decisions (settle before the listed task)
@@ -948,15 +948,16 @@ class Atlas:
                 val |= (midx == i) & (seeds >= np.quantile(s, 0.85))
         enc, _ = train_autoencoder(X[~val], X[val], latent=latent, epochs=epochs, patience=patience,
                                    threads=threads, seed=seed)
-        Z, _ = embed(enc, X)
+        Z, rec = embed(enc, X)
         mu, sd = Z[~val].mean(0), Z[~val].std(0) + 1e-8
         Zs = (Z - mu) / sd
         rng = np.random.default_rng(seed)
         ref = np.concatenate([rng.permutation(np.where((midx == i) & ~val)[0])[:refs_per_model] for i in np.unique(midx)])
         models = [registry.get(mid) for mid in model_ids]
         atlas = cls(spec, enc, mu, sd, Zs[ref], midx[ref], dens[ref], models, np.inf, k)
-        novelty_val = atlas._novelty(Zs[val])
-        atlas.threshold = float(np.percentile(novelty_val, 99))
+        # Unknown = reconstruction error above the 99th percentile of known validation spectra.
+        # BUILD-12: reconstruction error separated an unseen material with AUROC 1.00, k-NN distance only 0.95.
+        atlas.threshold = float(np.percentile(rec[val], 99))
         return atlas
 
     # ---------- querying ----------
@@ -984,7 +985,7 @@ class Atlas:
             extrap = bool(np.all(w == trained[0]) or np.all(w == trained[-1]))
             nov = float(dist[r].mean())
             out.append(Located(mat, edge, width, extrap, float(np.median(self.ref_density[idx[r][members]])),
-                               len(members) / self.k, nov, nov > self.threshold, float(rec[r])))
+                               len(members) / self.k, nov, bool(rec[r] > self.threshold), float(rec[r])))
         return out
 
     # ---------- persistence ----------
@@ -1081,9 +1082,9 @@ Expected: FAIL (`AttributeError: 'Atlas' object has no attribute 'add_models'`)
         report = {}
         for mid in model_ids:
             X, _, dens, _ = self._load_inputs(store, registry, [mid], self.spec)
-            Z, _ = embed(self.encoder, X)
+            Z, rec = embed(self.encoder, X)
             Zs = (Z - self.mu) / self.sd
-            report[mid] = float(np.mean(self._novelty(Zs) > self.threshold))
+            report[mid] = float(np.mean(rec > self.threshold))
             self.models.append(registry.get(mid))
             self.refs = np.vstack([self.refs, Zs])
             self.ref_model = np.concatenate([self.ref_model, np.full(len(Zs), len(self.models) - 1)])

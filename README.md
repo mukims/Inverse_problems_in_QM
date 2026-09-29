@@ -60,7 +60,7 @@ The full history and every number below are in [`LOGBOOK.md`](LOGBOOK.md). All r
 | **Model choice matters little once the split is fair** | BUILD-09 (0–1.5 eV): transformer 2.267, XGBoost 2.394, physics misfit 2.442, MLP 2.884 |
 | **Impurity arrangement is not recoverable** from one spectrum | Rank correlation between arrangement distance and spectral distance ≈ 0 at c = 20 (9-AGNR) |
 | **Autoencoders compress well but add nothing for concentration** | Latent never beats PCA-64 (square: 3.58 vs 3.17 MAE; joint: 2.12/2.80/3.65 vs 1.90/2.58/3.18) |
-| **Classification results with per-material normalisation are circular** | Dividing by each spectrum's own pristine requires knowing the material (Bug #8). A label-free check (physics misfit on raw spectra) still identifies the width 99.57% of the time; the label-free material atlas is in progress |
+| **Material and width are identifiable without any label leakage** | Earlier 100% claims used each material's own pristine and were circular (Bug #8). The label-free material atlas (BUILD-12) identifies 7-AGNR / 9-AGNR / Square-10 with **100%** accuracy on 45,450 held-out spectra at every concentration; two physics descriptors (band onset, plateau level) already reach 99.45% |
 
 **Data validity rules** that came out of this work (LOGBOOK Bugs #6–#8):
 1. Round T to 3 decimals before dividing by pristine, so band-gap channels become exact zeros.
