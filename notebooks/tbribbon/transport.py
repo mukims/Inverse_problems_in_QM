@@ -21,8 +21,7 @@ def _legacy_trace(z, H0, H1, shifts, gL, gR):
     I = np.eye(H0.shape[0])
     G = gL
     for s in shifts:
-        g_d = np.linalg.inv(z - H0 - np.diag(s))
-        G = np.linalg.solve(I - g_d @ H1 @ G @ H1, g_d)
+        G = np.linalg.inv(z - H0 - np.diag(s) - H1 @ G @ H1)
     left, right = G, gR
     c_l = np.linalg.solve(I - right @ H1 @ left @ H1, left)
     c_r = np.linalg.solve(I - left @ H1 @ right @ H1, right)
