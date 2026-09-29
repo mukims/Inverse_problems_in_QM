@@ -16,7 +16,7 @@ published benchmark numbers, and the physics-informed variants.
 |---|---|---|
 | `pinn_agnr.py` | Physics-informed **CNN** with a differentiable misfit regulariser | `DifferentiableMisfit`, residual 1D blocks |
 | `pinn_agnr_curvature.py` | `ConductanceMLP` + **curvature-weighted** misfit | The "PINN" the README and LOGBOOK refer to. Checkpoint: `pinn_agnr_curvature.pt` |
-| `patched_transformer_v2.py` | 1D-patched transformer with ConvStem + `[CLS]` head | Best single-width result (MAE ≈ 0.98). Checkpoint: `patched_transformer_v2.pt` |
+| `patched_transformer_v2.py` | 1D-patched transformer with ConvStem + `[CLS]` head | Best single-width result (MAE ≈ 0.98 on the BUILD-04 7-AGNR set, c = 3–43; not comparable with the held-out-seed benchmarks, see LOGBOOK Bug #7). Checkpoint: `patched_transformer_v2.pt` |
 | `train_conc_models.py` | Trains/benchmarks XGBoost + MLP + transformer from one entry point | Step 2 of the inference pipeline |
 | `retrain_models.py` | Retrains the MLP and transformer on consolidated data, backing up the old checkpoints first | Writes `*_backup.pt` |
 | `compare_all_models.py` | Four-way benchmark → the `compare_*.png` plots in this folder | Loads checkpoints from **this** folder |

@@ -1,0 +1,18 @@
+{
+  "display_name": "XGBoost",
+  "metrics": {
+    "Width_Acc_Overall": 99.99839357429718,
+    "Width_Acc_7": 100.0,
+    "Width_Acc_9": 99.99727891156462,
+    "Conc_MAE_Overall": 2.329807349929848,
+    "Conc_RMSE_Overall": 3.3387916510476305,
+    "Conc_Max_Error": 20.349449157714844,
+    "Conc_MAE_7": 2.008212184889644,
+    "Conc_RMSE_7": 2.8391649552673695,
+    "Conc_MAE_9": 2.5529550154679486,
+    "Conc_RMSE_9": 3.645449509883327,
+    "train_time_sec": 135.8
+  },
+  "written": "2026-09-29T12:14:42",
+  "snap_grid": false
+}

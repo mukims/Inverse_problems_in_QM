@@ -1,4 +1,4 @@
-# multi_width/ — Joint 7- & 9-AGNR models (BUILD-06, current work)
+# multi_width/ — Joint 7- & 9-AGNR models (BUILD-06, leak-free re-run BUILD-09)
 
 **This is where active development happens.**
 
@@ -9,7 +9,9 @@ drop that assumption and solve both halves at once from a single spectrum:
 2. **Concentration regression** — how many impurities, `c`?
 
 Dataset: 249,000 spectra (7-AGNR: 34 concentrations `c ∈ [2,68]`; 9-AGNR: 49
-concentrations `c ∈ [2,98]`; 3,000 samples each), split 70/15/15.
+concentrations `c ∈ [2,98]`; 3,000 samples each), split 70/15/15 **by configuration seed**
+(`--split seed`, the default since BUILD-09). `--split random` reproduces the original BUILD-06
+row split, which leaked near-identical spectra into the test set (LOGBOOK Bug #7).
 
 ---
 
@@ -38,13 +40,33 @@ conda run -n ml python mw_compare.py
 train/val/test split, metrics, logging, the target scaler, and the shared trainer
 used by both neural scripts.
 
+### Current results (held-out seeds, BUILD-09)
+
+| Model | Concentration MAE | 7-AGNR | 9-AGNR | RMSE | Random split (BUILD-06) |
+|---|---|---|---|---|---|
+| Transformer | **2.267** | 1.871 | 2.542 | 3.274 | 1.390 |
+| XGBoost | 2.394 | 2.016 | 2.656 | 3.432 | 1.982 |
+| Physics misfit (no learning) | 2.442 | 1.985 | 2.760 | 3.834 | 2.445 |
+| MLP | 2.884 | 2.454 | 3.182 | 3.673 | 2.018 |
+
+Files: `seed_split/mw_results/*_metrics.json`. Related checks:
+- `energy_window_check.py`: the same XGBoost on 0–1.5 eV gives 2.396, on 1.5–3 eV 2.769, on the **full 0–3 eV spectrum 1.977**.
+- `seed_split_10k/`: XGBoost with all 10,000 seeds per concentration; on a common test set it improves only from 2.387 (3k seeds) to 2.330.
+
+**BUILD-06 training settings.** The script defaults have drifted; to reproduce BUILD-06 training use
+`mw_transformer.py --epochs 80 --patience 80` and `mw_mlp.py --epochs 120 --lr-schedule plateau --plateau-patience 8 --patience 60`.
+
+**Width accuracy here is circular** (LOGBOOK Bug #8): each spectrum is divided by its *own* width's pristine,
+which requires knowing the width. Treat the concentration results as "given the correct width". For label-free
+width identification see `notebooks/material_atlas/`.
+
 ---
 
 ## The one rule that matters
 
-**All four techniques must use the same `--samples-per-conc` and `--spectrum-len`.**
+**All four techniques must use the same `--samples-per-conc`, `--spectrum-len` and `--split`.**
 
-The split is deterministic given those two values plus `seed=42`, which is exactly
+The split is deterministic given those values (plus `seed=42` for `--split random`), which is exactly
 what makes the four result sets comparable. Change either and you get a different
 test set. `mw_compare.py` checks this and warns loudly if the stored predictions
 disagree — trust that warning.
