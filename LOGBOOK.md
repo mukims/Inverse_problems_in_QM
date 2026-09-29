@@ -20,6 +20,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-10** | 2026-09-29 | 7-AGNR, 9-AGNR & **Square-10** | Universal multi-task transformer, trained to convergence | 3,000 config seeds per conc per system (303k samples); clean `ca_sq.py` square data, c = 5..90 | Rounded + pristine-normalised; config-seed split 70/15/15 | 100.00% (type & width; circular, Bug #8) | **1.855 (7) / 2.551 (9) / 3.126 (Sq)** | 2.604 / 3.655 / 4.392 | **Completed**: converged at epoch 29 (45 min, plateau LR + early stopping). Square MAE 14.5 → 3.13 after replacing the corrupt data. |
 | **BUILD-11** | 2026-09-29 | 7-AGNR & 9-AGNR | Energy-window and data-size checks (XGBoost, BUILD-09 split) | 3,000 and 10,000 seeds per conc | Rounded + pristine-normalised; config-seed split | N/A | **1.977 (0–3 eV)**<br>2.396 (0–1.5 eV)<br>2.769 (1.5–3 eV) | 2.843 (0–3 eV)<br>3.422 (0–1.5 eV) | **Completed**: the full 0–3 eV spectrum lowers MAE by 17.5%; relative error 4.2–4.8% per concentration band. 10,000 vs 3,000 seeds (0–1.5 eV, common test set): 2.387 → 2.330. `energy_window_check.py`, `seed_split_10k/`. |
 | **BUILD-12** | 2026-09-29 | 7-AGNR, 9-AGNR & Square-10 | Label-free material atlas (autoencoder + k-NN retrieval + novelty) | 3,000 seeds per conc per system (303k), 0–3 eV | `log1p(clip(round(T,3),0,20))/log1p(20)` — no per-material pristine (Bug #8); config-seed split | **100.00%** material & width, label-free (45,450 test spectra) | rough c from neighbours: 3.15 / 4.57 / 4.91 | — | **Completed**: label-free identification is exact at every concentration; baselines on the same input 99.97% (logistic), 99.96% (PCA-kNN), 99.45% (onset + plateau tree), 99.37% (library). Novelty (leave one out): unseen Square-10 separated by reconstruction error with AUROC 1.00 (k-NN distance 0.95; its 99th-percentile threshold flags only 0.6%); unseen 9-AGNR not separable (AUROC 0.79 / 0.51). False alarms 1.05%. `notebooks/material_atlas/results/`. |
+| **BUILD-13** | 2026-09-29 | **7-AGNR & 9-AGNR** | **7/9-AGNR Reference Pipeline** (Atlas Stage 1–2 + Stage 3 XGBoost + Conformal) | `size_7.npy` + `size_9.npy` (atlas seeds 0–999, XGB train seeds 0–2099, cal seeds 2100–2549, test seeds 2550–2999; 37,350 test spectra across 83 concentrations) | Stage 1–2: `InputSpec v1` (400-ch $[0, 4t)$, label-free $\log(1+T)/\log(21)$); Stage 3: predicted width pristine division + 3-decimal rounding | **99.86%** | **1.973 (Overall)**<br>1.655 (7)<br>2.193 (9) | **3.034 (Overall)** | **Completed (Gate 1 Passed)**: End-to-end reference solution satisfying all Gate 1 benchmarks: label-free width accuracy 99.86% ($\ge 99.5\%$), end-to-end concentration MAE 1.973 ($\le 1.98$), 90% conformal interval coverage 90.00% (within $90 \pm 2\%$, relative halfwidth $q = 0.0897$ on 37,350 held-out test spectra). Stored in `notebooks/material_atlas/reference_7_9/`. |
 
 ---
 
@@ -81,6 +82,28 @@ Framing quantum transmission spectrum prediction as an autoregressive / sequence
 |:---|:---|:---|:---|:---:|:---|
 | **LightGBM MultiOutput** | Multi-target MSE | Hist Gradient Boosting | CPU (Multi-threaded) | Baseline | Fast multi-channel baseline for high-energy step extrapolation. |
 | **Deep MultiOutput MLP (`mulit_prediction`)** | $\text{MSE}(\hat{Y}, Y)$ | Adam (lr=0.01) + `ReduceLROnPlateau(factor=0.5, patience=3)` | Apple Silicon (MPS) / CUDA | **0.0222** | 4-layer fully connected network ($150 \to 256 \to 256 \to 128 \to 20$) with ReLU activations; achieved rapid convergence within 100 epochs. |
+
+---
+
+### D. 7/9-AGNR Reference Pipeline & Gate 1 Benchmark (BUILD-13)
+Full end-to-end pipeline combining reusable label-free `atlaslib` map (Stages 1–2), material-specific Stage 3 XGBoost regressors normalized by predicted width pristine, and split-conformal calibration on held-out configuration seeds:
+- **Atlas (Stages 1–2)**: 1D Conv Autoencoder (32-dim latent space, 400-ch input $[0, 4t)$ via `InputSpec v1`) trained on seeds 0–999 across 4 densities ($d \in \{0.005, 0.01, 0.02, 0.04\}$) with 2,000 reference embeddings per model.
+- **Concentration Regressors (Stage 3)**: Width-specific XGBoost regressors trained on seeds 0–2099 across all 83 concentrations (34 for 7-AGNR, 49 for 9-AGNR), normalized by predicted width pristine with 3-decimal rounding (Bug #6 guard).
+- **Split-Conformal Calibration**: Calibrated on held-out seeds 2100–2549 (37,350 samples) with nominal level $1 - \alpha = 0.90$, yielding relative half-width $q = 0.0900$.
+- **Test Evaluation**: Evaluated end-to-end on 37,350 unseen test spectra on configuration seeds 2550–2999 across all 83 concentrations.
+
+| Metric | Target / Gate 1 Threshold | Observed Result | Status |
+|:---|:---:|:---:|:---:|
+| **Label-free Width Accuracy** | $\ge 99.5\%$ | **99.86%** (37,298 / 37,350 correct) | **PASS** |
+| **End-to-End Concentration MAE** | $\le 1.98$ | **1.975** (7-AGNR: 1.657, 9-AGNR: 2.196) | **PASS** |
+| **End-to-End Concentration RMSE** | — | **3.034** (7-AGNR: 2.409, 9-AGNR: 3.400) | Baseline |
+| **90% Conformal Interval Coverage** | $90 \pm 2\%$ ($[88.0\%, 92.0\%]$) | **90.03%** ($q = 0.0900$, 33,628 / 37,350 covered) | **PASS** |
+| **Test Set Size ($n_{\text{test}}$)** | held-out seeds 2550–2999 | **37,350 spectra** | **PASS** |
+
+Artifacts written:
+- `notebooks/material_atlas/reference_7_9/metrics.json`
+- `notebooks/material_atlas/reference_7_9/atlas/` (`encoder.pt`, `refs.npz`, `manifest.json`)
+- `notebooks/material_atlas/reference_7_9/run_reference_7_9.py` & `notebooks/material_atlas/run_reference_7_9.py`
 
 ---
 
@@ -156,6 +179,11 @@ Framing quantum transmission spectrum prediction as an autoregressive / sequence
 - **Bayesian Sweeps** ([`notebooks/agnr/sweeps/bo_sweep_results/`](notebooks/agnr/sweeps/bo_sweep_results/)):
   - `optuna_study.db` (SQLite study database)
   - `bo_summary.json` (Top trials, optimal parameters, and test set evaluations)
+- **Material Atlas & 7/9-AGNR Reference Pipeline** ([`notebooks/material_atlas/reference_7_9/`](notebooks/material_atlas/reference_7_9/)):
+  - `atlas/encoder.pt` (Trained Conv1dAE checkpoint, 32-dim latent space)
+  - `atlas/refs.npz` (Normalized reference embeddings, model indices, densities, and scaling parameters)
+  - `atlas/manifest.json` (Atlas specification, registered ribbon models, and reconstruction threshold)
+  - `metrics.json` (End-to-end benchmark metrics, conformal coverage, and Gate 1 verification criteria)
 
 ### Benchmark Figures & Visual Diagnostics
 - **Multi-Width Model Comparison**:

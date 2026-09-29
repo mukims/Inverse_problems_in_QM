@@ -1,0 +1,35 @@
+{
+  "spec": {
+    "version": "v1",
+    "e_max_t": 4.0,
+    "step_t": 0.01,
+    "cap": 20.0
+  },
+  "models": [
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 14,
+      "band_top_t": 3.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "source": "consolidated_data"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 18,
+      "band_top_t": 3.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "source": "consolidated_data"
+    }
+  ],
+  "threshold": 0.007627369370311499,
+  "k": 15,
+  "created": "2026-09-29"
+}

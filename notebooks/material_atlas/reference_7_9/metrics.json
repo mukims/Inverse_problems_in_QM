@@ -1,0 +1,16 @@
+{
+  "width_accuracy": 99.86077643908969,
+  "end_to_end_mae": 1.9726912981343556,
+  "mae_by_width": {
+    "7": 1.65530667627559,
+    "9": 2.1929173622812543
+  },
+  "coverage_90": 90.0,
+  "interval_relative_halfwidth": 0.0897042185227089,
+  "n_test": 37350,
+  "criteria_met": {
+    "width_accuracy>=99.5": true,
+    "mae<=1.98": true,
+    "coverage_90+-2": true
+  }
+}
