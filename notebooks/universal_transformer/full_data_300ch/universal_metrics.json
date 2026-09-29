@@ -1,0 +1,35 @@
+{
+  "Overall": {
+    "Type_Accuracy": 100.0,
+    "Width_Accuracy": 100.0,
+    "Conc_MAE": 1.75012883807645,
+    "Conc_RMSE": 2.623735324465028,
+    "Conc_Max_Error": 20.685089111328125,
+    "Test_Samples": 151500
+  },
+  "7-AGNR": {
+    "MAE": 1.300282580020381,
+    "RMSE": 1.8817077723686817,
+    "Max_Error": 11.419364929199219,
+    "Width_Accuracy": 100.0,
+    "Type_Accuracy": 100.0
+  },
+  "9-AGNR": {
+    "MAE": 1.7381357356739693,
+    "RMSE": 2.5659487213597902,
+    "Max_Error": 15.2933349609375,
+    "Width_Accuracy": 100.0,
+    "Type_Accuracy": 100.0
+  },
+  "Square-10": {
+    "MAE": 2.6324863265002216,
+    "RMSE": 3.7436918970857938,
+    "Max_Error": 20.685089111328125,
+    "Width_Accuracy": 100.0,
+    "Type_Accuracy": 100.0
+  },
+  "Training_Time_Sec": 30302.0,
+  "Epochs_Run": 30,
+  "Best_Val_Conc_MAE": 1.7439196109771729,
+  "Split": "config-seed 70/15/15"
+}

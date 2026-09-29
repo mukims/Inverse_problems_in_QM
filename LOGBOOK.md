@@ -107,6 +107,31 @@ Artifacts written:
 
 ---
 
+### E. Universal Multi-Task Transformer on Seed-Split 300-Channel Data (BUILD-14)
+Full 300-channel universal transformer trained across all three geometries (7-AGNR, 9-AGNR, Square-10) with joint classification of material type, ribbon width, and concentration regression:
+- **Architecture**: 3-layer transformer encoder (`d_model=128`, `nhead=4`, `dim_feedforward=512`) with multi-task prediction heads.
+- **Input Channels**: 300 energy channels ($E \in [0, 3.0t)$) with label-free Bug #6 rounding guard.
+- **Split**: Configuration-seed 70% train / 15% validation / 15% test (held-out seeds across all concentrations; total $n_{\text{test}} = 151,500$ samples).
+- **Training**: 30 epochs (30,302 s wall time, ~8.4 hours).
+
+| Metric | Overall | 7-AGNR | 9-AGNR | Square-10 | Status |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| **Material Type Accuracy** | **100.0%** | 100.0% | 100.0% | 100.0% | PASS |
+| **Ribbon Width Accuracy** | **100.0%** | 100.0% | 100.0% | 100.0% | PASS |
+| **Concentration MAE** | **1.750** | **1.300** | **1.738** | **2.632** | PASS |
+| **Concentration RMSE** | **2.624** | **1.882** | **2.566** | **3.744** | Baseline |
+| **Concentration Max Error** | **20.69** | 11.42 | 15.29 | 20.69 | Baseline |
+| **Test Set Size ($n_{\text{test}}$)** | **151,500** | 51,000 | 73,500 | 27,000 | PASS |
+
+Artifacts written:
+- `notebooks/universal_transformer/full_data_300ch/universal_metrics.json`
+- `notebooks/universal_transformer/full_data_300ch/universal_transformer.pt`
+- `notebooks/universal_transformer/full_data_300ch/universal_training_curves.png`
+- `notebooks/universal_transformer/full_data_300ch/universal_scatter.png`
+- `notebooks/universal_transformer/full_data_300ch/universal_confusion.png`
+
+---
+
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
 
 ### Bug #1: Hardcoded Lead Paths in Generation Scripts
