@@ -21,9 +21,11 @@ def seeds_for_width(width):
     return 1000 if width <= 14 else (300 if width <= 27 else 100)
 
 
-def _init(H0, H1, energies, n_cells, spc, n_imp, v, formula):
+def _init(H0, H1, energies, n_cells, spc, n_imp, v, formula, leads=None):
+    if leads is None:
+        leads = LeadCache(H0, H1, energies)
     _W.update(H0=H0, H1=H1, E=energies, n_cells=n_cells, spc=spc, n_imp=n_imp, v=v, formula=formula,
-              leads=LeadCache(H0, H1, energies))
+              leads=leads)
 
 
 def _one(seed):
@@ -35,8 +37,10 @@ def generate(store, models, densities, spec, n_jobs=20, formula=DEFAULT_FORMULA,
     e_t, wrote = spec.energies_t(), []
     for m in models:
         h = hamiltonian_for(m)
-        if not store.densities(m.model_id):
-            with Pool(1, _init, (h.H0, h.H1, e_t, 1, h.H0.shape[0], 0, 0.0, formula)) as p:
+        leads = LeadCache(h.H0, h.H1, e_t)
+        pristine_path = store._dir(m.model_id) / "pristine.npy"
+        if not pristine_path.exists():
+            with Pool(1, _init, (h.H0, h.H1, e_t, 1, h.H0.shape[0], 0, 0.0, formula, leads)) as p:
                 store.write_pristine(m.model_id, e_t, p.map(_one, [0])[0])
         for d in densities:
             n_imp = m.impurities_for_density(d)
@@ -44,7 +48,7 @@ def generate(store, models, densities, spec, n_jobs=20, formula=DEFAULT_FORMULA,
             if store.has_cloud(m.model_id, actual):
                 continue
             sd = np.arange(seeds_for_width(m.width)) if seeds is None else np.asarray(list(seeds))
-            with Pool(n_jobs, _init, (h.H0, h.H1, e_t, m.n_cells, h.H0.shape[0], n_imp, m.impurity_v_t, formula)) as p:
+            with Pool(n_jobs, _init, (h.H0, h.H1, e_t, m.n_cells, h.H0.shape[0], n_imp, m.impurity_v_t, formula, leads)) as p:
                 spectra = np.array(p.map(_one, sd, chunksize=4))
             store.write_cloud(m.model_id, actual, n_imp, spectra, sd, e_t)
             wrote.append((m.model_id, actual))
