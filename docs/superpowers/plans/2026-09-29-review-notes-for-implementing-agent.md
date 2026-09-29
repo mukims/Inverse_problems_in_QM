@@ -144,3 +144,56 @@ for N in (7, 8):
     ch = open_channels(h.H0, h.H1, E[idx])
     print(N, 'max|P-ch| over sampled E:', np.max(np.abs(P[idx]-ch)))"
 ```
+
+---
+
+## Update 2026-09-29 22:00: B4 (blocking, urgent — generation is running now) `agnr_lib` disorder transmission is unphysical for even-width AGNR
+
+**The cloud generator is running right now** (PID 2422715, started ~20:23, currently on N8) and has already written clouds for N6 (all 4 densities), N7 (all 4 densities), N8 (2 of 4 densities). N6 and N8 are corrupt; N7 is fine. This is a different bug from B3 (which was the generic `legacy_trace` on honeycomb): B1's fix — `agnr_lib.device_transmission(..., nonlocal_mode="IL", d=1e-5)` — is itself wrong for **even ribbon width**, and B1's regression test only checks `size_7.npy` and `size_9.npy` (both odd), so it can't catch this.
+
+**Evidence — single impurity, seed 0, first 60 channels (E = 0–0.59 t), `T(E) − pristine(E)`, should be ≤ 0 (disorder can only scatter, not enhance transmission beyond the clean value at this broadening):**
+
+| m | 3p+2? | n_imp=1 | n_imp=3 | n_imp=6 |
+|---|---|---|---|---|
+| 5 | odd | −0.015 | −0.004 | — |
+| 6 | even | **+2.03** at E=0.56 | +1.98 | +2.02 |
+| 7 | odd, validated | 0.000 | 0.000 | 0.000 |
+| 8 | even | **+2.01** at E=0.54 | **+21.3** at E=0.24 | +21.3 |
+| 9 | odd, validated | 0.000 | 0.000 | — |
+| 10 | even | **+0.96** | **+11.7** | — |
+
+Odd widths (5, 7, 9) stay at or below the clean value everywhere, as they should and as the validated `size_7`/`size_9` data does. Every even width tested (6, 8, 10) jumps 1–21 above the clean value from a single impurity, and gets worse with more impurities. This shows up in the stored clouds too:
+
+| Model | density | max(median − pristine) | fraction of samples > pristine + 0.5 |
+|---|---|---|---|
+| N6 | 0.005 | 2.72 | 4.6% |
+| N6 | 0.04 | 7.64 | 9.3% |
+| N7 (reference) | 0.005–0.04 | ≤ 0.004 | 0.2–1.2% |
+| N8 | 0.005 | 54.0 | 6.2% |
+| N8 | 0.01 | 30.3 | 8.7% |
+
+N7's own cloud is fine — it matches the `size_7`/`size_9` calibration in the B3 update almost exactly — so this is not a generic problem with the generation pipeline; it is specific to even `m` inside `agnr_lib.unitcell` / `unidevice` / `chosen_for_config`. The likely site: `unitcell`'s anti-diagonal coupling loop `idx = np.arange(0, m, 2); base[idx, 2*m-1-idx] = t; base[2*m-1-idx, idx] = t` (agnr_lib.py:47-56) indexes a different bond pattern depending on whether `m` is odd or even, and/or `unidevice`'s impurity-site mapping (`imps[:, 1]` indexing into the `2m`-site cell) may not line up the same way for even `m`. I have not root-caused it further; this needs someone who can check the intended AGNR unit-cell geometry, not just observe the symptom.
+
+Do, in order:
+1. **Stop the current `generate_clouds.py` run** (PID 2422715 at last check) before it writes more even-width clouds. Everything after N8 in the model list (N9 is odd, fine; N10, 12, 14, 16 are even) will be corrupt if generation continues unfixed.
+2. Quarantine `N6/cloud_*` and `N8/cloud_d0.0050`, `N8/cloud_d0.0100` (whatever exists when generation stops) the same way as the B3 quarantine, and clear their `meta.json` entries.
+3. Find and fix the even-`m` bug in `agnr_lib.unitcell`/`unidevice` (or in how `generate_clouds.py`/`fingerprints.py` calls it — check whether `m` there truly means the same "N sites across the ribbon" for both parities as it does in `chosen_for_config`'s `2*width` site count). Do not touch `agnr_lib.py` without first confirming with the human — it is shared, validated code (the B1 recipe depends on it staying byte-for-byte the formula that reproduces `size_7`/`size_9`); a fix must keep the odd-width match intact.
+4. Extend the B1.2 regression test with an even-width check. There is no consolidated ground-truth file for any even AGNR width (only `size_7.npy`, `size_9.npy` exist), so use a physical invariant instead: for every stored cloud, `median(cloud, axis=0) <= pristine + tol` (tol ~0.05, matching what real disordered data actually does) and this must hold before any even-width cloud is trusted. This is the same guard proposed for B3; extending it to run automatically in `write_cloud` (not just as an offline check) would have caught both bugs before they reached the store.
+
+**Evidence command** (read-only):
+```bash
+cd notebooks/agnr/physics
+OMP_NUM_THREADS=2 ~/miniconda3/envs/ml/bin/python -c "
+import numpy as np, agnr_lib as A
+for m in (7, 8):
+    L = A.load_leads(m)
+    pris = A.spectrum(m, L, config=0, concentration=0, nonlocal_mode='IL', d=1e-5)
+    t = np.array([A.device_transmission(w,1e-5,1.0,0.0,m,0,1,L,nonlocal_mode='IL') for w in A.energy_grid()[:60]])
+    print(m, 'max(T - pristine) with 1 impurity:', np.max(t - pris[:60]))"
+```
+
+---
+
+## Update 2026-09-29 22:02: B4 still active — generator has not been stopped
+
+`generate_clouds.py` (PID 2422715) is still running 40 minutes after the B4 finding above. Since the 22:00 check it wrote a third N8 density (`cloud_d0.0200.npy`); N6 (all 4 densities) and N8 (3 of 4) remain corrupt by the same test. N9 (odd, should be fine) has not started yet. No commit or `.agents` note references B4 yet — the fix has not been picked up.

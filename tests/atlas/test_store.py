@@ -49,9 +49,9 @@ def test_duplicate_seeds_refused(tmp_path, rng):
 def test_spike_fraction(tmp_path):
     s = CloudStore(tmp_path)
     s.write_pristine(MID, E, np.ones(10))
-    c = np.ones((2, 10)) * 0.5; c[0, :3] = 5.0          # 3 of 20 points above pristine
-    s.write_cloud(MID, 0.01, 14, c, np.arange(2), E)
-    assert s.spike_fraction(MID, 0.01) == pytest.approx(3 / 20)
+    c = np.ones((3, 10)) * 0.5; c[0, :3] = 5.0          # 3 of 30 points above pristine, median is 0.5
+    s.write_cloud(MID, 0.01, 14, c, np.arange(3), E)
+    assert s.spike_fraction(MID, 0.01) == pytest.approx(3 / 30)
 
 
 def test_formula_mismatch_refused(tmp_path, rng):
@@ -59,4 +59,12 @@ def test_formula_mismatch_refused(tmp_path, rng):
     s.write_pristine(MID, E, np.ones(10), formula="agnr_lib")
     with pytest.raises(ValueError, match="formula"):
         s.write_cloud(MID, 0.01, 14, rng.random((2, 10)), np.arange(2), E, formula="caroli")
+
+
+def test_unphysical_excess_cloud_refused(tmp_path):
+    s = CloudStore(tmp_path)
+    s.write_pristine(MID, E, np.ones(10))
+    bad = np.ones((3, 10)) * 1.5
+    with pytest.raises(ValueError, match="unphysical"):
+        s.write_cloud(MID, 0.01, 14, bad, np.arange(3), E)
 

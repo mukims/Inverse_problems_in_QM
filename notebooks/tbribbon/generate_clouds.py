@@ -63,6 +63,12 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
                 f"No validated trace formula for ZGNR ({m.model_id}). "
                 "See docs/superpowers/plans/2026-09-29-review-notes-for-implementing-agent.md"
             )
+        if is_agnr and m.width % 2 == 0:
+            raise NotImplementedError(
+                f"Even-width AGNR ({m.model_id}) has unphysical disorder transmission in agnr_lib (Bug B4). "
+                "Halted pending human confirmation of agnr_lib geometry fix. "
+                "See docs/superpowers/plans/2026-09-29-review-notes-for-implementing-agent.md"
+            )
 
         if is_agnr:
             model_formula = "agnr_lib_IL_1e-5"

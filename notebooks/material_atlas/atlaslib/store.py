@@ -54,7 +54,7 @@ class CloudStore:
         d = self._dir(model_id)
         return np.load(d / "energies_t.npy"), np.load(d / "pristine.npy")
 
-    def write_cloud(self, model_id, density, n_impurities, spectra, seeds, energies_t, formula=None):
+    def write_cloud(self, model_id, density, n_impurities, spectra, seeds, energies_t, formula=None, max_excess_tol=0.05):
         spectra = np.asarray(spectra, dtype=np.float64)
         seeds = np.asarray(seeds, dtype=np.int64)
         energies_t = np.asarray(energies_t, dtype=np.float64)
@@ -67,6 +67,16 @@ class CloudStore:
         if np.unique(seeds).size != seeds.size:
             raise ValueError("duplicate seed in cloud")
         self._check_energies(model_id, energies_t)
+        pristine_file = self._dir(model_id) / "pristine.npy"
+        if max_excess_tol is not None and pristine_file.exists():
+            pris = np.load(pristine_file)
+            med = np.median(spectra, axis=0)
+            max_excess = float(np.max(med - pris))
+            if max_excess > max_excess_tol:
+                raise ValueError(
+                    f"unphysical cloud for {model_id} (density {density}): median exceeds pristine by {max_excess:.4f} (tol={max_excess_tol}). "
+                    "Disorder cannot systematically enhance transmission above clean conductance."
+                )
         new = {hashlib.md5(r.tobytes()).hexdigest() for r in spectra}
         for other in self.densities(model_id):
             if abs(other - density) < 1e-12:

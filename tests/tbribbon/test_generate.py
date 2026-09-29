@@ -49,3 +49,35 @@ def test_agnr_lib_reproduces_stored_rows():
         rel_err = np.max(np.abs(np.array(got) - ref) / np.abs(ref))
         assert rel_err < 1e-5, f"size_{m} c={c_val} seed={s} rel_err={rel_err}"
 
+
+def test_agnr_disorder_physical_invariant_on_odd_widths():
+    """Verify physical invariant on validated widths: median(cloud) <= pristine + tol (0.05)."""
+    from pathlib import Path
+    import sys
+    REPO = Path(__file__).resolve().parents[2]
+    sys.path.insert(0, str(REPO / "notebooks" / "agnr" / "physics"))
+    import agnr_lib as A
+    import numpy as np
+
+    for m in (5, 7):
+        L = A.load_leads(m)
+        pris = A.spectrum(m, L, config=0, concentration=0, nonlocal_mode="IL", d=1e-5)
+        clouds = [
+            [A.device_transmission(w, 1e-5, 1.0, 0.0, m, s, 2, L, nonlocal_mode="IL") for w in A.energy_grid()[:60]]
+            for s in range(5)
+        ]
+        med = np.median(clouds, axis=0)
+        assert np.max(med - pris[:60]) <= 0.05
+
+
+def test_even_width_agnr_cloud_generation_halted(tmp_path):
+    import pytest
+    from tbribbon.materials import make_model
+    store = CloudStore(tmp_path)
+    spec = InputSpec()
+    m6 = make_model("graphene-ideal", "armchair", 6)
+    with pytest.raises(NotImplementedError, match="Even-width AGNR"):
+        generate(store, [m6], [0.01], spec)
+
+
+

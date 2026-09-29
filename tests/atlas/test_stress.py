@@ -217,9 +217,9 @@ def test_store_spike_fraction_extremes(tmp_path):
     s.write_cloud(mid, 0.01, 14, c_below, np.arange(4), e_t)
     assert s.spike_fraction(mid, 0.01) == 0.0
 
-    # Cloud completely above pristine: spike fraction 1.0
+    # Cloud completely above pristine: spike fraction 1.0 (bypass physical guard for test)
     c_above = np.ones((4, 10)) * 2.5
-    s.write_cloud(mid, 0.02, 28, c_above, np.arange(4), e_t)
+    s.write_cloud(mid, 0.02, 28, c_above, np.arange(4), e_t, max_excess_tol=None)
     assert s.spike_fraction(mid, 0.02) == 1.0
 
     # Cloud within 1e-6 numerical tolerance above pristine: should NOT count as spike
