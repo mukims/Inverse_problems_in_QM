@@ -88,7 +88,7 @@ AGNR leads are precomputed for widths 5–31. Impurities are on-site shifts of $
 
 ### Formalism
 1. **Lead Surface Green's Function ($g_L, g_R$)**: Computed by Sancho–Rubio decimation or by iterating the Dyson equation until convergence:
-   $$G^{(n+1)} = \left(I - g \cdot V \cdot G^{(n)} \cdot V^\dagger\right)^{-1} g$$
+   $$G^{(n+1)} = \left(I - g \cdot \tau \cdot G^{(n)} \cdot \tau^\dagger\right)^{-1} g$$
 2. **Device Green's Function**: Built by recursively attaching 100 unit-cell slices (with random on-site defects of strength $V = 0.5$) to the left lead, then connecting the right lead.
 3. **Transmission**: the code evaluates the trace formula
    $$T(E) = \left|\text{Tr}\left[\tilde G_{LL}\,\tau\,\tilde G_{RR}\,\tau - \tau\,\tilde G^{\text{nl}}\,\tau\,\tilde G^{\text{nl}}\right]\right|, \qquad \tilde G = G - G^\dagger$$
