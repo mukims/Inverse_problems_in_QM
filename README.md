@@ -251,7 +251,7 @@ See [**`README_COMBINED.md`**](README_COMBINED.md) for full dataset specificatio
 ## Repository Structure
 
 ```
-transmissions/
+Inverse_problems_in_QM/
 ├── README.md                      # Primary repository documentation
 ├── LOGBOOK.md                     # Build registry, benchmarks and bug history (source of truth)
 ├── README_COMBINED.md             # Dataset catalog and NumPy/Pandas loading guide
@@ -350,8 +350,8 @@ transmissions/
 ### 1. Prerequisites & Environment Setup
 ```bash
 # Clone the repository
-git clone https://github.com/mukims/transmissions.git
-cd transmissions
+git clone https://github.com/mukims/Inverse_problems_in_QM.git
+cd Inverse_problems_in_QM
 
 # Install core dependencies
 pip install torch numpy scipy pandas matplotlib tqdm xgboost lightgbm scikit-learn
