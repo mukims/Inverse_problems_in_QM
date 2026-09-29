@@ -40,13 +40,16 @@ def parse_args():
     parser.add_argument("--lr", type=float, default=5e-4, help="Peak learning rate")
     parser.add_argument("--warmup-epochs", type=int, default=3, help="Warmup epochs")
     parser.add_argument("--weight-decay", type=float, default=1e-4, help="Weight decay")
+    parser.add_argument("--spectrum-len", type=int, default=150,
+                        help="Energy channels from E = 0 at 0.01 eV steps (150 = 0-1.5 eV, 300 = 0-3 eV; must be a multiple of 10)")
     parser.add_argument("--samples-per-conc", type=int, default=3000, help="Config seeds per concentration per system")
     parser.add_argument("--threads", type=int, default=16, help="Torch CPU threads")
     parser.add_argument("--out-dir", type=str, default=str(SCRIPT_DIR), help="where checkpoint, metrics and plots are written")
     parser.add_argument("--cache-path", type=str, default=None, help="default: universal_cache_seed_<samples-per-conc>.pt")
     args = parser.parse_args()
     if args.cache_path is None:
-        args.cache_path = str(SCRIPT_DIR / f"universal_cache_seed_{args.samples_per_conc}.pt")
+        suffix = "" if args.spectrum_len == 150 else f"_{args.spectrum_len}ch"
+        args.cache_path = str(SCRIPT_DIR / f"universal_cache_seed_{args.samples_per_conc}{suffix}.pt")
     return args
 
 
@@ -73,7 +76,7 @@ def main():
     train_data, val_data, test_data, scaler, meta = ud.load_universal_data(
         repo_root=repo_root,
         samples_per_conc=args.samples_per_conc,
-        spectrum_len=150,
+        spectrum_len=args.spectrum_len,
         seed=42,
         cache_path=args.cache_path,
         num_workers=args.threads,
@@ -96,7 +99,7 @@ def main():
 
     # 2. Build Model
     model = UniversalPatchedTransformer(
-        seq_len=150,
+        seq_len=args.spectrum_len,
         patch_size=10,
         stem_channels=32,
         embed_dim=128,
