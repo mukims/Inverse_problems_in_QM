@@ -1,0 +1,20 @@
+{
+  "display_name": "Patched Transformer v2",
+  "metrics": {
+    "Width_Acc_Overall": 100.0,
+    "Width_Acc_7": 100.0,
+    "Width_Acc_9": 100.0,
+    "Conc_MAE_Overall": 2.2672803191423734,
+    "Conc_RMSE_Overall": 3.2742904511537763,
+    "Conc_Max_Error": 19.32866668701172,
+    "Conc_MAE_7": 1.8708460850185817,
+    "Conc_RMSE_7": 2.6361516906026967,
+    "Conc_MAE_9": 2.542357134656841,
+    "Conc_RMSE_9": 3.652131375292507,
+    "train_time_sec": 7810.6,
+    "best_val_mae": 2.234
+  },
+  "written": "2026-09-29T02:55:40",
+  "snap_grid": false,
+  "width_condition": true
+}

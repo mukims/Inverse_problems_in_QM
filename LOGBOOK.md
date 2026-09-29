@@ -15,7 +15,9 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-05** | 2026-08-17 | 7-AGNR | MLP + Transformer | `size_7.npy` (170k samples) | `xgb.ipynb` pipeline (150 channels, clip [0, 1]) | N/A | 1.84 (MLP) | 2.51 (MLP) | Consolidated 34 concentrations ($c \le 68$). |
 | **BUILD-06** | 2026-08-17 | **7-AGNR & 9-AGNR** | **Multi-Task 4-Way Pipeline** | `size_7.npy` + `size_9.npy` (249k samples) | Base pristine files (`7_agnr_pris.npy`, `9_agnr_pris.npy`), 150 channels, clip [0, 1] | **100.00%** | **1.390 (TF)<br>1.982 (XGB)<br>2.018 (MLP)** | **1.977 (TF)<br>2.804 (XGB)<br>2.680 (MLP)** | **Completed**: Multi-width pipeline with Width-Conditioned Patched Transformer v2 achieving state-of-the-art accuracy. |
 | **BUILD-07** | 2026-08-20 | 7-AGNR & 9-AGNR | Bayesian Optimization Sweep | `manifest_agnr.csv` / consolidated sets | Physical Curvature Misfit + Loss weighting sweep | **100.00%** | **1.563 (BO-PINN)** | **2.196 (BO-PINN)** | **Completed**: Optuna Bayesian hyperparameter search (misfit weight $\lambda = 0.00286$, lr = $1.98\times 10^{-4}$, dropout = 0.07). |
-| **BUILD-08** | 2026-08-25 | 7-AGNR & 9-AGNR | Spectral Sequence Continuation (Time Series NN) | Combined `size_7.npy` & `size_9.npy` (580,000 samples) | Sequence mapping: 150 low-energy channels ($E \le 1.50\,\text{eV}$) $\to$ 20 high-energy channels ($E \in [1.50, 1.70]\,\text{eV}$) normalized to $[0, 1]$ | N/A | **Val MSE: 0.0222** | **Val RMSE: 0.149** | **Active**: MultiOutput LightGBM baseline & 4-layer PyTorch MLP (`mulit_prediction`) with ReduceLROnPlateau, MPS acceleration. |
+| **BUILD-08** | 2026-08-25 | 7-AGNR & 9-AGNR | Spectral Sequence Continuation (Time Series NN) | Combined `size_7.npy` & `size_9.npy` (580,000 samples) | Sequence mapping: 150 low-energy channels ($E \le 1.50\,\text{eV}$) $\to$ 20 high-energy channels ($E \in [1.50, 1.70]\,\text{eV}$) normalized to $[0, 1]$ | N/A | **Val MSE: 0.0222** | **Val RMSE: 0.149** | **Completed**: comparable baselines (`build08_baselines.py`, normalised inputs, seed split): LightGBM MSE 0.0213, MLP 0.0218, persistence 0.0477. The notebook's LightGBM 0.1073 was a raw-scale MAE mislabelled as RMSE. |
+| **BUILD-09** | 2026-09-29 | 7-AGNR & 9-AGNR | Seed-split re-evaluation of the BUILD-06 4-way pipeline | `size_7.npy` + `size_9.npy` (249k samples) | As BUILD-06 + 3-decimal rounding (Bug #6); **config-seed split** 70/15/15 (Bug #7) | **100.00%** | **2.267 (TF)**<br>2.394 (XGB)<br>2.442 (Misfit)<br>2.884 (MLP) | **3.274 (TF)**<br>3.432 (XGB)<br>3.834 (Misfit)<br>3.673 (MLP) | **Completed**: leak-free BUILD-06. Learned models lose 21–63% vs the random split; the no-learning misfit baseline is unchanged. Results in `multi_width/seed_split/`. |
+| **BUILD-10** | 2026-09-29 | 7-AGNR, 9-AGNR & **Square-10** | Universal multi-task transformer, trained to convergence | 3,000 config seeds per conc per system (303k samples); clean `ca_sq.py` square data, c = 5..90 | Rounded + pristine-normalised; config-seed split 70/15/15 | **100.00%** (type & width) | **1.855 (7) / 2.551 (9) / 3.126 (Sq)** | 2.604 / 3.655 / 4.392 | **Completed**: converged at epoch 29 (45 min, plateau LR + early stopping). Square MAE 14.5 → 3.13 after replacing the corrupt data. |
 
 ---
 
@@ -32,6 +34,17 @@ Evaluated on **37,350 held-out test configurations** across all 83 concentration
 | **XGBoost (Hist Gradient Boosting)** | **100.00%** | 1.982 | 1.756 | 2.138 | 2.804 | 18.50 | 34.3s train |
 | **ConductanceMLP (Multi-Task PINN)** | **100.00%** | 2.018 | 1.882 | 2.112 | 2.680 | 17.22 | 902.5s train |
 | **Patched Transformer v2 (Width-Conditioned)** | **100.00%** | **1.390** | **1.319** | **1.440** | **1.977** | **16.09** | 8003.9s train |
+
+**Seed-split re-evaluation (BUILD-09)** — same 37,350 test spectra count, but whole configuration seeds held out (Bug #7), same training settings as BUILD-06 (transformer 80-epoch cosine, MLP 120-epoch plateau):
+
+| Model / Method | Random split MAE (BUILD-06) | **Seed split MAE** | 7-AGNR | 9-AGNR | RMSE | Change |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Patched Transformer v2** | 1.390 | **2.267** | 1.871 | 2.542 | 3.274 | +63% |
+| **XGBoost** | 1.982 | 2.394 | 2.016 | 2.656 | 3.432 | +21% |
+| **Physical Misfit Baseline** | 2.445 | 2.442 | 1.985 | 2.760 | 3.834 | none (no per-sample learning) |
+| **ConductanceMLP** | 2.018 | 2.884 | 2.454 | 3.182 | 3.673 | +43% |
+
+The random-split numbers above this table are inflated by near-twin leakage. Once it is removed, the transformer still ranks first, but by 0.13 over XGBoost rather than 0.59, and the MLP falls behind the no-learning physics baseline.
 
 ---
 
