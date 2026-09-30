@@ -1,0 +1,1165 @@
+{
+  "per_model": {
+    "graphene-ideal/armchair/N5": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/armchair/N6": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 85.71,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 71.43,
+        "median_width_continuous_diff": 0.1948,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 71.43,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 85.71,
+        "median_width_continuous_diff": 0.3218,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/armchair/N7": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 85.71,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 85.71,
+        "median_width_continuous_diff": 0.1171,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 85.71,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 85.71,
+        "median_width_continuous_diff": 0.113,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/armchair/N8": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 71.43,
+        "median_width_continuous_diff": 0.2114,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 85.71,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 57.14,
+        "median_width_continuous_diff": 0.3946,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 71.43,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 57.14,
+        "median_width_continuous_diff": 0.3903,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/armchair/N9": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 85.71,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 71.43,
+        "median_width_continuous_diff": 0.1085,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/armchair/N10": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 85.71,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 85.71,
+        "median_width_continuous_diff": 0.066,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 57.14,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 28.57,
+        "median_width_continuous_diff": 1.2537,
+        "share_flagged_unknown": 14.29,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/armchair/N11": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 85.71,
+        "median_width_continuous_diff": 0.3668,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 85.71,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 42.86,
+        "median_width_continuous_diff": 0.5962,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/armchair/N12": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 14.29,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/armchair/N13": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 42.86,
+        "median_width_continuous_diff": 0.5654,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/armchair/N14": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 85.71,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 71.43,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 71.43,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 14.29,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/armchair/N15": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 85.71,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/armchair/N16": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 71.43,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 85.71,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/zigzag/N4": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/zigzag/N5": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/zigzag/N6": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/zigzag/N7": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/zigzag/N8": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/zigzag/N9": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/zigzag/N10": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/zigzag/N11": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    },
+    "graphene-ideal/zigzag/N12": {
+      "0.0050": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.005,
+        "true_density": 0.005,
+        "n_test_samples": 7
+      },
+      "0.0100": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.01,
+        "true_density": 0.01,
+        "n_test_samples": 7
+      },
+      "0.0200": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.02,
+        "true_density": 0.02,
+        "n_test_samples": 7
+      },
+      "0.0400": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "median_width_diff": 0.0,
+        "width_continuous_accuracy": 100.0,
+        "median_width_continuous_diff": 0.0,
+        "share_flagged_unknown": 0.0,
+        "median_predicted_density": 0.04,
+        "true_density": 0.04,
+        "n_test_samples": 7
+      }
+    }
+  },
+  "pooled": {
+    "armchair_d0.0050": {
+      "edge_type": "armchair",
+      "density": 0.005,
+      "n_test_samples": 84,
+      "material_accuracy": 100.0,
+      "edge_accuracy": 100.0,
+      "width_accuracy": 100.0,
+      "share_flagged_unknown": 0.0
+    },
+    "armchair_d0.0100": {
+      "edge_type": "armchair",
+      "density": 0.01,
+      "n_test_samples": 84,
+      "material_accuracy": 100.0,
+      "edge_accuracy": 100.0,
+      "width_accuracy": 100.0,
+      "share_flagged_unknown": 0.0
+    },
+    "armchair_d0.0200": {
+      "edge_type": "armchair",
+      "density": 0.02,
+      "n_test_samples": 84,
+      "material_accuracy": 100.0,
+      "edge_accuracy": 100.0,
+      "width_accuracy": 97.62,
+      "share_flagged_unknown": 0.0
+    },
+    "armchair_d0.0400": {
+      "edge_type": "armchair",
+      "density": 0.04,
+      "n_test_samples": 84,
+      "material_accuracy": 100.0,
+      "edge_accuracy": 100.0,
+      "width_accuracy": 85.71,
+      "share_flagged_unknown": 3.57
+    },
+    "zigzag_d0.0050": {
+      "edge_type": "zigzag",
+      "density": 0.005,
+      "n_test_samples": 63,
+      "material_accuracy": 100.0,
+      "edge_accuracy": 100.0,
+      "width_accuracy": 100.0,
+      "share_flagged_unknown": 0.0
+    },
+    "zigzag_d0.0100": {
+      "edge_type": "zigzag",
+      "density": 0.01,
+      "n_test_samples": 63,
+      "material_accuracy": 100.0,
+      "edge_accuracy": 100.0,
+      "width_accuracy": 100.0,
+      "share_flagged_unknown": 0.0
+    },
+    "zigzag_d0.0200": {
+      "edge_type": "zigzag",
+      "density": 0.02,
+      "n_test_samples": 63,
+      "material_accuracy": 100.0,
+      "edge_accuracy": 100.0,
+      "width_accuracy": 100.0,
+      "share_flagged_unknown": 0.0
+    },
+    "zigzag_d0.0400": {
+      "edge_type": "zigzag",
+      "density": 0.04,
+      "n_test_samples": 63,
+      "material_accuracy": 100.0,
+      "edge_accuracy": 100.0,
+      "width_accuracy": 100.0,
+      "share_flagged_unknown": 0.0
+    },
+    "all_d0.0050": {
+      "edge_type": "all",
+      "density": 0.005,
+      "n_test_samples": 147,
+      "material_accuracy": 100.0,
+      "edge_accuracy": 100.0,
+      "width_accuracy": 100.0,
+      "share_flagged_unknown": 0.0
+    },
+    "all_d0.0100": {
+      "edge_type": "all",
+      "density": 0.01,
+      "n_test_samples": 147,
+      "material_accuracy": 100.0,
+      "edge_accuracy": 100.0,
+      "width_accuracy": 100.0,
+      "share_flagged_unknown": 0.0
+    },
+    "all_d0.0200": {
+      "edge_type": "all",
+      "density": 0.02,
+      "n_test_samples": 147,
+      "material_accuracy": 100.0,
+      "edge_accuracy": 100.0,
+      "width_accuracy": 98.64,
+      "share_flagged_unknown": 0.0
+    },
+    "all_d0.0400": {
+      "edge_type": "all",
+      "density": 0.04,
+      "n_test_samples": 147,
+      "material_accuracy": 100.0,
+      "edge_accuracy": 100.0,
+      "width_accuracy": 91.84,
+      "share_flagged_unknown": 2.04
+    }
+  },
+  "revised_gate5_pass_per_line": false
+}

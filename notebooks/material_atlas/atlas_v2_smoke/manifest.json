@@ -31,6 +31,28 @@
     {
       "material": "graphene-ideal",
       "edge": "armchair",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 24,
+      "band_top_t": 2.942,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "source": "idealised nearest-neighbour"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 26,
+      "band_top_t": 2.95,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "source": "idealised nearest-neighbour"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
       "width": 14,
       "t_ev": 1.0,
       "sites_per_cell": 28,
@@ -90,6 +112,17 @@
       "t_ev": 1.0,
       "sites_per_cell": 14,
       "band_top_t": 2.848,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "source": "idealised nearest-neighbour"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 16,
+      "band_top_t": 2.879,
       "n_cells": 100,
       "impurity_v_t": 0.5,
       "source": "idealised nearest-neighbour"
@@ -185,6 +218,17 @@
     {
       "material": "graphene-ideal",
       "edge": "zigzag",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 16,
+      "band_top_t": 2.956,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "source": "idealised nearest-neighbour"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
       "width": 9,
       "t_ev": 1.0,
       "sites_per_cell": 18,
@@ -194,7 +238,7 @@
       "source": "idealised nearest-neighbour"
     }
   ],
-  "threshold": 0.015435393899679184,
+  "threshold": 0.017354024574160576,
   "k": 15,
   "created": "2026-09-30"
 }

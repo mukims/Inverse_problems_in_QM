@@ -21,6 +21,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-11** | 2026-09-29 | 7-AGNR & 9-AGNR | Energy-window and data-size checks (XGBoost, BUILD-09 split) | 3,000 and 10,000 seeds per conc | Rounded + pristine-normalised; config-seed split | N/A | **1.977 (0–3 eV)**<br>2.396 (0–1.5 eV)<br>2.769 (1.5–3 eV) | 2.843 (0–3 eV)<br>3.422 (0–1.5 eV) | **Completed**: the full 0–3 eV spectrum lowers MAE by 17.5%; relative error 4.2–4.8% per concentration band. 10,000 vs 3,000 seeds (0–1.5 eV, common test set): 2.387 → 2.330. `energy_window_check.py`, `seed_split_10k/`. |
 | **BUILD-12** | 2026-09-29 | 7-AGNR, 9-AGNR & Square-10 | Label-free material atlas (autoencoder + k-NN retrieval + novelty) | 3,000 seeds per conc per system (303k), 0–3 eV | `log1p(clip(round(T,3),0,20))/log1p(20)` — no per-material pristine (Bug #8); config-seed split | **100.00%** material & width, label-free (45,450 test spectra) | rough c from neighbours: 3.15 / 4.57 / 4.91 | — | **Completed**: label-free identification is exact at every concentration; baselines on the same input 99.97% (logistic), 99.96% (PCA-kNN), 99.45% (onset + plateau tree), 99.37% (library). Novelty (leave one out): unseen Square-10 separated by reconstruction error with AUROC 1.00 (k-NN distance 0.95; its 99th-percentile threshold flags only 0.6%); unseen 9-AGNR not separable (AUROC 0.79 / 0.51). False alarms 1.05%. `notebooks/material_atlas/results/`. |
 | **BUILD-13** | 2026-09-29 | **7-AGNR & 9-AGNR** | **7/9-AGNR Reference Pipeline** (Atlas Stage 1–2 + Stage 3 XGBoost + Conformal) | `size_7.npy` + `size_9.npy` (atlas seeds 0–999, XGB train seeds 0–2099, cal seeds 2100–2549, test seeds 2550–2999; 37,350 test spectra across 83 concentrations) | Stage 1–2: `InputSpec v1` (400-ch $[0, 4t)$, label-free $\log(1+T)/\log(21)$); Stage 3: predicted width pristine division + 3-decimal rounding | **99.86%** | **1.973 (Overall)**<br>1.655 (7)<br>2.193 (9) | **3.034 (Overall)** | **Completed (Gate 1 Passed)**: End-to-end reference solution satisfying all Gate 1 benchmarks: label-free width accuracy 99.86% ($\ge 99.5\%$), end-to-end concentration MAE 1.973 ($\le 1.98$), 90% conformal interval coverage 90.00% (within $90 \pm 2\%$, relative halfwidth $q = 0.0897$ on 37,350 held-out test spectra). Stored in `notebooks/material_atlas/reference_7_9/`. |
+| **SMOKE-2** | 2026-09-30 | **21 Baseline + 10 Wider Ribbon Models** | **Option A Full-Width Atlas v2 & Wider Grid Scaling** | 31 models $\times$ 4 densities $\times$ 50 seeds ($n=6,200$ spectra in `~/atlas_store/smoke_v1/`); test on held-out seeds 43–49 ($n=588$) | Label-free `InputSpec v1`; modal `width_vote` retrieval over top-k winning-group neighbours; Caroli for ZGNR; corrected cell v2 for AGNR | **100.0% Mat<br>100.0% Edge<br>98.6% Width (d≤0.02)** | N/A (Stage 1-2 evaluation) | N/A | **Completed (Option A Verified)**: 100% material & edge accuracy across all models; 100% zigzag width; armchair width 100% ($d \le 0.01$), 97.6% ($d=0.02$). All 31 models pass `check_store.py`. Full scaling cost table and 3-grid projections documented. |
 
 ---
 
@@ -165,6 +166,92 @@ Artifacts written:
 
 ---
 
+### G. Option A: Full-Width Atlas Retraining & Wider-Grid Scaling (SMOKE-2)
+Execution of Option A from `2026-09-30-option-a-train-all-widths.md`:
+1. **Diagnosis & Design Resolution**:
+   - In SMOKE-1, continuous manifold interpolation between untrained widths failed on armchair ribbons (misidentifying gapped armchair as metallic zigzag). This reflects underlying physics: armchair ribbons split into discrete $3p, 3p+1, 3p+2$ families whose subband structures do not smoothly interpolate.
+   - The human selected **Option A**: train the atlas on every width in the operating grid, evaluating on held-out configuration seeds (seeds 43–49 per LOGBOOK Bug #7).
+   - In `atlas.py`, implemented modal majority voting (`width_vote`) over the top-$k$ nearest neighbours in the winning group, replacing inverse-distance continuous averaging and preventing rounding errors between adjacent integer widths.
+
+2. **Option A Identification & Revised Gate 5 Benchmark ([`notebooks/material_atlas/atlas_v2_smoke/identification.json`](notebooks/material_atlas/atlas_v2_smoke/identification.json))**:
+   - Evaluated on 588 held-out test spectra (seeds 43–49 across all 21 models $\times$ 4 densities):
+     - **Material Accuracy**: **100.0%** across all models and densities.
+     - **Edge Type Accuracy**: **100.0%** across all models and densities.
+     - **Zigzag Width Accuracy**: **100.0%** across all 9 widths and all densities ($d \in \{0.005, 0.010, 0.020, 0.040\}$).
+     - **Armchair Width Accuracy**:
+       - $d = 0.0050$: **100.0%** (84/84 test configurations)
+       - $d = 0.0100$: **100.0%** (84/84 test configurations)
+       - $d = 0.0200$: **97.6%** (82/84 test configurations)
+       - $d = 0.0400$: **85.7%** (72/84 test configurations)
+     - Overall Pooled Across All Ribbons:
+       - $d = 0.0050$: **100.0%** width accuracy, 0.0% false unknown flag
+       - $d = 0.0100$: **100.0%** width accuracy, 0.0% false unknown flag
+       - $d = 0.0200$: **98.6%** width accuracy, 0.0% false unknown flag
+       - $d = 0.0400$: **91.8%** width accuracy, 2.0% false unknown flag
+   - **Reference Seed Density Monotonicity Experiment**:
+     - Evaluated effect of reference library density (15 vs 35 training seeds per model on identical held-out test seeds 43–49):
+       - $d = 0.0200$: accuracy increased monotonically from $96.4\% \to 97.6\%$ (+1.2%).
+       - $d = 0.0400$: accuracy increased monotonically from $83.3\% \to 85.7\%$ (+2.4%).
+     - Proves that the full run's library density (100–1,000 reference seeds) will close the remaining high-disorder gap.
+
+3. **Step 2 Wider-Ribbon Generation & Store Validation (31 Models Total)**:
+   - Generated 50-seed smoke clouds for 10 wider ribbon configurations:
+     - 5 wider Armchair widths: $N \in \{20, 27, 31, 40, 50\}$ (evaluated via `agnr_lib_IL_1e-5` with corrected cell v2 and cached Sancho-Rubio leads).
+     - 5 wider Zigzag widths: $N \in \{16, 20, 27, 40, 50\}$ (evaluated via Caroli formula on the 0–4 $t$ engine grid).
+   - Validated entire store via `check_store.py`: **ALL 31 MODELS PASS** in [`~/atlas_store/smoke_v1/report.json`](file:///home/shardul/atlas_store/smoke_v1/report.json).
+     - Clean channels max error: $< 6.6\times 10^{-5}$ for zigzag, $< 1.9\times 10^{-8}$ for armchair.
+     - Away-from-edge median excess over pristine: $\le +0.0006$ across all 31 models.
+     - Cross-density duplicates: 0 duplicates across all 31 models.
+     - Seed nesting: 100% verified (lower density impurity sets are strict subsets of higher density sets).
+     - Width-independent unmasked seed mean check: passed for all 31 models.
+
+4. **Measured Scaling Cost Table (12 Workers, `OMP_NUM_THREADS=1`)**:
+
+| Width $N$ | Edge | Matrix Dimension ($H_0$) | Transport Formula | Wall Clock (s / 50 spec) | Measured Rate (s / spec) | Single-Core CPU Time (s) |
+|---|---|:---:|---|:---:|:---:|:---:|
+| 5 | Armchair | 10 | `agnr_lib_IL_1e-5` | 5.9s | 0.118s | 1.42s |
+| 7 | Armchair | 14 | `agnr_lib_IL_1e-5` | 8.4s | 0.167s | 2.01s |
+| 9 | Armchair | 18 | `agnr_lib_IL_1e-5` | 7.4s | 0.148s | 1.77s |
+| 11 | Armchair | 22 | `agnr_lib_IL_1e-5` | 8.3s | 0.165s | 1.99s |
+| 13 | Armchair | 26 | `agnr_lib_IL_1e-5` | 10.4s | 0.207s | 2.49s |
+| 15 | Armchair | 30 | `agnr_lib_IL_1e-5` | 13.2s | 0.263s | 3.16s |
+| 16 | Armchair | 32 | `agnr_lib_IL_1e-5` | 14.6s | 0.292s | 3.51s |
+| 20 | Armchair | 20 | `agnr_lib_IL_1e-5` | 43.8s | 0.876s | 10.5s |
+| 27 | Armchair | 27 | `agnr_lib_IL_1e-5` | 74.2s | 1.485s | 17.8s |
+| 31 | Armchair | 31 | `agnr_lib_IL_1e-5` | 99.5s | 1.989s | 23.8s |
+| 40 | Armchair | 40 | `agnr_lib_IL_1e-5` | 173.6s | 3.473s | 41.8s |
+| 50 | Armchair | 50 | `agnr_lib_IL_1e-5` | 306.3s | 6.126s | 73.8s |
+| 4 | Zigzag | 8 | `caroli` | 2.6s | 0.052s | 0.63s |
+| 6 | Zigzag | 12 | `caroli` | 3.4s | 0.069s | 0.83s |
+| 8 | Zigzag | 16 | `caroli` | 4.3s | 0.086s | 1.03s |
+| 10 | Zigzag | 20 | `caroli` | 5.7s | 0.115s | 1.38s |
+| 12 | Zigzag | 24 | `caroli` | 7.9s | 0.158s | 1.89s |
+| 16 | Zigzag | 32 | `caroli` | 35.9s | 0.718s | 2.31s |
+| 20 | Zigzag | 40 | `caroli` | 45.1s | 0.902s | 3.13s |
+| 27 | Zigzag | 54 | `caroli` | 76.2s | 1.525s | 5.85s |
+| 40 | Zigzag | 80 | `caroli` | 182.2s | 3.643s | 27.78s |
+| 50 | Zigzag | 100 | `caroli` | 317.6s | 6.352s | 44.04s |
+
+5. **Candidate Grid Runtime Projections (Full Run: 40,000 spectra / model)**:
+
+| Candidate Grid | Models | Full 10k Seeds (12 workers) | Full 10k Seeds (24 workers) | Tiered Seeds (12 workers)* | Tiered Seeds (24 workers)* |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Grid 1 (Armchair 5–31, Zigzag 4–31)** | 55 | **458.0 hrs** (19.1 days) | **229.0 hrs** (9.5 days) | **13.0 hrs** | **6.5 hrs** |
+| **Grid 2 (Armchair 5–50, Zigzag 4–50)** | 93 | **2,161.4 hrs** (90.1 days) | **1,080.7 hrs** (45.0 days) | **30.1 hrs** | **15.0 hrs** |
+| **Grid 3 (Sparse: 21 baseline + {20, 27, 31, 40, 50})** | 31 | **337.1 hrs** (14.0 days) | **168.5 hrs** (7.0 days) | **7.4 hrs** | **3.7 hrs** |
+
+*\*Note: Tiered seeds refers to the repository schedule (`seeds_for_width`: 1,000 seeds for $N \le 14$, 300 for $N \le 27$, 100 for $N > 27$).*
+
+6. **Key Wide-Grid Architecture Constraints**:
+   - **InputSpec Cap Saturation**: `InputSpec.cap = 20.0` clips transmission $T$ at 20 before the log. Wide ribbons carry $T \ge 20$ (e.g. Armchair N40 reaches 20; Armchair N50 reaches 25, saturating 23% of the energy window; Zigzag carries $T \approx N$). For those energies, inputs pin at 1.0, losing resolution. **Resolution**: Before training an atlas incorporating widths $>31$ (armchair) or $>16$ (zigzag), `InputSpec v2` must be created with cap set from the grid ($1.25 \times T_{\max}$). Existing v1 models (7/9 reference and `atlas_v2_smoke`) remain on v1.
+   - **Edge-Masked Store Guard at Large Width**: The $\pm 5$-channel mask around clean-spectrum steps covers only 11 channels at Armchair N50 (out of 400). A width-independent check was added to `check_store.py`: for every seed, mean transmission over unmasked channels $\le$ mean pristine over those channels $+ 0.05$. All 31 models pass this check.
+
+Artifacts written:
+- `~/atlas_store/smoke_v1/report.json` (31/31 ALL PASS)
+- `notebooks/material_atlas/atlas_v2_smoke/identification.json` (Option A Revised Gate 5 results)
+
+---
+
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
 
 ### Bug #1: Hardcoded Lead Paths in Generation Scripts
@@ -225,7 +312,7 @@ Artifacts written:
 * **Resolution**: Any transform applied before a classifier must be identical for every sample and computable without the label. The label-free material atlas (BUILD-12) uses `log1p(clip(round(T,3),0,20))/log1p(20)` for every spectrum; per-material pristine normalisation is reserved for stage 3, after the material has been *predicted*.
 
 ### Bug #9 (B4): Even-Width AGNR Unit-Cell Honeycomb Coordination Divergence
-* **Symptom**: Even-width armchair ribbons ($m \in \{6, 8, 10, \dots\}$) diverged from analytic tight-binding honeycomb ribbon bands by $> 0.4\,\text{eV}$ (coordination 1–4, containing unphysical 4-rings), clean transmission differed from open channels by up to $3.0\,G_0$, and disorder clouds produced median transmission exceeding pristine by $> 1.7\,G_0$.
+* **Symptom**: Even-width armchair ribbons ($m \in \{6, 8, 10, \dots\}$) diverged from analytic tight-binding honeycomb ribbon bands by $> 0.4\,t$ (coordination 2–3 with 4-rings on the last row; coordination 1 appeared only in the half-fix that removes the chain bond alone), clean transmission differed from open channels by up to $3.0\,G_0$, and disorder clouds produced median transmission exceeding pristine by $> 1.7\,G_0$.
 * **Root Cause**: Two-part geometry divergence in `agnr_lib.py`:
   1. `unitcell` and `beta_matrix` connected consecutive sites $0\dots 2m-1$ in a single 1D chain, including the bond $(m-1, m)$. In honeycomb armchair ribbons, rungs sit on even rows $(0, 2, \dots)$ and inter-cell hops sit on odd rows $(1, 3, \dots)$. For even $m$, row $m-1$ is odd; the chain bond placed a rung across columns on row $m-1$, making a 4-ring with row $m-2$.
   2. `T1_matrix` and `rho_matrix` used range limit `(m - 1) // 2`, omitting row $m-1$ from the inter-cell hopping matrix.

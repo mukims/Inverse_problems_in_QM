@@ -55,10 +55,17 @@ def check_model(store, model, reg):
         med = np.median(spec, axis=0)
         near = step_mask
         away = ~step_mask
+        n_unmasked = int(np.sum(away))
 
         max_med_diff_away = float(np.max((med - pris)[away])) if np.any(away) else 0.0
         max_med_diff_all = float(np.max(med - pris))
         max_med_diff_near = float(np.max((med - pris)[near])) if np.any(near) else 0.0
+
+        # Width-independent check: for every seed, mean T over unmasked channels <= mean pristine + 0.05
+        seed_means = np.mean(spec[:, away], axis=1) if np.any(away) else np.mean(spec, axis=1)
+        pris_mean = float(np.mean(pris[away])) if np.any(away) else float(np.mean(pris))
+        max_seed_mean_excess = float(np.max(seed_means - pris_mean))
+        seed_mean_valid = bool(max_seed_mean_excess <= 0.05)
 
         above_pris_05 = spec > pris + 0.5
         share_above_all = float(np.mean(above_pris_05))
@@ -68,10 +75,13 @@ def check_model(store, model, reg):
 
         density_stats[f"{d:.4f}"] = {
             "n_seeds": len(sds),
+            "n_unmasked_channels": n_unmasked,
             "max_median_excess": round(max_med_diff_away, 6),
             "max_median_excess_away": round(max_med_diff_away, 6),
             "max_median_excess_all": round(max_med_diff_all, 6),
             "max_median_excess_near": round(max_med_diff_near, 6),
+            "max_seed_mean_excess_unmasked": round(max_seed_mean_excess, 6),
+            "seed_mean_valid": seed_mean_valid,
             "share_above_pristine_plus_05": round(share_above_all, 4),
             "share_above_near": round(share_above_near, 4),
             "share_above_away": round(share_above_away, 4),
@@ -111,14 +121,18 @@ def check_model(store, model, reg):
     # Evaluation
     passed = (
         clean_err < 1e-3
-        and all(stats["max_median_excess"] <= 0.05 for stats in density_stats.values())
+        and all(stats["max_median_excess"] <= 0.05 and stats["seed_mean_valid"] for stats in density_stats.values())
         and not has_duplicates
         and nesting_valid
     )
 
+    n_unmasked_total = int(np.sum(~step_mask))
     return {
         "formula": formula,
         "clean_channels_max_err": round(clean_err, 6),
+        "n_unmasked_channels": n_unmasked_total,
+        "total_channels": len(pris),
+        "unmasked_pct": round(n_unmasked_total / len(pris) * 100, 1),
         "densities": density_stats,
         "no_cross_density_duplicates": not has_duplicates,
         "seed_nesting_valid": nesting_valid,
@@ -137,9 +151,17 @@ def main():
     out_path = Path(a.out) if a.out else (store_path / "report.json")
 
     reg = Registry()
-    # Add models in smoke build:
-    models = ([make_model("graphene-ideal", "armchair", n) for n in range(5, 17)]
-              + [make_model("graphene-ideal", "zigzag", n) for n in range(4, 13)])
+    # Discover all models present in the store:
+    models = []
+    for mid in sorted(store.models()):
+        parts = mid.split("/")
+        if len(parts) == 3:
+            mat, edge, w_str = parts
+            if w_str.startswith("N"):
+                models.append(make_model(mat, edge, int(w_str[1:])))
+    if not models:
+        models = ([make_model("graphene-ideal", "armchair", n) for n in range(5, 17)]
+                  + [make_model("graphene-ideal", "zigzag", n) for n in range(4, 13)])
 
     report = {}
     all_pass = True

@@ -5,6 +5,7 @@ import argparse
 import multiprocessing as mp
 import os
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -72,11 +73,14 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
                 if store.has_cloud(m.model_id, actual):
                     continue
                 sd = np.arange(seeds_for_width(m.width)) if seeds is None else np.asarray(list(seeds))
+                t0 = time.time()
                 with ctx.Pool(n_jobs, _init_agnr, (m.width, n_imp, leads)) as p:
                     spectra = np.array(p.map(_one_agnr, sd, chunksize=4))
+                dt = time.time() - t0
                 store.write_cloud(m.model_id, actual, n_imp, spectra, sd, grid_e, formula=model_formula)
                 wrote.append((m.model_id, actual))
-                print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula})", flush=True)
+                sec_per = dt / len(sd)
+                print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula}) in {dt:.2f}s ({sec_per:.4f} s/spec)", flush=True)
         else:
             h = hamiltonian_for(m)
             leads = LeadCache(h.H0, h.H1, e_t)
@@ -91,23 +95,47 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
                 if store.has_cloud(m.model_id, actual):
                     continue
                 sd = np.arange(seeds_for_width(m.width)) if seeds is None else np.asarray(list(seeds))
+                t0 = time.time()
                 with ctx.Pool(n_jobs, _init, (h.H0, h.H1, e_t, m.n_cells, h.H0.shape[0], n_imp, m.impurity_v_t, model_formula, leads)) as p:
                     spectra = np.array(p.map(_one, sd, chunksize=4))
+                dt = time.time() - t0
                 store.write_cloud(m.model_id, actual, n_imp, spectra, sd, e_t, formula=model_formula)
                 wrote.append((m.model_id, actual))
-                print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula})", flush=True)
+                sec_per = dt / len(sd)
+                print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula}) in {dt:.2f}s ({sec_per:.4f} s/spec)", flush=True)
     return wrote
 
 
+def _parse_widths(val):
+    if not val:
+        return []
+    res = []
+    for part in val.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if "-" in part:
+            lo, hi = map(int, part.split("-"))
+            res.extend(range(lo, hi + 1))
+        else:
+            res.append(int(part))
+    return sorted(set(res))
+
+
 if __name__ == "__main__":
+    import time
     ap = argparse.ArgumentParser()
     ap.add_argument("--store", default="~/atlas_store/engine_v1")
     ap.add_argument("--n-jobs", type=int, default=4)
     ap.add_argument("--formula", default="legacy_trace")
     ap.add_argument("--n-seeds", type=int, default=None, help="Fixed number of seeds per model (e.g. 50 for smoke build)")
+    ap.add_argument("--armchair-widths", default="5-16", help="Armchair widths (e.g. '5-16' or '20,27,31,40,50')")
+    ap.add_argument("--zigzag-widths", default="4-12", help="Zigzag widths (e.g. '4-12' or '16,20,27,40,50')")
     a = ap.parse_args()
     os.environ.setdefault("OMP_NUM_THREADS", "1")
-    ms = ([make_model("graphene-ideal", "armchair", n) for n in range(5, 17)]
-          + [make_model("graphene-ideal", "zigzag", n) for n in range(4, 13)])
+    arm_widths = _parse_widths(a.armchair_widths)
+    zig_widths = _parse_widths(a.zigzag_widths)
+    ms = ([make_model("graphene-ideal", "armchair", n) for n in arm_widths]
+          + [make_model("graphene-ideal", "zigzag", n) for n in zig_widths])
     seeds = range(a.n_seeds) if a.n_seeds is not None else None
     generate(CloudStore(a.store), ms, [0.005, 0.01, 0.02, 0.04], InputSpec(), n_jobs=a.n_jobs, formula=a.formula, seeds=seeds)

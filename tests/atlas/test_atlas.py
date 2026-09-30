@@ -50,3 +50,44 @@ def test_save_load_round_trip(built):
     again = Atlas.load(tmp / "saved")
     T = toy_spectrum(1.0, 7, 0.01, 80_000)[None]
     assert atlas.locate(T, E, 3.0) == again.locate(T, E, 3.0)
+
+
+def test_width_vote_majority_rule():
+    from unittest.mock import MagicMock
+    import atlaslib.atlas as atlas_module
+    from atlaslib.registry import RibbonModel
+
+    m6 = RibbonModel("graphene-ideal", "armchair", 6, 2, 6, 3.0)
+    m8 = RibbonModel("graphene-ideal", "armchair", 8, 2, 8, 3.0)
+    models = [m6, m8]
+
+    # k=15: 9 neighbours width 6, 6 neighbours width 8
+    nb_indices = np.array([list(range(15))])
+    ref_models = np.array([0]*9 + [1]*6)
+    distances = np.array([[1.0]*15])
+
+    mock_nn = MagicMock()
+    mock_nn.kneighbors.return_value = (distances, nb_indices)
+
+    atlas = Atlas(
+        spec=InputSpec(),
+        encoder=MagicMock(),
+        mu=np.zeros(32),
+        sd=np.ones(32),
+        refs=np.zeros((15, 32)),
+        ref_model=ref_models,
+        ref_density=np.zeros(15),
+        models=models,
+        threshold=1.0,
+        k=15
+    )
+    atlas._nn = mock_nn
+
+    orig_embed = atlas_module.embed
+    atlas_module.embed = lambda enc, X: (np.zeros((len(X), 32)), np.zeros(len(X)))
+    try:
+        dummy_T = np.zeros((1, len(E)))
+        res = atlas.locate(dummy_T, E, 3.0)
+        assert res[0].width_vote == 6.0
+    finally:
+        atlas_module.embed = orig_embed

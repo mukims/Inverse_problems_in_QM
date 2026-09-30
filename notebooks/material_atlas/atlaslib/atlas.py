@@ -24,6 +24,7 @@ class Located:
     novelty: float
     unknown: bool
     recon_error: float
+    width_vote: float = 0.0
 
 
 class Atlas:
@@ -35,7 +36,7 @@ class Atlas:
 
     # ---------- building ----------
     @staticmethod
-    def _load_inputs(store, registry, model_ids, spec):
+    def _load_inputs(store, registry, model_ids, spec, max_seed=None):
         X, midx, dens, seeds = [], [], [], []
         for i, mid in enumerate(model_ids):
             m = registry.get(mid)
@@ -46,6 +47,9 @@ class Atlas:
             seeds.append([-1])
             for d in store.densities(mid):
                 c, s = store.read_cloud(mid, d)
+                if max_seed is not None:
+                    mask = s <= max_seed
+                    c, s = c[mask], s[mask]
                 X.append(spec.to_input(c, e_t, m.band_top_t))
                 midx.append(np.full(len(s), i))
                 dens.append(np.full(len(s), d))
@@ -54,13 +58,16 @@ class Atlas:
 
     @classmethod
     def build(cls, store, registry, model_ids, spec, latent=32, epochs=60, patience=8, k=15,
-              refs_per_model=2000, seed=2, threads=4):
-        X, midx, dens, seeds = cls._load_inputs(store, registry, model_ids, spec)
+              refs_per_model=2000, seed=2, threads=4, max_seed=None, val_seed_min=None):
+        X, midx, dens, seeds = cls._load_inputs(store, registry, model_ids, spec, max_seed=max_seed)
         val = np.zeros(len(X), bool)
-        for i in np.unique(midx):                       # validation = top 15% of seeds per model
+        for i in np.unique(midx):                       # validation split
             s = seeds[(midx == i) & (seeds >= 0)]
             if s.size:
-                val |= (midx == i) & (seeds >= np.quantile(s, 0.85))
+                if val_seed_min is not None:
+                    val |= (midx == i) & (seeds >= val_seed_min)
+                else:
+                    val |= (midx == i) & (seeds >= np.quantile(s, 0.85))
         enc, _ = train_autoencoder(X[~val], X[val], latent=latent, epochs=epochs, patience=patience,
                                    threads=threads, seed=seed)
         Z, rec = embed(enc, X)
@@ -102,8 +109,11 @@ class Atlas:
             width = float(np.clip(width, trained[0], trained[-1]))
             extrap = bool(np.all(w == trained[0]) or np.all(w == trained[-1]))
             nov = float(dist[r].mean())
+            vals, counts = np.unique(w, return_counts=True)
+            width_vote = float(vals[np.argmax(counts)])
             out.append(Located(mat, edge, width, extrap, float(np.median(self.ref_density[idx[r][members]])),
-                               len(members) / self.k, nov, bool(rec[r] > self.threshold), float(rec[r])))
+                               len(members) / self.k, nov, bool(rec[r] > self.threshold), float(rec[r]),
+                               width_vote=width_vote))
         return out
 
     def add_models(self, store, registry, model_ids):

@@ -144,7 +144,7 @@ def load_leads(m, leads_dir="~/Desktop/backup/agnr"):
     and caching them via `leads_sancho_rubio` on first access.
     """
     m = int(m)
-    if m % 2 == 0:
+    if m % 2 == 0 or m > 31:
         p = os.path.join(CELL_V2_LEADS_DIR, f"size_{m}", f"leads_{m}.npy")
         if not os.path.exists(p):
             os.makedirs(os.path.dirname(p), exist_ok=True)
