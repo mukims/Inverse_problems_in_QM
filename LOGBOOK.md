@@ -241,9 +241,9 @@ Execution of Option A from `2026-09-30-option-a-train-all-widths.md`:
 | 40 | Zigzag | 80 | `caroli` | 17.11s | 1.426s / spec | 90.8s (21% overhead) |
 | 50 | Zigzag | 100 | `caroli` | 31.19s | 2.599s / spec | 149.4s (13% overhead) |
 
-*\*Note: Smoke pool wall clock is $50 \times t_{\text{spec}} / 12 + 19.5\text{s}$ overhead, accurately matching the reviewer's measured file timestamps.*
+*\*Note: For narrow ribbons, pool wall clock follows ideal sharing + 19.5s overhead. For wide ribbons at smoke scale ($n=50$ seeds, chunksize=4), 13 chunks across 12 workers causes the busiest worker to run 2 chunks (8 serial spectra), yielding wall clock $\approx 8 \times t_{\text{spec}} + 19.5\text{s}$ (e.g. Armchair N50: $8 \times 29.1\text{s} + 19.5\text{s} = 252\text{s}$; hybrid P/E-core contention on the i7-13700 pushes this to 307s). At 1,000 seeds ($250$ chunks on 16 workers), the chunk tail is negligible ($\le 2.4\%$).*
 
-5. **Candidate Grid Runtime Projections ($\sum \frac{\text{seeds} \times 4 \times t_{\text{spec}}}{n_{\text{workers}}} + \text{pools} \times 19.5\text{s}$)**:
+5. **Candidate Grid Runtime Projections & Chosen Sparse Production Run**:
 
 | Candidate Grid | Models | Full 10k Seeds (12 workers) | Full 10k Seeds (24 workers) | Tiered Seeds (12 workers)* | Tiered Seeds (24 workers)* |
 |---|:---:|:---:|:---:|:---:|:---:|
@@ -251,7 +251,8 @@ Execution of Option A from `2026-09-30-option-a-train-all-widths.md`:
 | **Grid 2 (Armchair 5–50, Zigzag 4–50)** | 93 | **820.6 hrs** (34.2 days)<br>[Compute: 818.6h, Ovh: 2.0h] | **411.3 hrs** (17.1 days)<br>[Compute: 409.3h, Ovh: 2.0h] | **13.7 hrs**<br>[Compute: 11.7h, Ovh: 2.0h] | **7.9 hrs**<br>[Compute: 5.8h, Ovh: 2.0h] |
 | **Grid 3 (Sparse: 21 baseline + {20, 27, 31, 40, 50})** | 31 | **134.9 hrs** (5.6 days)<br>[Compute: 134.2h, Ovh: 0.7h] | **67.8 hrs** (2.8 days)<br>[Compute: 67.1h, Ovh: 0.7h] | **3.9 hrs**<br>[Compute: 3.3h, Ovh: 0.7h] | **2.3 hrs**<br>[Compute: 1.6h, Ovh: 0.7h] |
 
-*\*Note: Tiered seeds refers to the repository schedule (`seeds_for_width`: 1,000 seeds for $N \le 14$, 300 for $N \le 27$, 100 for $N > 27$). Pool startup overhead across 4 densities contributes only 1.2 to 2.0 hours total across all models for full runs.*
+- **Production Decision (FULL-1)**: The human selected the **sparse 31-width grid with 1,000 seeds per (model, density)** (`docs/superpowers/plans/2026-09-30-full-run-sparse-grid.md`).
+- Reusing existing 1,000-seed clouds for N5 (all densities), N7 (all densities), and N9 ($d=0.005$) and running on 16 workers with a $\sim 1.2\times$ hybrid CPU contention factor, projected wall clock is **about 10–12 hours**.
 
 6. **Key Wide-Grid Architecture Constraints**:
    - **InputSpec Cap Saturation**: `InputSpec.cap = 20.0` clips transmission $T$ at 20 before the log. Wide ribbons carry $T \ge 20$ (e.g. Armchair N40 reaches 20; Armchair N50 reaches 25, saturating 23% of the energy window; Zigzag carries $T \approx N$). For those energies, inputs pin at 1.0, losing resolution. **Resolution**: Before training an atlas incorporating widths $>31$ (armchair) or $>16$ (zigzag), `InputSpec v2` must be created with cap set from the grid ($1.25 \times T_{\max}$). Existing v1 models (7/9 reference and `atlas_v2_smoke`) remain on v1.

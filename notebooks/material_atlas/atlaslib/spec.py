@@ -11,6 +11,12 @@ class InputSpec:
     step_t: float = 0.01
     cap: float = 20.0        # G0; clipped before the log so spikes cannot dominate
 
+    def __post_init__(self):
+        if self.version == "v2" and self.cap == 20.0:
+            object.__setattr__(self, "cap", 64.0)
+        elif self.version not in ("v1", "v2"):
+            raise ValueError(f"unknown InputSpec version: {self.version}")
+
     @property
     def n_channels(self) -> int:
         return int(round(self.e_max_t / self.step_t))

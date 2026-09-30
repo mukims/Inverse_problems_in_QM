@@ -10,7 +10,18 @@ from atlaslib import Atlas, CloudStore, InputSpec, Registry
 from tbribbon.materials import make_model
 
 HELD_OUT = {("graphene-ideal", "armchair"): [8, 12, 13], ("graphene-ideal", "zigzag"): [8]}
-TRAIN = {("graphene-ideal", "armchair"): range(5, 17), ("graphene-ideal", "zigzag"): range(4, 13)}
+GRIDS = {
+    "baseline21": {
+        ("graphene-ideal", "armchair"): list(range(5, 17)),
+        ("graphene-ideal", "zigzag"): list(range(4, 13)),
+    },
+    "sparse31": {
+        ("graphene-ideal", "armchair"): [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 27, 31, 40, 50],
+        ("graphene-ideal", "zigzag"): [4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 20, 27, 40, 50],
+    }
+}
+TRAIN = GRIDS["baseline21"]
+
 
 
 def main():
@@ -18,12 +29,15 @@ def main():
     ap.add_argument("--store", default="~/atlas_store/engine_v1")
     ap.add_argument("--out", default=str(Path(__file__).resolve().parent / "atlas_v2"))
     ap.add_argument("--threads", type=int, default=4)
+    ap.add_argument("--grid", choices=["baseline21", "sparse31"], default="sparse31")
+    ap.add_argument("--spec-version", default="v2", choices=["v1", "v2"])
     ap.add_argument("--holdout-widths", action="store_true", default=False,
                     help="Run legacy Gate 5 diagnostic with held-out widths (armchair 8, 12, 13; zigzag 8)")
     a = ap.parse_args()
-    store, spec, out = CloudStore(a.store), InputSpec(), Path(a.out)
+    grid_models = GRIDS[a.grid]
+    store, spec, out = CloudStore(a.store), InputSpec(version=a.spec_version), Path(a.out)
     reg = Registry()
-    for (mat, edge), widths in TRAIN.items():
+    for (mat, edge), widths in grid_models.items():
         for n in widths:
             reg.add(make_model(mat, edge, n))
 
@@ -79,7 +93,7 @@ def main():
     print(f"{'Model':<30} | {'Dens':<6} | {'MatAcc':<7} | {'EdgeAcc':<7} | {'WidthAcc':<8} | {'Med|W-N|':<8} | {'Unknown%':<8} | {'PredDens':<8}")
     print("-" * 102)
 
-    for (mat, edge), widths in TRAIN.items():
+    for (mat, edge), widths in grid_models.items():
         for n in widths:
             mid = f"{mat}/{edge}/N{n}"
             e_t, _ = store.read_pristine(mid)

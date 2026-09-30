@@ -142,13 +142,28 @@ if __name__ == "__main__":
     ap.add_argument("--n-jobs", type=int, default=4)
     ap.add_argument("--formula", default="legacy_trace")
     ap.add_argument("--n-seeds", type=int, default=None, help="Fixed number of seeds per model (e.g. 50 for smoke build)")
-    ap.add_argument("--armchair-widths", default="5-16", help="Armchair widths (e.g. '5-16' or '20,27,31,40,50')")
-    ap.add_argument("--zigzag-widths", default="4-12", help="Zigzag widths (e.g. '4-12' or '16,20,27,40,50')")
+    ap.add_argument("--grid", choices=["sparse31", "custom"], default="sparse31",
+                    help="Grid schedule: 'sparse31' (31 models ordered narrowest first) or 'custom'")
+    ap.add_argument("--armchair-widths", default="5-16", help="Armchair widths for custom grid")
+    ap.add_argument("--zigzag-widths", default="4-12", help="Zigzag widths for custom grid")
     a = ap.parse_args()
     os.environ.setdefault("OMP_NUM_THREADS", "1")
-    arm_widths = _parse_widths(a.armchair_widths)
-    zig_widths = _parse_widths(a.zigzag_widths)
-    ms = ([make_model("graphene-ideal", "armchair", n) for n in arm_widths]
-          + [make_model("graphene-ideal", "zigzag", n) for n in zig_widths])
+    if a.grid == "sparse31":
+        # Narrow block (21 baseline models)
+        narrow_ms = [make_model("graphene-ideal", "armchair", n) for n in range(5, 17)] + \
+                    [make_model("graphene-ideal", "zigzag", n) for n in range(4, 13)]
+        # Wide block (10 models), sorted by width
+        wide_specs = [
+            ("armchair", 20), ("zigzag", 16), ("zigzag", 20), ("armchair", 27),
+            ("zigzag", 27), ("armchair", 31), ("armchair", 40), ("zigzag", 40),
+            ("armchair", 50), ("zigzag", 50)
+        ]
+        wide_ms = [make_model("graphene-ideal", edge, n) for edge, n in sorted(wide_specs, key=lambda x: x[1])]
+        ms = narrow_ms + wide_ms
+    else:
+        arm_widths = _parse_widths(a.armchair_widths)
+        zig_widths = _parse_widths(a.zigzag_widths)
+        ms = ([make_model("graphene-ideal", "armchair", n) for n in arm_widths]
+              + [make_model("graphene-ideal", "zigzag", n) for n in zig_widths])
     seeds = range(a.n_seeds) if a.n_seeds is not None else None
-    generate(CloudStore(a.store), ms, [0.005, 0.01, 0.02, 0.04], InputSpec(), n_jobs=a.n_jobs, formula=a.formula, seeds=seeds)
+    generate(CloudStore(a.store), ms, [0.005, 0.01, 0.02, 0.04], InputSpec(version="v2"), n_jobs=a.n_jobs, formula=a.formula, seeds=seeds)

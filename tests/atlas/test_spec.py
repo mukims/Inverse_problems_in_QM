@@ -54,3 +54,20 @@ def test_other_grid_is_interpolated():
     e_t = np.linspace(0, 4.0, 81)                    # e.g. eV data converted with t = 2.7
     X = s.to_input(np.tile(e_t, (1, 1)), e_t, band_top_t=4.0)
     assert X[0, 100] == pytest.approx(np.log1p(1.0) / np.log1p(20.0), abs=1e-3)
+
+
+def test_inputspec_v2_cap_is_64():
+    s2 = InputSpec(version="v2")
+    assert s2.version == "v2"
+    assert s2.cap == 64.0
+    assert s2.as_dict()["cap"] == 64.0
+
+
+def test_no_clean_spectrum_in_grid_reaches_cap():
+    from atlaslib.store import CloudStore
+    store = CloudStore("~/atlas_store/smoke_v1")
+    s2 = InputSpec(version="v2")
+    for mid in store.models():
+        _, pris = store.read_pristine(mid)
+        assert np.max(pris) < s2.cap, f"{mid} pristine reaches or exceeds cap {s2.cap}"
+
