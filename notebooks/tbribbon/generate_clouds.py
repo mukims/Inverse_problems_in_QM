@@ -37,8 +37,11 @@ def _init(H0, H1, energies, n_cells, spc, n_imp, v, formula, leads=None):
 
 
 def _one(seed):
+    t0 = time.perf_counter()
     s = impurity_shifts(_W["n_cells"], _W["spc"], _W["n_imp"], seed, _W["v"])
-    return spectrum(_W["H0"], _W["H1"], _W["E"], s, _W["leads"], formula=_W["formula"])
+    spec = spectrum(_W["H0"], _W["H1"], _W["E"], s, _W["leads"], formula=_W["formula"])
+    dt = time.perf_counter() - t0
+    return spec, dt
 
 
 def _init_agnr(m_width, n_imp, leads):
@@ -47,10 +50,13 @@ def _init_agnr(m_width, n_imp, leads):
 
 def _one_agnr(seed):
     m_width, n_imp, leads = _W["m_width"], _W["n_imp"], _W["leads"]
-    return np.array([
+    t0 = time.perf_counter()
+    spec = np.array([
         agnr_lib.device_transmission(w, 1e-5, 1.0, 0.0, m_width, seed, n_imp, leads, nonlocal_mode="IL")
         for w in agnr_lib.energy_grid()
     ])
+    dt = time.perf_counter() - t0
+    return spec, dt
 
 
 def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", seeds=None):
@@ -75,12 +81,15 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
                 sd = np.arange(seeds_for_width(m.width)) if seeds is None else np.asarray(list(seeds))
                 t0 = time.time()
                 with ctx.Pool(n_jobs, _init_agnr, (m.width, n_imp, leads)) as p:
-                    spectra = np.array(p.map(_one_agnr, sd, chunksize=4))
+                    res = p.map(_one_agnr, sd, chunksize=4)
                 dt = time.time() - t0
-                store.write_cloud(m.model_id, actual, n_imp, spectra, sd, grid_e, formula=model_formula)
+                spectra = np.array([r[0] for r in res])
+                times = np.array([r[1] for r in res])
+                median_t_spec = float(np.median(times))
+                store.write_cloud(m.model_id, actual, n_imp, spectra, sd, grid_e, formula=model_formula, t_spectrum_sec=median_t_spec)
                 wrote.append((m.model_id, actual))
                 sec_per = dt / len(sd)
-                print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula}) in {dt:.2f}s ({sec_per:.4f} s/spec)", flush=True)
+                print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula}) in {dt:.2f}s (wall {sec_per:.4f} s/spec, worker compute median {median_t_spec:.4f} s/spec)", flush=True)
         else:
             h = hamiltonian_for(m)
             leads = LeadCache(h.H0, h.H1, e_t)
@@ -88,7 +97,8 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
             pristine_path = store._dir(m.model_id) / "pristine.npy"
             if not pristine_path.exists():
                 with ctx.Pool(1, _init, (h.H0, h.H1, e_t, 1, h.H0.shape[0], 0, 0.0, model_formula, leads)) as p:
-                    store.write_pristine(m.model_id, e_t, p.map(_one, [0])[0], formula=model_formula)
+                    pris_spec, _ = p.map(_one, [0])[0]
+                    store.write_pristine(m.model_id, e_t, pris_spec, formula=model_formula)
             for d in densities:
                 n_imp = m.impurities_for_density(d)
                 actual = n_imp / m.n_sites
@@ -97,12 +107,15 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
                 sd = np.arange(seeds_for_width(m.width)) if seeds is None else np.asarray(list(seeds))
                 t0 = time.time()
                 with ctx.Pool(n_jobs, _init, (h.H0, h.H1, e_t, m.n_cells, h.H0.shape[0], n_imp, m.impurity_v_t, model_formula, leads)) as p:
-                    spectra = np.array(p.map(_one, sd, chunksize=4))
+                    res = p.map(_one, sd, chunksize=4)
                 dt = time.time() - t0
-                store.write_cloud(m.model_id, actual, n_imp, spectra, sd, e_t, formula=model_formula)
+                spectra = np.array([r[0] for r in res])
+                times = np.array([r[1] for r in res])
+                median_t_spec = float(np.median(times))
+                store.write_cloud(m.model_id, actual, n_imp, spectra, sd, e_t, formula=model_formula, t_spectrum_sec=median_t_spec)
                 wrote.append((m.model_id, actual))
                 sec_per = dt / len(sd)
-                print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula}) in {dt:.2f}s ({sec_per:.4f} s/spec)", flush=True)
+                print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula}) in {dt:.2f}s (wall {sec_per:.4f} s/spec, worker compute median {median_t_spec:.4f} s/spec)", flush=True)
     return wrote
 
 

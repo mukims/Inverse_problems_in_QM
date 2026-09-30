@@ -54,7 +54,7 @@ class CloudStore:
         d = self._dir(model_id)
         return np.load(d / "energies_t.npy"), np.load(d / "pristine.npy")
 
-    def write_cloud(self, model_id, density, n_impurities, spectra, seeds, energies_t, formula=None, max_excess_tol=0.05):
+    def write_cloud(self, model_id, density, n_impurities, spectra, seeds, energies_t, formula=None, max_excess_tol=0.05, **extra_meta):
         spectra = np.asarray(spectra, dtype=np.float64)
         seeds = np.asarray(seeds, dtype=np.int64)
         energies_t = np.asarray(energies_t, dtype=np.float64)
@@ -101,6 +101,8 @@ class CloudStore:
             meta["clouds"][k] = {"density": float(density), "n_impurities": int(n_impurities), "n": int(seeds.size), "formula": str(formula)}
         else:
             meta["clouds"][k] = {"density": float(density), "n_impurities": int(n_impurities), "n": int(seeds.size)}
+        for extra_k, extra_v in extra_meta.items():
+            meta["clouds"][k][extra_k] = extra_v
         self._save_meta(model_id, meta)
 
     def read_cloud(self, model_id, density):

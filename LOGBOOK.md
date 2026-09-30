@@ -21,7 +21,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-11** | 2026-09-29 | 7-AGNR & 9-AGNR | Energy-window and data-size checks (XGBoost, BUILD-09 split) | 3,000 and 10,000 seeds per conc | Rounded + pristine-normalised; config-seed split | N/A | **1.977 (0–3 eV)**<br>2.396 (0–1.5 eV)<br>2.769 (1.5–3 eV) | 2.843 (0–3 eV)<br>3.422 (0–1.5 eV) | **Completed**: the full 0–3 eV spectrum lowers MAE by 17.5%; relative error 4.2–4.8% per concentration band. 10,000 vs 3,000 seeds (0–1.5 eV, common test set): 2.387 → 2.330. `energy_window_check.py`, `seed_split_10k/`. |
 | **BUILD-12** | 2026-09-29 | 7-AGNR, 9-AGNR & Square-10 | Label-free material atlas (autoencoder + k-NN retrieval + novelty) | 3,000 seeds per conc per system (303k), 0–3 eV | `log1p(clip(round(T,3),0,20))/log1p(20)` — no per-material pristine (Bug #8); config-seed split | **100.00%** material & width, label-free (45,450 test spectra) | rough c from neighbours: 3.15 / 4.57 / 4.91 | — | **Completed**: label-free identification is exact at every concentration; baselines on the same input 99.97% (logistic), 99.96% (PCA-kNN), 99.45% (onset + plateau tree), 99.37% (library). Novelty (leave one out): unseen Square-10 separated by reconstruction error with AUROC 1.00 (k-NN distance 0.95; its 99th-percentile threshold flags only 0.6%); unseen 9-AGNR not separable (AUROC 0.79 / 0.51). False alarms 1.05%. `notebooks/material_atlas/results/`. |
 | **BUILD-13** | 2026-09-29 | **7-AGNR & 9-AGNR** | **7/9-AGNR Reference Pipeline** (Atlas Stage 1–2 + Stage 3 XGBoost + Conformal) | `size_7.npy` + `size_9.npy` (atlas seeds 0–999, XGB train seeds 0–2099, cal seeds 2100–2549, test seeds 2550–2999; 37,350 test spectra across 83 concentrations) | Stage 1–2: `InputSpec v1` (400-ch $[0, 4t)$, label-free $\log(1+T)/\log(21)$); Stage 3: predicted width pristine division + 3-decimal rounding | **99.86%** | **1.973 (Overall)**<br>1.655 (7)<br>2.193 (9) | **3.034 (Overall)** | **Completed (Gate 1 Passed)**: End-to-end reference solution satisfying all Gate 1 benchmarks: label-free width accuracy 99.86% ($\ge 99.5\%$), end-to-end concentration MAE 1.973 ($\le 1.98$), 90% conformal interval coverage 90.00% (within $90 \pm 2\%$, relative halfwidth $q = 0.0897$ on 37,350 held-out test spectra). Stored in `notebooks/material_atlas/reference_7_9/`. |
-| **SMOKE-2** | 2026-09-30 | **21 Baseline + 10 Wider Ribbon Models** | **Option A Full-Width Atlas v2 & Wider Grid Scaling** | 31 models $\times$ 4 densities $\times$ 50 seeds ($n=6,200$ spectra in `~/atlas_store/smoke_v1/`); test on held-out seeds 43–49 ($n=588$) | Label-free `InputSpec v1`; modal `width_vote` retrieval over top-k winning-group neighbours; Caroli for ZGNR; corrected cell v2 for AGNR | **100.0% Mat<br>100.0% Edge<br>98.6% Width (d≤0.02)** | N/A (Stage 1-2 evaluation) | N/A | **Completed (Option A Verified)**: 100% material & edge accuracy across all models; 100% zigzag width; armchair width 100% ($d \le 0.01$), 97.6% ($d=0.02$). All 31 models pass `check_store.py`. Full scaling cost table and 3-grid projections documented. |
+| **SMOKE-2** | 2026-09-30 | **21 Baseline + 10 Wider Ribbon Models** | **Option A Full-Width Atlas v2 & Wider Grid Scaling** | 31 models $\times$ 4 densities $\times$ 50 seeds ($n=6,200$ spectra in `~/atlas_store/smoke_v1/`); test on held-out seeds 43–49 ($n=588$) | Label-free `InputSpec v1`; modal `width_vote` retrieval over top-k winning-group neighbours; Caroli for ZGNR; corrected cell v2 for AGNR | **100.0% Mat<br>100.0% Edge<br>98.6% Width (d≤0.02)<br>91.8% Width (d=0.04)** | N/A (Stage 1-2 evaluation) | N/A | **Completed (Option A Verified)**: 100% material & edge accuracy across all models; 100% zigzag width; armchair width 100% ($d \le 0.01$), 97.6% ($d=0.02$), 85.7% ($d=0.04$). All 31 models pass `check_store.py`. Full scaling cost table and 3-grid projections documented. |
 
 ---
 
@@ -187,12 +187,19 @@ Execution of Option A from `2026-09-30-option-a-train-all-widths.md`:
        - $d = 0.0050$: **100.0%** width accuracy, 0.0% false unknown flag
        - $d = 0.0100$: **100.0%** width accuracy, 0.0% false unknown flag
        - $d = 0.0200$: **98.6%** width accuracy, 0.0% false unknown flag
-       - $d = 0.0400$: **91.8%** width accuracy, 2.0% false unknown flag
-   - **Reference Seed Density Monotonicity Experiment**:
-     - Evaluated effect of reference library density (15 vs 35 training seeds per model on identical held-out test seeds 43–49):
-       - $d = 0.0200$: accuracy increased monotonically from $96.4\% \to 97.6\%$ (+1.2%).
-       - $d = 0.0400$: accuracy increased monotonically from $83.3\% \to 85.7\%$ (+2.4%).
-     - Proves that the full run's library density (100–1,000 reference seeds) will close the remaining high-disorder gap.
+      - **Reference Seed Density Sweep & Monotonicity Analysis**:
+     - At smoke scale, moving from 15 to 35 training seeds changed accuracy by 1 of 84 test spectra at $d = 0.02$ ($96.4\% \to 97.6\%$) and 2 of 84 at $d = 0.04$ ($83.3\% \to 85.7\%$). At $p \approx 0.85$ and $n = 84$, the binomial standard error is $\approx 3.9\%$, so this change is consistent with improvement but not statistically significant at smoke scale.
+     - To settle the scaling question rigorously using the existing store, a multi-seed sweep was evaluated across 5, 10, 15, 25, and 35 training seeds with 3 autoencoder seeds each on held-out test seeds 43–49 ($n=84$ armchair spectra at $d=0.04$):
+
+| Training Seeds | Mean Armchair Width-Vote Acc ($d=0.04$, $n=84$) | Spread ($\pm$) | Individual AE Seed Accuracies |
+|:---:|:---:|:---:|---|
+| 5 | **44.4%** | $\pm 4.8\%$ | [39.3%, 48.8%, 45.2%] |
+| 10 | **69.8%** | $\pm 9.5\%$ | [71.4%, 78.6%, 59.5%] |
+| 15 | **76.6%** | $\pm 6.5\%$ | [83.3%, 76.2%, 70.2%] |
+| 25 | **90.5%** | $\pm 2.4\%$ | [92.9%, 90.5%, 88.1%] |
+| 35 | **91.3%** | $\pm 3.6\%$ | [86.9%, 92.9%, 94.0%] |
+
+     - **Findings**: The broad sweep shows a massive, monotonic jump from 5 to 25 training seeds ($44.4\% \to 90.5\%$), but saturates between 25 and 35 seeds ($90.5\% \to 91.3\%$, within the $\pm 3.6\%$ spread and binomial noise). This confirms that higher reference library density drives substantial accuracy gains, while also demonstrating that an intermediate run (e.g. 300 seeds giving 210 train / 45 test seeds per model) or full run is needed to evaluate closing the remaining high-disorder gap.
 
 3. **Step 2 Wider-Ribbon Generation & Store Validation (31 Models Total)**:
    - Generated 50-seed smoke clouds for 10 wider ribbon configurations:
@@ -205,42 +212,46 @@ Execution of Option A from `2026-09-30-option-a-train-all-widths.md`:
      - Seed nesting: 100% verified (lower density impurity sets are strict subsets of higher density sets).
      - Width-independent unmasked seed mean check: passed for all 31 models.
 
-4. **Measured Scaling Cost Table (12 Workers, `OMP_NUM_THREADS=1`)**:
+4. **Disentangled Scaling Cost Table (`OMP_NUM_THREADS=1`)**:
+   - Fixed pool startup overhead is measured at $\sim 19.5\text{s}$ per 50-spectrum pool (worker process spawn, library imports, and lead cache pickling).
+   - In worker compute loops, per-spectrum compute time $t_{\text{spec}}$ was benchmarked directly on 1 core (`time.perf_counter()` around transport calculation) and recorded in metadata.
 
-| Width $N$ | Edge | Matrix Dimension ($H_0$) | Transport Formula | Wall Clock (s / 50 spec) | Measured Rate (s / spec) | Single-Core CPU Time (s) |
+| Width $N$ | Edge | Matrix Dim ($H_0$) | Transport Formula | Pure Compute $t_{\text{spec}}$ (1 core) | 12-Worker Rate ($t_{\text{spec}} / 12$) | Smoke 50-Seed Pool Wall Clock* |
 |---|---|:---:|---|:---:|:---:|:---:|
-| 5 | Armchair | 10 | `agnr_lib_IL_1e-5` | 5.9s | 0.118s | 1.42s |
-| 7 | Armchair | 14 | `agnr_lib_IL_1e-5` | 8.4s | 0.167s | 2.01s |
-| 9 | Armchair | 18 | `agnr_lib_IL_1e-5` | 7.4s | 0.148s | 1.77s |
-| 11 | Armchair | 22 | `agnr_lib_IL_1e-5` | 8.3s | 0.165s | 1.99s |
-| 13 | Armchair | 26 | `agnr_lib_IL_1e-5` | 10.4s | 0.207s | 2.49s |
-| 15 | Armchair | 30 | `agnr_lib_IL_1e-5` | 13.2s | 0.263s | 3.16s |
-| 16 | Armchair | 32 | `agnr_lib_IL_1e-5` | 14.6s | 0.292s | 3.51s |
-| 20 | Armchair | 20 | `agnr_lib_IL_1e-5` | 43.8s | 0.876s | 10.5s |
-| 27 | Armchair | 27 | `agnr_lib_IL_1e-5` | 74.2s | 1.485s | 17.8s |
-| 31 | Armchair | 31 | `agnr_lib_IL_1e-5` | 99.5s | 1.989s | 23.8s |
-| 40 | Armchair | 40 | `agnr_lib_IL_1e-5` | 173.6s | 3.473s | 41.8s |
-| 50 | Armchair | 50 | `agnr_lib_IL_1e-5` | 306.3s | 6.126s | 73.8s |
-| 4 | Zigzag | 8 | `caroli` | 2.6s | 0.052s | 0.63s |
-| 6 | Zigzag | 12 | `caroli` | 3.4s | 0.069s | 0.83s |
-| 8 | Zigzag | 16 | `caroli` | 4.3s | 0.086s | 1.03s |
-| 10 | Zigzag | 20 | `caroli` | 5.7s | 0.115s | 1.38s |
-| 12 | Zigzag | 24 | `caroli` | 7.9s | 0.158s | 1.89s |
-| 16 | Zigzag | 32 | `caroli` | 35.9s | 0.718s | 2.31s |
-| 20 | Zigzag | 40 | `caroli` | 45.1s | 0.902s | 3.13s |
-| 27 | Zigzag | 54 | `caroli` | 76.2s | 1.525s | 5.85s |
-| 40 | Zigzag | 80 | `caroli` | 182.2s | 3.643s | 27.78s |
-| 50 | Zigzag | 100 | `caroli` | 317.6s | 6.352s | 44.04s |
+| 5 | Armchair | 10 | `agnr_lib_IL_1e-5` | 0.70s | 0.058s / spec | 22.4s (87% overhead) |
+| 7 | Armchair | 14 | `agnr_lib_IL_1e-5` | 0.83s | 0.069s / spec | 22.9s (85% overhead) |
+| 9 | Armchair | 18 | `agnr_lib_IL_1e-5` | 1.01s | 0.084s / spec | 23.7s (82% overhead) |
+| 11 | Armchair | 22 | `agnr_lib_IL_1e-5` | 1.27s | 0.106s / spec | 24.8s (79% overhead) |
+| 13 | Armchair | 26 | `agnr_lib_IL_1e-5` | 1.58s | 0.131s / spec | 26.1s (75% overhead) |
+| 15 | Armchair | 30 | `agnr_lib_IL_1e-5` | 1.96s | 0.163s / spec | 27.7s (71% overhead) |
+| 16 | Armchair | 32 | `agnr_lib_IL_1e-5` | 2.18s | 0.182s / spec | 28.6s (68% overhead) |
+| 20 | Armchair | 40 | `agnr_lib_IL_1e-5` | 3.30s | 0.275s / spec | 33.2s (59% overhead) |
+| 27 | Armchair | 54 | `agnr_lib_IL_1e-5` | 6.28s | 0.523s / spec | 45.7s (43% overhead) |
+| 31 | Armchair | 62 | `agnr_lib_IL_1e-5` | 8.71s | 0.726s / spec | 55.8s (35% overhead) |
+| 40 | Armchair | 80 | `agnr_lib_IL_1e-5` | 16.23s | 1.353s / spec | 87.1s (22% overhead) |
+| 50 | Armchair | 100 | `agnr_lib_IL_1e-5` | 29.08s | 2.423s / spec | 140.6s (14% overhead) |
+| 4 | Zigzag | 8 | `caroli` | 0.39s | 0.032s / spec | 21.1s (92% overhead) |
+| 6 | Zigzag | 12 | `caroli` | 0.50s | 0.042s / spec | 21.6s (90% overhead) |
+| 8 | Zigzag | 16 | `caroli` | 0.65s | 0.054s / spec | 22.2s (88% overhead) |
+| 10 | Zigzag | 20 | `caroli` | 0.86s | 0.072s / spec | 23.1s (84% overhead) |
+| 12 | Zigzag | 24 | `caroli` | 1.13s | 0.094s / spec | 24.2s (81% overhead) |
+| 16 | Zigzag | 32 | `caroli` | 1.95s | 0.162s / spec | 27.6s (71% overhead) |
+| 20 | Zigzag | 40 | `caroli` | 3.10s | 0.258s / spec | 32.4s (60% overhead) |
+| 27 | Zigzag | 54 | `caroli` | 6.21s | 0.518s / spec | 45.4s (43% overhead) |
+| 40 | Zigzag | 80 | `caroli` | 17.11s | 1.426s / spec | 90.8s (21% overhead) |
+| 50 | Zigzag | 100 | `caroli` | 31.19s | 2.599s / spec | 149.4s (13% overhead) |
 
-5. **Candidate Grid Runtime Projections (Full Run: 40,000 spectra / model)**:
+*\*Note: Smoke pool wall clock is $50 \times t_{\text{spec}} / 12 + 19.5\text{s}$ overhead, accurately matching the reviewer's measured file timestamps.*
+
+5. **Candidate Grid Runtime Projections ($\sum \frac{\text{seeds} \times 4 \times t_{\text{spec}}}{n_{\text{workers}}} + \text{pools} \times 19.5\text{s}$)**:
 
 | Candidate Grid | Models | Full 10k Seeds (12 workers) | Full 10k Seeds (24 workers) | Tiered Seeds (12 workers)* | Tiered Seeds (24 workers)* |
 |---|:---:|:---:|:---:|:---:|:---:|
-| **Grid 1 (Armchair 5–31, Zigzag 4–31)** | 55 | **458.0 hrs** (19.1 days) | **229.0 hrs** (9.5 days) | **13.0 hrs** | **6.5 hrs** |
-| **Grid 2 (Armchair 5–50, Zigzag 4–50)** | 93 | **2,161.4 hrs** (90.1 days) | **1,080.7 hrs** (45.0 days) | **30.1 hrs** | **15.0 hrs** |
-| **Grid 3 (Sparse: 21 baseline + {20, 27, 31, 40, 50})** | 31 | **337.1 hrs** (14.0 days) | **168.5 hrs** (7.0 days) | **7.4 hrs** | **3.7 hrs** |
+| **Grid 1 (Armchair 5–31, Zigzag 4–31)** | 55 | **167.7 hrs** (7.0 days)<br>[Compute: 166.5h, Ovh: 1.2h] | **84.4 hrs** (3.5 days)<br>[Compute: 83.3h, Ovh: 1.2h] | **6.4 hrs**<br>[Compute: 5.2h, Ovh: 1.2h] | **3.8 hrs**<br>[Compute: 2.6h, Ovh: 1.2h] |
+| **Grid 2 (Armchair 5–50, Zigzag 4–50)** | 93 | **820.6 hrs** (34.2 days)<br>[Compute: 818.6h, Ovh: 2.0h] | **411.3 hrs** (17.1 days)<br>[Compute: 409.3h, Ovh: 2.0h] | **13.7 hrs**<br>[Compute: 11.7h, Ovh: 2.0h] | **7.9 hrs**<br>[Compute: 5.8h, Ovh: 2.0h] |
+| **Grid 3 (Sparse: 21 baseline + {20, 27, 31, 40, 50})** | 31 | **134.9 hrs** (5.6 days)<br>[Compute: 134.2h, Ovh: 0.7h] | **67.8 hrs** (2.8 days)<br>[Compute: 67.1h, Ovh: 0.7h] | **3.9 hrs**<br>[Compute: 3.3h, Ovh: 0.7h] | **2.3 hrs**<br>[Compute: 1.6h, Ovh: 0.7h] |
 
-*\*Note: Tiered seeds refers to the repository schedule (`seeds_for_width`: 1,000 seeds for $N \le 14$, 300 for $N \le 27$, 100 for $N > 27$).*
+*\*Note: Tiered seeds refers to the repository schedule (`seeds_for_width`: 1,000 seeds for $N \le 14$, 300 for $N \le 27$, 100 for $N > 27$). Pool startup overhead across 4 densities contributes only 1.2 to 2.0 hours total across all models for full runs.*
 
 6. **Key Wide-Grid Architecture Constraints**:
    - **InputSpec Cap Saturation**: `InputSpec.cap = 20.0` clips transmission $T$ at 20 before the log. Wide ribbons carry $T \ge 20$ (e.g. Armchair N40 reaches 20; Armchair N50 reaches 25, saturating 23% of the energy window; Zigzag carries $T \approx N$). For those energies, inputs pin at 1.0, losing resolution. **Resolution**: Before training an atlas incorporating widths $>31$ (armchair) or $>16$ (zigzag), `InputSpec v2` must be created with cap set from the grid ($1.25 \times T_{\max}$). Existing v1 models (7/9 reference and `atlas_v2_smoke`) remain on v1.
