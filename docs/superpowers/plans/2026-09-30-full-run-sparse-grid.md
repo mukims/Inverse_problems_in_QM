@@ -27,7 +27,7 @@ For the implementing agent. **The human chose** the sparse grid from SMOKE-2, wi
    - Run `OMP_NUM_THREADS=1 generate_clouds.py --store ~/atlas_store/engine_v1 --n-seeds 1000 --n-jobs 16`. Nothing else is using the CPU (i7-13700, 24 threads), and `TRAPS.md` allows 16 when alone.
    - Order the models **narrowest first**, so problems show up early and cheaply. The 10 wide models take about 90% of the time.
    - Run `check_store.py --store ~/atlas_store/engine_v1` after the narrow block (armchair N ≤ 16, zigzag N ≤ 12) and again at the end. Every model must PASS.
-   - Expected duration: about **10–12 hours on 16 workers**, or 13–16 hours on 12. That is the sum over models of 4,000 × t_spec divided by the workers, using your measured single-core t_spec, plus ~20% worker contention seen on the widest ribbons and ~0.6 h of pool start-up. The earlier 25–35 h figure came from smoke batches, whose wall time is inflated by chunking (see `2026-09-30-timing-model-note.md`). Put the measured figure from `meta.json` timing in the LOGBOOK.
+   - Expected duration: **about 24 hours**. Measured at 13:48 on the first 1,000-seed densities: armchair N6 and N8 take 134 s and 159 s per density against 760 and 920 single-core seconds of work, an effective speed-up of ~6.7× on 16 workers. The i7-13700 has 8 P-cores with hyper-threading and 8 E-cores; per-spectrum time under load is ~1.65× the single-core time. The earlier 10–12 h figure assumed ~13×. Record the measured speed-up for narrow and wide ribbons in FULL-1.
    - The run resumes by density: if it stops, rerun the same command.
 4. **Full-scale atlas.**
    - Build a v2 atlas from `engine_v1` on all 31 models into `atlas_v2/`, split by seed 70/15/15: 0–699 train, 700–849 validation, 850–999 test.
