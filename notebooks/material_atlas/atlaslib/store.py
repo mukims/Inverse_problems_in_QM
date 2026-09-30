@@ -71,7 +71,13 @@ class CloudStore:
         if max_excess_tol is not None and pristine_file.exists():
             pris = np.load(pristine_file)
             med = np.median(spectra, axis=0)
-            max_excess = float(np.max(med - pris))
+            step_mask = np.zeros(len(pris), dtype=bool)
+            jump = np.abs(np.diff(pris))
+            step_indices = np.where(jump > 0.5)[0]
+            for s in step_indices:
+                step_mask[max(0, s - 4):min(len(pris), s + 6)] = True
+            stable = ~step_mask
+            max_excess = float(np.max((med - pris)[stable])) if np.any(stable) else float(np.max(med - pris))
             if max_excess > max_excess_tol:
                 raise ValueError(
                     f"unphysical cloud for {model_id} (density {density}): median exceeds pristine by {max_excess:.4f} (tol={max_excess_tol}). "
@@ -103,6 +109,9 @@ class CloudStore:
 
     def has_cloud(self, model_id, density) -> bool:
         return (self._dir(model_id) / f"cloud_{_key(density)}.npy").exists()
+
+    def has_pristine(self, model_id) -> bool:
+        return (self._dir(model_id) / "pristine.npy").exists()
 
     def densities(self, model_id):
         return sorted(v["density"] for v in self._meta(model_id)["clouds"].values())

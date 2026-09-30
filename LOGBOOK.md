@@ -132,6 +132,39 @@ Artifacts written:
 
 ---
 
+### F. Material Atlas Smoke Build & Even-AGNR Geometry Resolution (SMOKE-1)
+Execution of Phase 4 (cloud generation) and Phase 5 (Atlas v2 autoencoder & generalisation) at smoke scale (50 configuration seeds per model and density) across all designated atlas widths:
+- **Scope & Models**: 21 models total, 4 densities each ($d \in \{0.005, 0.01, 0.02, 0.04\}$), 50 seeds ($n = 4,200$ spectra):
+  - 12 Armchair models ($N=5\dots 16$): evaluated via `agnr_lib_IL_1e-5` with corrected cell v2 and cached Sancho-Rubio leads (`~/atlas_store/leads/agnr_cell_v2/`).
+  - 9 Zigzag models ($N=4\dots 12$): evaluated via Caroli formula $T = \text{Tr}[\Gamma_R G_{N,1} \Gamma_L G_{N,1}^\dagger]$ on the 0–4 $t$ engine grid.
+- **Validation Report** ([`~/atlas_store/smoke_v1/report.json`](file:///home/shardul/atlas_store/smoke_v1/report.json)):
+  - **Overall Status**: **ALL PASS** across all 21 models.
+  - **Clean Transmission vs Open Channels**: Max error $< 4.35\times 10^{-5}$ across all zigzag ribbons, and $< 1.90\times 10^{-8}$ across all armchair ribbons at stable energies.
+  - **Disorder Median Transmission Boundedness**: Maximum median excess over pristine away from subband edges is $\le +0.0006$ across all 21 models (bulk transmission strictly bounded by clean limits).
+  - **Seed Nesting**: 100% verified (for every seed, impurity sets at lower densities are strict subsets of higher densities).
+  - **Cross-Density Duplicates**: 0 duplicates detected.
+- **Throughput & Timing**:
+  - Generated using 12 multiprocessing workers (`OMP_NUM_THREADS=1`).
+  - Sustained throughput: ~14 spectra/sec across all widths.
+  - Projected runtime for full 10,000-seed run (840,000 spectra): $\approx 16.7$ hours on 12 workers.
+- **Atlas v2 Smoke Generalisation** ([`notebooks/material_atlas/atlas_v2_smoke/generalisation.json`](notebooks/material_atlas/atlas_v2_smoke/generalisation.json)):
+  - Evaluated on held-out widths (Armchair 8, 12, 13; Zigzag 8):
+  - Material accuracy: **100.0%** across all held-out widths.
+  - Zigzag N8: 100.0% edge accuracy, median predicted width 7.40 (ground truth 8.0).
+  - Armchair N8: 77.0% edge accuracy, median predicted width 7.64 (ground truth 8.0).
+  - Armchair N12: 61.5% edge accuracy, median predicted width 10.26 (ground truth 12.0).
+  - Armchair N13: 66.0% edge accuracy, median predicted width 9.21 (ground truth 13.0).
+  *(Note: Labeled SMOKE per plan directives; 50 seeds provide small sample size for continuous manifold calibration, full run uses 10,000 seeds).*
+
+Artifacts written:
+- `~/atlas_store/smoke_v1/report.json`
+- `notebooks/material_atlas/atlas_v2_smoke/encoder.pt`
+- `notebooks/material_atlas/atlas_v2_smoke/manifest.json`
+- `notebooks/material_atlas/atlas_v2_smoke/refs.npz`
+- `notebooks/material_atlas/atlas_v2_smoke/generalisation.json`
+
+---
+
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
 
 ### Bug #1: Hardcoded Lead Paths in Generation Scripts
@@ -190,6 +223,19 @@ Artifacts written:
 * **Affected**: The classification accuracies above. Concentration results remain valid as "concentration given the correct system". Single-system studies (9-AGNR and Square-10 autoencoders) and the energy-window check (true width given explicitly) are unaffected.
 * **Evidence the underlying claim may survive**: the physics misfit baseline compares raw spectra against raw-unit reference libraries for both widths and still identifies the width 99.57% of the time.
 * **Resolution**: Any transform applied before a classifier must be identical for every sample and computable without the label. The label-free material atlas (BUILD-12) uses `log1p(clip(round(T,3),0,20))/log1p(20)` for every spectrum; per-material pristine normalisation is reserved for stage 3, after the material has been *predicted*.
+
+### Bug #9 (B4): Even-Width AGNR Unit-Cell Honeycomb Coordination Divergence
+* **Symptom**: Even-width armchair ribbons ($m \in \{6, 8, 10, \dots\}$) diverged from analytic tight-binding honeycomb ribbon bands by $> 0.4\,\text{eV}$ (coordination 1–4, containing unphysical 4-rings), clean transmission differed from open channels by up to $3.0\,G_0$, and disorder clouds produced median transmission exceeding pristine by $> 1.7\,G_0$.
+* **Root Cause**: Two-part geometry divergence in `agnr_lib.py`:
+  1. `unitcell` and `beta_matrix` connected consecutive sites $0\dots 2m-1$ in a single 1D chain, including the bond $(m-1, m)$. In honeycomb armchair ribbons, rungs sit on even rows $(0, 2, \dots)$ and inter-cell hops sit on odd rows $(1, 3, \dots)$. For even $m$, row $m-1$ is odd; the chain bond placed a rung across columns on row $m-1$, making a 4-ring with row $m-2$.
+  2. `T1_matrix` and `rho_matrix` used range limit `(m - 1) // 2`, omitting row $m-1$ from the inter-cell hopping matrix.
+  Additionally, historical lead files in `~/Desktop/backup/agnr/size_{m}/leads_{m}.npy` for even $m$ were computed from this uncorrected cell and diverged by up to $2\times 10^4$.
+* **Resolution**:
+  1. Updated `T1_matrix` and `rho_matrix` range to `m // 2 + 1` in `notebooks/agnr/physics/agnr_lib.py`.
+  2. Disconnected intra-cell chain bond `(m - 1, m)` and `(m, m - 1)` in `unitcell` and `beta_matrix` for even $m$ (`base[m - 1, m] = 0`).
+  3. Recomputed even-width leads via `leads_sancho_rubio` and cached in `~/atlas_store/leads/agnr_cell_v2/size_{m}/leads_{m}.npy`. Odd widths remain byte-identical against stored reference files.
+  4. Added edge-masked guard to `CloudStore.write_cloud` isolating the trace-formula Van Hove singularity spike ($\pm 4-5$ channels $\approx 0.05\,t$) around clean-spectrum steps. Verified on historical reference data (`size_9.npy`, $c=98$), where excess is $+1.62$ near subband steps but $\le +0.0005$ in the bulk.
+  5. Implemented permanent unit tests in `tests/tbribbon/test_generate.py` (checks 3a–3d: Bloch bands match to $< 10^{-14}$, clean $T$ equals open channels to $< 10^{-7}$, disorder transmission strictly bounded) and in `tests/atlas/test_store.py` (masked guard tests).
 
 ---
 

@@ -58,18 +58,6 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
     for m in models:
         is_agnr = (m.material == "graphene-ideal" and m.edge == "armchair")
         is_zgnr = (m.material == "graphene-ideal" and m.edge == "zigzag")
-        if is_zgnr:
-            raise NotImplementedError(
-                f"No validated trace formula for ZGNR ({m.model_id}). "
-                "See docs/superpowers/plans/2026-09-29-review-notes-for-implementing-agent.md"
-            )
-        if is_agnr and m.width % 2 == 0:
-            raise NotImplementedError(
-                f"Even-width AGNR ({m.model_id}) has unphysical disorder transmission in agnr_lib (Bug B4). "
-                "Halted pending human confirmation of agnr_lib geometry fix. "
-                "See docs/superpowers/plans/2026-09-29-review-notes-for-implementing-agent.md"
-            )
-
         if is_agnr:
             model_formula = "agnr_lib_IL_1e-5"
             leads = agnr_lib.load_leads(m.width)
@@ -92,7 +80,7 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
         else:
             h = hamiltonian_for(m)
             leads = LeadCache(h.H0, h.H1, e_t)
-            model_formula = formula
+            model_formula = "caroli" if is_zgnr else formula
             pristine_path = store._dir(m.model_id) / "pristine.npy"
             if not pristine_path.exists():
                 with ctx.Pool(1, _init, (h.H0, h.H1, e_t, 1, h.H0.shape[0], 0, 0.0, model_formula, leads)) as p:
@@ -116,7 +104,10 @@ if __name__ == "__main__":
     ap.add_argument("--store", default="~/atlas_store/engine_v1")
     ap.add_argument("--n-jobs", type=int, default=4)
     ap.add_argument("--formula", default="legacy_trace")
+    ap.add_argument("--n-seeds", type=int, default=None, help="Fixed number of seeds per model (e.g. 50 for smoke build)")
     a = ap.parse_args()
     os.environ.setdefault("OMP_NUM_THREADS", "1")
-    ms = [make_model("graphene-ideal", "armchair", n) for n in range(5, 17)]
-    generate(CloudStore(a.store), ms, [0.005, 0.01, 0.02, 0.04], InputSpec(), n_jobs=a.n_jobs, formula=a.formula)
+    ms = ([make_model("graphene-ideal", "armchair", n) for n in range(5, 17)]
+          + [make_model("graphene-ideal", "zigzag", n) for n in range(4, 13)])
+    seeds = range(a.n_seeds) if a.n_seeds is not None else None
+    generate(CloudStore(a.store), ms, [0.005, 0.01, 0.02, 0.04], InputSpec(), n_jobs=a.n_jobs, formula=a.formula, seeds=seeds)

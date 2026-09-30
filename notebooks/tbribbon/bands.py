@@ -16,6 +16,7 @@ def open_channels(H0, H1, energies, nk=4001):
     b = _bands(H0, H1, nk)
     out = []
     for E in energies:
-        s = np.sign(b - E)
+        # Offset by 1e-7 to prevent machine-epsilon sign flutter on exact flat bands (e.g. at E=1.0t)
+        s = np.sign(b - (E + 1e-7))
         out.append(int(np.sum(s[1:] != s[:-1]) // 2))
     return np.array(out)

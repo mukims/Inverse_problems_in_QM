@@ -51,6 +51,9 @@ def unitcell(w, d, t, e, m):
     idy = np.arange(0, 2 * m - 1)
     base[idy, idy + 1] = t
     base[idy + 1, idy] = t
+    if m % 2 == 0:
+        base[m - 1, m] = 0
+        base[m, m - 1] = 0
     idx = np.arange(0, m, 2)
     base[idx, 2 * m - 1 - idx] = t
     base[2 * m - 1 - idx, idx] = t
@@ -66,6 +69,9 @@ def beta_matrix(w_vals, d, t, e, m):
     idy = np.arange(0, 2 * m - 1)
     base[:, idy, idy + 1] = t
     base[:, idy + 1, idy] = t
+    if m % 2 == 0:
+        base[:, m - 1, m] = 0
+        base[:, m, m - 1] = 0
     idx = np.arange(0, m, 2)
     base[:, idx, 2 * m - 1 - idx] = t
     base[:, 2 * m - 1 - idx, idx] = t
@@ -77,7 +83,7 @@ def T1_matrix(t, m):
     m = int(m)
     dim = 2 * m
     T = np.zeros((dim, dim), dtype=np.complex128)
-    n = np.arange(1, (m - 1) // 2 + 1)
+    n = np.arange(1, m // 2 + 1)
     T[2 * n - 1, 2 * m - 2 * n] = t
     return T
 
@@ -87,7 +93,7 @@ def rho_matrix(t, m):
     m = int(m)
     dim = 2 * m
     rho = np.zeros((dim, dim), dtype=complex)
-    for n in range(1, (m - 1) // 2 + 1):
+    for n in range(1, m // 2 + 1):
         rho[2 * n - 1, 2 * n - 1] = t
     return rho
 
@@ -127,11 +133,27 @@ def leads_sancho_rubio(w_vals, d, t, e, m, tol=1e-10, max_iter=200):
     return np.linalg.inv(Ws), count
 
 
+CELL_V2_LEADS_DIR = os.path.expanduser("~/atlas_store/leads/agnr_cell_v2")
+
+
 def load_leads(m, leads_dir="~/Desktop/backup/agnr"):
-    """Load precomputed AGNR leads for width m -> (300, 2m, 2m)."""
-    p = os.path.expanduser(os.path.join(leads_dir, f"size_{m}", f"leads_{m}.npy"))
-    arr = np.load(p)
-    # some saved files are (G, iters) tuples flattened to object/extra dim
+    """Load precomputed AGNR leads for width m -> (300, 2m, 2m).
+
+    Odd m loads historical leads from `leads_dir` (validated by regression).
+    Even m loads corrected cell v2 leads from CELL_V2_LEADS_DIR, computing
+    and caching them via `leads_sancho_rubio` on first access.
+    """
+    m = int(m)
+    if m % 2 == 0:
+        p = os.path.join(CELL_V2_LEADS_DIR, f"size_{m}", f"leads_{m}.npy")
+        if not os.path.exists(p):
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            g_s, _ = leads_sancho_rubio(energy_grid(), D_DEFAULT, T_DEFAULT, 0.0, m)
+            np.save(p, g_s)
+        arr = np.load(p)
+    else:
+        p = os.path.expanduser(os.path.join(leads_dir, f"size_{m}", f"leads_{m}.npy"))
+        arr = np.load(p)
     if arr.ndim == 4 and arr.shape[0] == 1:
         arr = arr[0]
     return arr

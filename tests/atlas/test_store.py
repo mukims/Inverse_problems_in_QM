@@ -68,3 +68,35 @@ def test_unphysical_excess_cloud_refused(tmp_path):
     with pytest.raises(ValueError, match="unphysical"):
         s.write_cloud(MID, 0.01, 14, bad, np.arange(3), E)
 
+
+def test_masked_guard_tolerates_step_edges_rejects_bulk_excess(tmp_path):
+    s = CloudStore(tmp_path)
+    e = np.arange(30) * 0.01
+    pris = np.zeros(30)
+    pris[15:] = 1.0  # jump of 1.0 at index 15
+    s.write_pristine(MID, e, pris)
+
+    # 1. Excess only within 3 channels of step (index 16): accepted
+    near_step_cloud = np.zeros((3, 30))
+    near_step_cloud[:, 15:] = 1.0
+    near_step_cloud[:, 16] = 1.5  # median exceeds by 0.5 near step
+    s.write_cloud(MID, 0.01, 14, near_step_cloud, np.arange(3), e)
+
+    # 2. Same excess placed more than 6 channels from any step (index 25): rejected
+    far_cloud = np.zeros((3, 30))
+    far_cloud[:, 15:] = 1.0
+    far_cloud[:, 25] = 1.5  # median exceeds by 0.5 far from step
+    with pytest.raises(ValueError, match="unphysical"):
+        s.write_cloud(MID, 0.02, 28, far_cloud, np.arange(3), e)
+
+
+def test_masked_guard_unmasked_when_no_steps(tmp_path):
+    s = CloudStore(tmp_path)
+    e = np.arange(20) * 0.01
+    pris = np.ones(20)  # flat pristine, no steps
+    s.write_pristine(MID, e, pris)
+    bad = np.ones((3, 20)) * 1.2
+    with pytest.raises(ValueError, match="unphysical"):
+        s.write_cloud(MID, 0.01, 14, bad, np.arange(3), e)
+
+

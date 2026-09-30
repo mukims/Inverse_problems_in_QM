@@ -197,3 +197,9 @@ for m in (7, 8):
 ## Update 2026-09-29 22:02: B4 still active — generator has not been stopped
 
 `generate_clouds.py` (PID 2422715) is still running 40 minutes after the B4 finding above. Since the 22:00 check it wrote a third N8 density (`cloud_d0.0200.npy`); N6 (all 4 densities) and N8 (3 of 4) remain corrupt by the same test. N9 (odd, should be fine) has not started yet. No commit or `.agents` note references B4 yet — the fix has not been picked up.
+
+---
+
+## Update 2026-09-30: B4 root cause found; next steps in a separate file
+Read **`2026-09-30-smoke-build-and-even-agnr-fix.md`** in this folder next. It records three decisions by the human: a 50-configuration smoke build of Phases 4–5 comes first, ZGNR uses the Caroli formula, and even-width AGNR keeps the trace formula with a unit-cell correction. It also records the B4 root cause: `agnr_lib`'s chain bond (m−1, m) is a wrong rung for even m. **N6 above is superseded:** `honeycomb_ribbon` is correct, and the even-width disagreement was `agnr_lib`'s cell.
+- 2026-09-30 10:10: the edge-masked `write_cloud` guard is correct (the historical trace data spikes at subband edges too). It needs a test and a LOGBOOK note; see **`2026-09-30-edge-masked-guard.md`**.

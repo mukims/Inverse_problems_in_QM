@@ -1,0 +1,26 @@
+{
+  "graphene-ideal/armchair/N8": {
+    "material_accuracy": 100.0,
+    "edge_accuracy": 77.0,
+    "median_width": 7.641089390351904,
+    "between_neighbours_pct": 28.499999999999996
+  },
+  "graphene-ideal/armchair/N12": {
+    "material_accuracy": 100.0,
+    "edge_accuracy": 61.5,
+    "median_width": 10.259955453694706,
+    "between_neighbours_pct": 33.0
+  },
+  "graphene-ideal/armchair/N13": {
+    "material_accuracy": 100.0,
+    "edge_accuracy": 66.0,
+    "median_width": 9.210075350424184,
+    "between_neighbours_pct": 13.5
+  },
+  "graphene-ideal/zigzag/N8": {
+    "material_accuracy": 100.0,
+    "edge_accuracy": 100.0,
+    "median_width": 7.4028422389533945,
+    "between_neighbours_pct": 57.99999999999999
+  }
+}
