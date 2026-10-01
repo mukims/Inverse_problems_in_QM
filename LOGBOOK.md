@@ -293,8 +293,9 @@ Artifacts written:
      - **Zigzag $N=40$** (Caroli): 4,000 spectra in 10,804s (wall 2.70s/spec, worker median 30.56s/spec).
      - **Armchair $N=50$** (`agnr_lib_IL_1e-5`, cell v2): 4,000 spectra in 18,297s (wall 4.57s/spec, worker median 51.92s/spec).
      - **Zigzag $N=50$** (Caroli): in progress on pool 1 ($d=0.0050$), the 31st and final model.
-   - **Empirical 16-Worker Scaling & Throughput**:
-     - Measured parallel speedup across wide models remains exceptionally stable at $11.1\times$ to $11.6\times$ (accounting for the 8 P-cores + 8 E-cores architecture of the i7-13700).
+   - **Empirical 16-Worker Scaling & Concurrency**:
+     - **Concurrency**: Across wide models, the ratio of median loaded worker time per spectrum to wall time per spectrum is consistently **$11.1\times$ to $11.6\times$** (e.g. at Armchair N50: $51.92\,\text{s} / 4.57\,\text{s} = 11.36\times$), measuring worker concurrency across the 16 parallel processes.
+     - **Effective Single-Core Speedup**: Under full 16-worker load, each spectrum experiences a $\sim 1.8\times$ slowdown relative to an unloaded single core ($51.92\,\text{s}$ loaded vs $29.08\,\text{s}$ single-core in SMOKE-2, due to shared memory bandwidth and the 8 P-cores with hyper-threading + 8 E-cores architecture of the i7-13700). Consequently, the effective speedup over a single core is $29.08\,\text{s} / 4.57\,\text{s} \approx \mathbf{6.4\times}$, explaining the $\sim 24\,\text{h}$ total sparse-grid generation time.
      - Variance between pools of identical geometry is $< 0.4\%$.
      - Total generated spectra on disk: **120,000+ / 124,000** (96.8% of planned sparse-grid dataset).
 
