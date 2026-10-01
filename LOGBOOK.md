@@ -22,6 +22,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-12** | 2026-09-29 | 7-AGNR, 9-AGNR & Square-10 | Label-free material atlas (autoencoder + k-NN retrieval + novelty) | 3,000 seeds per conc per system (303k), 0–3 eV | `log1p(clip(round(T,3),0,20))/log1p(20)` — no per-material pristine (Bug #8); config-seed split | **100.00%** material & width, label-free (45,450 test spectra) | rough c from neighbours: 3.15 / 4.57 / 4.91 | — | **Completed**: label-free identification is exact at every concentration; baselines on the same input 99.97% (logistic), 99.96% (PCA-kNN), 99.45% (onset + plateau tree), 99.37% (library). Novelty (leave one out): unseen Square-10 separated by reconstruction error with AUROC 1.00 (k-NN distance 0.95; its 99th-percentile threshold flags only 0.6%); unseen 9-AGNR not separable (AUROC 0.79 / 0.51). False alarms 1.05%. `notebooks/material_atlas/results/`. |
 | **BUILD-13** | 2026-09-29 | **7-AGNR & 9-AGNR** | **7/9-AGNR Reference Pipeline** (Atlas Stage 1–2 + Stage 3 XGBoost + Conformal) | `size_7.npy` + `size_9.npy` (atlas seeds 0–999, XGB train seeds 0–2099, cal seeds 2100–2549, test seeds 2550–2999; 37,350 test spectra across 83 concentrations) | Stage 1–2: `InputSpec v1` (400-ch $[0, 4t)$, label-free $\log(1+T)/\log(21)$); Stage 3: predicted width pristine division + 3-decimal rounding | **99.86%** | **1.973 (Overall)**<br>1.655 (7)<br>2.193 (9) | **3.034 (Overall)** | **Completed (Gate 1 Passed)**: End-to-end reference solution satisfying all Gate 1 benchmarks: label-free width accuracy 99.86% ($\ge 99.5\%$), end-to-end concentration MAE 1.973 ($\le 1.98$), 90% conformal interval coverage 90.00% (within $90 \pm 2\%$, relative halfwidth $q = 0.0897$ on 37,350 held-out test spectra). Stored in `notebooks/material_atlas/reference_7_9/`. |
 | **SMOKE-2** | 2026-09-30 | **21 Baseline + 10 Wider Ribbon Models** | **Option A Full-Width Atlas v2 & Wider Grid Scaling** | 31 models $\times$ 4 densities $\times$ 50 seeds ($n=6,200$ spectra in `~/atlas_store/smoke_v1/`); test on held-out seeds 43–49 ($n=588$) | Label-free `InputSpec v1`; modal `width_vote` retrieval over top-k winning-group neighbours; Caroli for ZGNR; corrected cell v2 for AGNR | **100.0% Mat<br>100.0% Edge<br>98.6% Width (d≤0.02)<br>91.8% Width (d=0.04)** | N/A (Stage 1-2 evaluation) | N/A | **Completed (Option A Verified)**: 100% material & edge accuracy across all models; 100% zigzag width; armchair width 100% ($d \le 0.01$), 97.6% ($d=0.02$), 85.7% ($d=0.04$). All 31 models pass `check_store.py`. Full scaling cost table and 3-grid projections documented. |
+| **BUILD-15** | 2026-10-01 | **31-Model Sparse Ribbon Grid (FULL-1 Production Run)** | **Atlas v2** (Conv1dAE + Option A Modal Width-Vote Retrieval + InputSpec v2) | `~/atlas_store/engine_v1/` (31 models $\times$ 4 densities $\times$ 1,000 seeds = **124,000 spectra**; test on held-out seeds 850–999 = **18,600 test spectra**) | `InputSpec v2` (cap=64.0, 400-ch $[0, 4.0t)$, label-free $\log(1+T)/\log(65)$); Caroli for ZGNR; corrected cell v2 for AGNR; config-seed split 70/15/15 | **100.0% Mat<br>100.0% Edge<br>99.98% Width** | N/A (Stage 1–2 identification) | N/A | **Completed (FULL-1 & Revised Gate 5 Verified)**: 100.0% Material Accuracy (18,600/18,600), 100.0% Edge Accuracy (18,600/18,600), 99.98% Width Accuracy across 18,600 held-out test spectra. 123 of 124 lines pass $\ge 99.0\%$ (122 at 100.0%). Only line below 99% is Armchair N8 at $d=0.0400$ (98.0%, 3 errors, intra-family $3p+2 \to 3p+2$). All 31 models pass `check_store.py`. Effective speedup over single core: ~6.4× (concurrency ~11.4×). |
 
 ---
 
@@ -262,13 +263,14 @@ Artifacts written:
 - `~/atlas_store/smoke_v1/report.json` (31/31 ALL PASS)
 - `notebooks/material_atlas/atlas_v2_smoke/identification.json` (Option A Revised Gate 5 results)
 
-### H. Full Production Run: Sparse 31-Width Grid (FULL-1 in Progress)
+### H. Full Production Run: Sparse 31-Width Grid (FULL-1 & Revised Gate 5 Completion)
 
 1. **Production Generation Setup**:
    - **Store**: `~/atlas_store/engine_v1/`
    - **Grid**: Sparse 31-width grid (17 Armchair: $N \in \{5\dots 16, 20, 27, 31, 40, 50\}$, 14 Zigzag: $N \in \{4\dots 12, 16, 20, 27, 40, 50\}$).
    - **Sampling**: 1,000 configuration seeds per (model, density), across 4 densities $\{0.005, 0.010, 0.020, 0.040\}$ ($n = 124,000$ spectra total).
-   - **Execution order**: Narrow block first (21 models: Armchair $N \le 16$, Zigzag $N \le 12$; 84,000 spectra) on 16 parallel workers (`OMP_NUM_THREADS=1`).
+   - **Execution order**: Narrow block first (21 models: Armchair $N \le 16$, Zigzag $N \le 12$; 84,000 spectra), followed by wide block (10 models; 40,000 spectra) on 16 parallel workers (`OMP_NUM_THREADS=1`).
+   - **Total Run Wall-Clock Time**: ~24.5 hours on the Intel Core i7-13700.
 
 2. **Narrow-Block Generation Completion**:
    - Armchair $N=5\dots 16$ (12 models, 48,000 spectra): 100% generated with worker compute timing profiling.
@@ -281,9 +283,9 @@ Artifacts written:
    - **Resolution**: Updated `check_store.py` to use a spike-robust per-seed mean: `mean(min(T, pristine + 1) - pristine) <= 0.05` over unmasked channels (`check_seed_excess`). Added unit tests in `tests/tbribbon/test_check_store.py` (2/2 passed; 88/88 test suite passing).
    - **Validation Result (ALL PASS)**: Rerunning `check_store.py --store ~/atlas_store/engine_v1 --narrow-only` produced **ALL PASS** across all 21 models (`report.json` written to `~/atlas_store/engine_v1/report.json`). Clean channel error $\le 4.3\times 10^{-5}$ for zigzag and $0.00$ for armchair; 0 cross-density duplicates; 100% valid seed nesting.
 
-4. **Wide-Block Generation Progress (30 / 31 Models Complete, 120,000 Spectra)**:
-   - Following narrow-block verification, wide-ribbon production generation proceeded continuously on 16 parallel workers (`OMP_NUM_THREADS=1`):
-     - **Zigzag $N=16$** (Caroli): 4,000 spectra across 4 densities in 1,250s (wall 0.31s/spec, worker median 3.38s/spec).
+4. **Wide-Block Generation Completion (All 31 Models Generated, 124,000 Spectra)**:
+   - Wide-ribbon production generation proceeded continuously on 16 parallel workers (`OMP_NUM_THREADS=1`):
+     - **Zigzag $N=16$** (Caroli): 4,000 spectra in 1,250s (wall 0.31s/spec, worker median 3.38s/spec).
      - **Armchair $N=20$** (`agnr_lib_IL_1e-5`, cell v2): 4,000 spectra in 2,102s (wall 0.53s/spec, worker median 5.86s/spec).
      - **Zigzag $N=20$** (Caroli): 4,000 spectra in 1,967s (wall 0.49s/spec, worker median 5.45s/spec).
      - **Armchair $N=27$** (`agnr_lib_IL_1e-5`, cell v2): 4,000 spectra in 3,940s (wall 0.98s/spec, worker median 11.28s/spec; crossed 100,000 spectra milestone).
@@ -292,12 +294,58 @@ Artifacts written:
      - **Armchair $N=40$** (`agnr_lib_IL_1e-5`, cell v2): 4,000 spectra in 10,360s (wall 2.59s/spec, worker median 29.45s/spec).
      - **Zigzag $N=40$** (Caroli): 4,000 spectra in 10,804s (wall 2.70s/spec, worker median 30.56s/spec).
      - **Armchair $N=50$** (`agnr_lib_IL_1e-5`, cell v2): 4,000 spectra in 18,297s (wall 4.57s/spec, worker median 51.92s/spec).
-     - **Zigzag $N=50$** (Caroli): in progress on pool 1 ($d=0.0050$), the 31st and final model.
+     - **Zigzag $N=50$** (Caroli): 4,000 spectra in 20,013s (wall 5.00s/spec, worker median 57.01s/spec).
    - **Empirical 16-Worker Scaling & Concurrency**:
-     - **Concurrency**: Across wide models, the ratio of median loaded worker time per spectrum to wall time per spectrum is consistently **$11.1\times$ to $11.6\times$** (e.g. at Armchair N50: $51.92\,\text{s} / 4.57\,\text{s} = 11.36\times$), measuring worker concurrency across the 16 parallel processes.
-     - **Effective Single-Core Speedup**: Under full 16-worker load, each spectrum experiences a $\sim 1.8\times$ slowdown relative to an unloaded single core ($51.92\,\text{s}$ loaded vs $29.08\,\text{s}$ single-core in SMOKE-2, due to shared memory bandwidth and the 8 P-cores with hyper-threading + 8 E-cores architecture of the i7-13700). Consequently, the effective speedup over a single core is $29.08\,\text{s} / 4.57\,\text{s} \approx \mathbf{6.4\times}$, explaining the $\sim 24\,\text{h}$ total sparse-grid generation time.
+     - **Concurrency**: Across wide models, the ratio of median loaded worker time per spectrum to wall time per spectrum is consistently **$11.1\times$ to $11.6\times$** (e.g. at Armchair N50: $51.92\,\text{s} / 4.57\,\text{s} = 11.36\times$; Zigzag N50: $57.01\,\text{s} / 5.00\,\text{s} = 11.40\times$).
+     - **Effective Single-Core Speedup**: Under full 16-worker load, each spectrum experiences a $\sim 1.8\times$ slowdown relative to an unloaded single core ($51.92\,\text{s}$ loaded vs $29.08\,\text{s}$ single-core in SMOKE-2, due to shared memory bandwidth and the 8 P-cores with hyper-threading + 8 E-cores architecture of the i7-13700). Consequently, the effective speedup over a single core is $29.08\,\text{s} / 4.57\,\text{s} \approx \mathbf{6.4\times}$, explaining the $\sim 24.5\,\text{h}$ total sparse-grid generation time.
      - Variance between pools of identical geometry is $< 0.4\%$.
-     - Total generated spectra on disk: **120,000+ / 124,000** (96.8% of planned sparse-grid dataset).
+     - Total generated spectra on disk: **124,000 / 124,000** (100.0% of planned sparse-grid dataset across all 31 models).
+
+5. **Full Store Validation Gate (`check_store.py`)**:
+   - Ran `check_store.py --store ~/atlas_store/engine_v1` on all 31 models:
+   - **Status**: **ALL PASS** across all 31 models ([`report.json`](file:///home/shardul/atlas_store/engine_v1/report.json)).
+   - **Clean Channels Error**: Max error is $0.00\text{e}+00$ across all 17 Armchair models, and $\le 6.60\times 10^{-5}$ across all 14 Zigzag models.
+   - **Median Excess Away from Subband Edges**: Strictly bounded by pristine limits across all 31 models ($\le +0.0005$ for Armchair, $-0.0000$ for Zigzag).
+   - **Duplicates & Nesting**: 0 cross-density duplicates; 100% verified seed nesting (lower density impurity sets are strict subsets of higher density sets).
+   - **Robust Seed Mean Checks**: 100% pass across all 124,000 generated spectra.
+
+6. **Full-Scale Atlas v2 Training & Revised Gate 5 Benchmark**:
+   - **Architecture & Spec**: 1D Conv Autoencoder (32-dim latent space) with `InputSpec v2` (cap = 64.0, 400 channels $[0, 4.0t)$, label-free $\log(1+T)/\log(65)$).
+   - **Data Split**: Strict configuration-seed split 70% train (seeds 0–699, $n=21,700$ training samples), 15% validation (seeds 700–849, $n=4,650$ samples), 15% test (seeds 850–999, $n=18,600$ samples across 124 lines with 150 test spectra per line).
+   - **Reference Library**: 700 reference embeddings per (model, density) = 86,800 reference embeddings.
+   - **Overall Pooled Benchmark Metrics (18,600 Held-Out Test Spectra)**:
+
+| Group / Edge Filter | Density ($d$) | Test Samples ($n_{\text{test}}$) | Material Acc (%) | Edge Acc (%) | Width-Vote Acc (%) | Flagged Unknown (%) |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Armchair** | 0.0050 | 2,550 | **100.0%** | **100.0%** | **100.0%** | 0.0% |
+| **Armchair** | 0.0100 | 2,550 | **100.0%** | **100.0%** | **100.0%** | 0.0% |
+| **Armchair** | 0.0200 | 2,550 | **100.0%** | **100.0%** | **100.0%** | 0.8% |
+| **Armchair** | 0.0400 | 2,550 | **100.0%** | **100.0%** | **99.8%** | 6.3% |
+| **Zigzag** | 0.0050 | 2,100 | **100.0%** | **100.0%** | **100.0%** | 0.0% |
+| **Zigzag** | 0.0100 | 2,100 | **100.0%** | **100.0%** | **100.0%** | 0.0% |
+| **Zigzag** | 0.0200 | 2,100 | **100.0%** | **100.0%** | **100.0%** | 0.0% |
+| **Zigzag** | 0.0400 | 2,100 | **100.0%** | **100.0%** | **100.0%** | 0.0% |
+| **All Models Pooled** | 0.0050 | 4,650 | **100.0%** | **100.0%** | **100.0%** | 0.0% |
+| **All Models Pooled** | 0.0100 | 4,650 | **100.0%** | **100.0%** | **100.0%** | 0.0% |
+| **All Models Pooled** | 0.0200 | 4,650 | **100.0%** | **100.0%** | **100.0%** | 0.5% |
+| **All Models Pooled** | 0.0400 | 4,650 | **100.0%** | **100.0%** | **99.9%** | 3.4% |
+| **TOTAL OVERALL** | **All Densities** | **18,600** | **100.000%** | **100.000%** | **99.978%** | **0.979%** |
+
+   - **Per-Line Revised Gate 5 Assessment**:
+     - 123 of 124 lines pass $\ge 99.0\%$ (122 lines at 100.0%, 1 line at 99.33%).
+     - Single line below 99%: Armchair $N=8$ at $d=0.0400$ ($98.00\% = 147/150$, 3 misclassifications).
+     - **Failure Pattern Analysis**:
+       - For Armchair $N=8$ at $d=0.0400$, the 3 misclassified test spectra (seeds 863, 879, 898) were all predicted as $N=5$, which belongs to the same $3p+2$ armchair family ($8 = 3(2)+2, 5 = 3(1)+2$). Seed 863 was additionally flagged as `unknown=True`.
+       - For Armchair $N=13$ at $d=0.0400$ (99.33%, 1 error), seed 924 was predicted as $N=6$, and was flagged as `unknown=True`.
+       - Across all 18,600 test spectra, there are **0 material errors** and **0 edge errors**.
+       - The overall false alarm rate is **0.979%** (182 / 18,600), easily satisfying the Gate 5 target of $\le 2\%$.
+
+Artifacts written:
+- `~/atlas_store/engine_v1/report.json`
+- `notebooks/material_atlas/atlas_v2/encoder.pt`
+- `notebooks/material_atlas/atlas_v2/manifest.json`
+- `notebooks/material_atlas/atlas_v2/refs.npz`
+- `notebooks/material_atlas/atlas_v2/identification.json`
 
 ---
 
