@@ -190,14 +190,37 @@ def main():
     hist = Counter(counts)
     max_count = max(counts) if counts else 0
 
-    pooled_pass = bool(pooled_fa <= 1.5)
+    arm_lines = [s for mid, mstats in ident_res.items() if "armchair" in mid for s in mstats.values()]
+    zig_lines = [s for mid, mstats in ident_res.items() if "zigzag" in mid for s in mstats.values()]
+    arm_pooled_fa = sum(s["n_flagged_unknown"] for s in arm_lines) / sum(s["n_test_samples"] for s in arm_lines) * 100
+    zig_pooled_fa = sum(s["n_flagged_unknown"] for s in zig_lines) / sum(s["n_test_samples"] for s in zig_lines) * 100
+
+    arm_pooled_pass = bool(arm_pooled_fa <= 1.5)
+    zig_pooled_pass = bool(zig_pooled_fa <= 1.5)
+    pooled_pass = arm_pooled_pass and zig_pooled_pass
     per_line_pass = bool(max_count < 8)
     sound_gate_pass = pooled_pass and per_line_pass
 
-    print("\n[INFO] Novelty False Alarm Histogram (flagged count out of 150 across 124 lines):")
-    for cnt in sorted(hist.keys()):
-        print(f"  {cnt:2d}/150 flagged: {hist[cnt]:3d} lines ({hist[cnt]/len(all_line_stats)*100:.1f}%)")
-    print(f"[INFO] Pooled False Alarm Rate: {pooled_fa:.2f}% (gate <= 1.5%: {'PASS' if pooled_pass else 'FAIL'})")
+    test_dispersion = float(np.var(counts, ddof=1) / (np.mean(counts) + 1e-12)) if len(counts) > 1 else 0.0
+
+    from scipy.stats import binom
+    n_lines = len(all_line_stats)
+    print("\n[INFO] Novelty False Alarm Histogram vs Binomial(150, 0.01) Expectation:")
+    print(f"{'Count':<8} | {'Observed Lines':<16} | {'Observed %':<12} | {'Binomial Expected Lines':<24} | {'Binomial %'}")
+    print("-" * 75)
+    max_h = max(max_count, 6)
+    binom_exp = {}
+    for cnt in range(max_h + 1):
+        obs = hist.get(cnt, 0)
+        p_b = binom.pmf(cnt, 150, 0.01) if cnt < max_h else 1.0 - binom.cdf(cnt - 1, 150, 0.01)
+        exp_lines = p_b * n_lines
+        binom_exp[str(cnt)] = round(exp_lines, 2)
+        print(f"{cnt:<8d} | {obs:<16d} | {obs/n_lines*100:<12.1f} | {exp_lines:<24.1f} | {p_b*100:.1f}%")
+
+    print(f"\n[INFO] Test Dispersion Index (var/mean): {test_dispersion:.4f} (1.0 = pure binomial noise)")
+    print(f"[INFO] Pooled False Alarm Rate (Armchair): {arm_pooled_fa:.2f}% (gate <= 1.5%: {'PASS' if arm_pooled_pass else 'FAIL'})")
+    print(f"[INFO] Pooled False Alarm Rate (Zigzag):   {zig_pooled_fa:.2f}% (gate <= 1.5%: {'PASS' if zig_pooled_pass else 'FAIL'})")
+    print(f"[INFO] Pooled False Alarm Rate (Overall):  {pooled_fa:.2f}% (gate <= 1.5%: {'PASS' if pooled_pass else 'FAIL'})")
     print(f"[INFO] Max Line Flagged Count: {max_count}/150 ({max_count/150*100:.2f}%) (gate < 8/150: {'PASS' if per_line_pass else 'FAIL'})")
 
     full_output = {
@@ -205,11 +228,20 @@ def main():
         "pooled": pooled,
         "novelty_gate": {
             "pooled_false_alarm_pct": round(pooled_fa, 3),
+            "armchair_pooled_false_alarm_pct": round(arm_pooled_fa, 3),
+            "zigzag_pooled_false_alarm_pct": round(zig_pooled_fa, 3),
             "pooled_gate_pass": pooled_pass,
             "max_line_flagged_count": max_count,
             "max_line_flagged_pct": round(max_count / 150 * 100, 2),
             "per_line_gate_pass": per_line_pass,
+            "test_dispersion_index": round(test_dispersion, 4),
             "flagged_count_histogram": {str(k): v for k, v in sorted(hist.items())},
+            "binomial_expected_histogram": binom_exp,
+            "n0_validation_scan": getattr(atlas, "_n0_disp_reports", {}),
+            "selected_n0": atlas.n0,
+            "z_star": atlas.z_star,
+            "w_edge": atlas.w_edge,
+            "novelty_version": atlas.novelty,
             "overall_pass": sound_gate_pass
         },
         "revised_gate5_pass_per_line": gate5_pass

@@ -29,3 +29,5 @@ The per-line counts are more spread than chance. A binomial with a 1% rate over 
 - Shrink each class's scale w toward its edge's pooled w, to reduce the estimation noise. For example, w_shrunk = (150 · w + n0 · w_edge) / (150 + n0), with n0 chosen on validation.
 
 This would most likely clear the two 8/150 lines and tighten the spread. Identification would not change, and detection would not change in any material way, since the minimum square ratio is 1.24. Without the refinement, the flag is usable as it stands: pooled 1.0%, worst line 5.3% (against 22% before), and it now catches untrained widths as well as unseen materials.
+
+> **Decision (human, 2026-10-01): apply the refinement.** See `2026-10-01-novelty-refinement.md`.

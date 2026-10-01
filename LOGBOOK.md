@@ -453,6 +453,84 @@ Artifacts written:
 
 ---
 
+### [2026-10-01] BUILD-17: FULL-3 Reviewer Novelty Refinement (Per-Edge Tail & Scale Shrinkage)
+* **Objective**: Implement reviewer-directed **FULL-3** refinement (`docs/superpowers/plans/2026-10-01-novelty-refinement.md`) to evaluate per-edge standardized tails $z^*_{\text{edge}}$ and scale shrinkage $w' = (N \cdot w + n_0 \cdot w_{\text{edge}}) / (N + n_0)$ aimed at eliminating the two lines at 8/150 and reducing per-line dispersion.
+* **Integrity Guardrail Adherence** (`docs/superpowers/plans/2026-10-01-no-test-tuning.md`):
+  - All model parameters ($n_0$, $w_{\text{edge}}$, $z^*_{\text{edge}}$, and per-class $\tau$) in `atlas_v2` and `atlas_v2_loo` were strictly selected and calibrated on **validation seeds 700–849 only**, using the automated validation rule in `atlaslib/atlas.py`.
+  - Zero test-set feedback was used for tuning or selection. Diagnostic scripts used during research were archived to `notebooks/material_atlas/diagnostics/`.
+  - Reported results reflect the exact validation-selected model as evaluated on test seeds 850–999.
+* **Validation Tuning of $n_0$**:
+  - Calibrated on validation seeds 700–774 ($N=75$) and evaluated false-alarm dispersion index ($\text{var} / \text{mean}$) on validation seeds 775–849 ($N=75$) across candidate values $n_0 \in \{0, 25, 50, 100, 150, 300\}$:
+
+| $n_0$ | Mean False Alarms | Variance | Dispersion Index ($\text{Var}/\text{Mean}$) | Max Class Count (out of 75) | Total False Alarms |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| **0** | **0.7419** | **2.5182** | **3.3941** | **13** | **92 / 9,300 (0.99%)** |
+| 25 | 0.8548 | 3.3771 | 3.9506 | 13 | 106 / 9,300 (1.14%) |
+| 50 | 0.7984 | 2.9265 | 3.6655 | 12 | 99 / 9,300 (1.06%) |
+| 100 | 0.7581 | 2.8841 | 3.8045 | 12 | 94 / 9,300 (1.01%) |
+| 150 | 0.7984 | 2.9102 | 3.6452 | 11 | 99 / 9,300 (1.06%) |
+| 300 | 0.6855 | 2.3962 | 3.4956 | 11 | 85 / 9,300 (0.91%) |
+
+  - **Parameter Selection**: $n_0 = 0$ strictly minimised the dispersion index on the validation split. Recalibration on the full validation split (seeds 700–849, $N=150$) was performed with $n_0 = 0$.
+  - **Calibrated Parameters**:
+    - $w_{\text{edge}}$: Armchair = 0.1326, Zigzag = 0.1129
+    - $z^*_{\text{edge}}$: Armchair = 2.9854, Zigzag = 3.3498
+    - Manifest version: `"novelty": "class_conditional_v2"`
+* **Before / After Comparison Table vs FULL-2**:
+
+| Evaluation Metric | FULL-1 (Global Recon) | FULL-2 (Pooled $z^* = 3.144$) | FULL-3 (Refined $n_0=0$, Per-Edge $z^*$) | Success Gate / Target | Status |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Identification Fields vs `1ffaff0db`** | Reference | 0 mismatches (100% byte-identical) | **0 mismatches (100% byte-identical)** | 0 mismatches | **PASS** |
+| **Material Accuracy (Test)** | 100.0% | 100.0% | **100.0%** | 100.0% | **PASS** |
+| **Edge Accuracy (Test)** | 100.0% | 100.0% | **100.0%** | $\ge 99.0\%$ | **PASS** |
+| **Width Classification Accuracy (Test)** | 99.98% | 99.98% | **99.98%** | $\ge 99.0\%$ | **PASS** |
+| **Median Absolute Width Error** | 0.0000 | 0.0000 | **0.0000** | $\le 0.10$ | **PASS** |
+| **Overall Pooled False Alarms** | 1.84% | 1.001% (186 / 18,600) | **1.000% (186 / 18,600)** | $\le 1.5\%$ | **PASS** |
+| **Pooled False Alarms (Armchair)** | 2.05% | 0.61% (62 / 10,200) | **0.87% (89 / 10,200)** | $\le 1.5\%$ (expect $\sim 1\%$) | **PASS** |
+| **Pooled False Alarms (Zigzag)** | 1.59% | 1.48% (124 / 8,400) | **1.15% (97 / 8,400)** | $\le 1.5\%$ (expect $\sim 1\%$) | **PASS** |
+| **Max Line False Alarms** | 33 / 150 (22.0%) | 8 / 150 (5.33%) | **10 / 150 (6.67%)** | $< 8 / 150$ | **FAIL (Narrow)** |
+| **Lines at or above 8 / 150** | 11 lines | 2 lines (armchair N9 d=0.005: 8, zigzag N9 d=0.01: 8) | **3 lines** (armchair N9 d=0.005: 10, N6 d=0.01: 9, N6 d=0.005: 8) | 0 lines | **FAIL (Narrow)** |
+| **Test Dispersion Index ($\text{Var}/\text{Mean}$)** | 4.78 | 2.40 | **2.65** | 1.0 (pure binomial noise) | Reported |
+| **Square Strip N10 Detection** | 100.0% | 100.0% (AUROC 1.000) | **100.0% (AUROC 0.9999)** | $\ge 95.0\%$ | **PASS** |
+| **Leave-One-Out Armchair N13 Detection** | 9.5% | 99.0% | **99.5%** | Reported | Reported |
+| **Leave-One-Out Zigzag N8 Detection** | 0.0% | 100.0% | **100.0%** | Reported | Reported |
+
+* **Novelty False Alarm Histogram vs Binomial(150, 0.01) Expectation**:
+
+| False Alarm Count (out of 150) | Observed Lines (FULL-3) | Observed % | Expected Lines $\text{Binomial}(150, 0.01)$ | Expected % |
+|:---:|:---:|:---:|:---:|:---:|
+| 0 | 48 | 38.7% | 27.5 | 22.1% |
+| 1 | 38 | 30.6% | 41.6 | 33.6% |
+| 2 | 11 | 8.9% | 31.3 | 25.2% |
+| 3 | 9 | 7.3% | 15.6 | 12.6% |
+| 4 | 7 | 5.6% | 5.8 | 4.7% |
+| 5 | 6 | 4.8% | 1.7 | 1.4% |
+| 6 | 0 | 0.0% | 0.4 | 0.3% |
+| 7 | 2 | 1.6% | 0.1 | 0.1% |
+| 8 | 1 | 0.8% | 0.0 | 0.0% |
+| 9 | 1 | 0.8% | 0.0 | 0.0% |
+| 10 | 1 | 0.8% | 0.0 | 0.0% |
+
+* **Analysis of FULL-3 Findings**:
+  1. **Zigzag tail successfully balanced**: Raising $z^*_{\text{zigzag}}$ from 3.144 to 3.3498 lowered zigzag pooled false alarms from 1.48% to 1.15%, completely clearing Zigzag N9 at $d=0.01$ (which dropped from 8/150 to 7/150). Zigzag now has zero lines exceeding 7/150.
+  2. **Armchair tail trade-off**: Lowering $z^*_{\text{armchair}}$ from 3.144 to 2.9854 successfully brought armchair pooled false alarms closer to the 1% target (0.87% vs 0.61% previously). However, because low-disorder armchair ribbons ($d=0.005$) exhibit inherently heavy right tails in latent distance due to discrete single-impurity location effects, lowering the edge threshold caused Armchair N9 $d=0.005$ to rise from 8/150 to 10/150, and Armchair N6 ($d=0.01$ and $d=0.005$) to 9/150 and 8/150.
+  3. **Scale Shrinkage Behavior**: Class scale $w = 1.4826 \cdot \text{MAD}$ correlates strongly with defect density (median $w \approx 0.141$ at $d=0.005$ vs $0.097$ at $d=0.040$). Shrinking towards an edge-wide median $w_{\text{edge}} = 0.1326$ pulls low-density scales downward, which tightens thresholds and exacerbates false alarms at low densities. The validation scan correctly identified $n_0 = 0$ as the optimal choice.
+  4. **Leave-One-Out & Unseen Material Robustness**: Square Strip N10 remained 100.0% flagged with AUROC 0.9999. Untrained width detection improved to 99.5% for Armchair N13 and remained 100.0% for Zigzag N8.
+* **Unit Testing**:
+  - `tests/atlas/test_novelty.py`: Added `test_per_edge_z_star_balances_different_edge_tails` and `test_scale_shrinkage_reduces_small_sample_dispersion`. All 5 tests passed; full test suite passed 93/93 green.
+
+Artifacts updated:
+- `notebooks/material_atlas/atlaslib/atlas.py` (implemented FULL-3 per-edge tail, scale shrinkage, validation $n_0$ scan, and serialization)
+- `notebooks/material_atlas/build_atlas_v2.py` (updated to report per-edge false alarms, dispersion index, binomial expectation histogram)
+- `notebooks/material_atlas/atlas_v2/manifest.json` (`novelty: "class_conditional_v2"`, $n_0 = 0$, $w_{\text{edge}}$, $z^*_{\text{edge}}$)
+- `notebooks/material_atlas/atlas_v2/identification.json` (metrics, per-edge false alarms, dispersion index, histogram)
+- `notebooks/material_atlas/atlas_v2/novelty.json` (Gate 3 square strip 100%, LOO Armchair N13 99.5%, Zigzag N8 100.0%)
+- `notebooks/material_atlas/atlas_v2_loo/manifest.json` (calibrated LOO thresholds under `"class_conditional_v2"`)
+- `tests/atlas/test_novelty.py` (5 unit tests covering per-edge tails, scale shrinkage, and persistence)
+- `notebooks/material_atlas/diagnostics/` (archived post-hoc test diagnostics with disclaimer README)
+
+---
+
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
 
 ### Bug #1: Hardcoded Lead Paths in Generation Scripts

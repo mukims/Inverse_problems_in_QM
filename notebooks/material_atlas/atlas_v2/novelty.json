@@ -2,7 +2,7 @@
   "square_strip_unseen_material": {
     "total_flagged_unknown_option_b_pct": 100.0,
     "total_flagged_unknown_recon_pct": 100.0,
-    "auroc_option_b": 0.9998,
+    "auroc_option_b": 0.9999,
     "auroc_recon_error": 1.0,
     "gate_pass": true,
     "per_density": {
@@ -10,52 +10,52 @@
         "n_samples": 150,
         "flagged_unknown_option_b_pct": 100.0,
         "flagged_unknown_recon_pct": 100.0,
-        "median_novelty_ratio": 2.0112
+        "median_novelty_ratio": 2.0475
       },
       "0.0100": {
         "n_samples": 150,
         "flagged_unknown_option_b_pct": 100.0,
         "flagged_unknown_recon_pct": 100.0,
-        "median_novelty_ratio": 1.9273
+        "median_novelty_ratio": 1.9621
       },
       "0.0200": {
         "n_samples": 150,
         "flagged_unknown_option_b_pct": 100.0,
         "flagged_unknown_recon_pct": 100.0,
-        "median_novelty_ratio": 1.808
+        "median_novelty_ratio": 1.8406
       },
       "0.0400": {
         "n_samples": 150,
         "flagged_unknown_option_b_pct": 100.0,
         "flagged_unknown_recon_pct": 100.0,
-        "median_novelty_ratio": 1.7368
+        "median_novelty_ratio": 1.7686
       }
     }
   },
   "leave_one_out_untrained_widths": {
     "graphene-ideal/armchair/N13": {
-      "total_flagged_unknown_option_b_pct": 99.0,
+      "total_flagged_unknown_option_b_pct": 99.5,
       "total_flagged_unknown_recon_pct": 9.5,
       "per_density": {
         "0.0050": {
           "flagged_unknown_option_b_pct": 100.0,
           "flagged_unknown_recon_pct": 0.0,
-          "median_novelty_ratio": 3.2185
+          "median_novelty_ratio": 3.1568
         },
         "0.0100": {
           "flagged_unknown_option_b_pct": 100.0,
           "flagged_unknown_recon_pct": 0.0,
-          "median_novelty_ratio": 3.087
+          "median_novelty_ratio": 3.0278
         },
         "0.0200": {
-          "flagged_unknown_option_b_pct": 98.67,
+          "flagged_unknown_option_b_pct": 99.33,
           "flagged_unknown_recon_pct": 2.67,
-          "median_novelty_ratio": 1.433
+          "median_novelty_ratio": 1.4692
         },
         "0.0400": {
-          "flagged_unknown_option_b_pct": 97.33,
+          "flagged_unknown_option_b_pct": 98.67,
           "flagged_unknown_recon_pct": 35.33,
-          "median_novelty_ratio": 1.2299
+          "median_novelty_ratio": 1.2663
         }
       }
     },
@@ -66,22 +66,22 @@
         "0.0050": {
           "flagged_unknown_option_b_pct": 100.0,
           "flagged_unknown_recon_pct": 0.0,
-          "median_novelty_ratio": 2.8364
+          "median_novelty_ratio": 2.7531
         },
         "0.0100": {
           "flagged_unknown_option_b_pct": 100.0,
           "flagged_unknown_recon_pct": 0.0,
-          "median_novelty_ratio": 2.4736
+          "median_novelty_ratio": 2.4016
         },
         "0.0200": {
           "flagged_unknown_option_b_pct": 100.0,
           "flagged_unknown_recon_pct": 0.0,
-          "median_novelty_ratio": 1.8941
+          "median_novelty_ratio": 1.8505
         },
         "0.0400": {
           "flagged_unknown_option_b_pct": 100.0,
           "flagged_unknown_recon_pct": 0.0,
-          "median_novelty_ratio": 1.7066
+          "median_novelty_ratio": 1.6696
         }
       }
     }
@@ -91,56 +91,56 @@
       "density": 0.005,
       "edge_type": "armchair",
       "n_test_samples": 2550,
-      "option_b_false_alarm_pct": 0.94,
+      "option_b_false_alarm_pct": 1.18,
       "recon_false_alarm_pct": 0.0
     },
     "armchair_d0.0100": {
       "density": 0.01,
       "edge_type": "armchair",
       "n_test_samples": 2550,
-      "option_b_false_alarm_pct": 0.59,
+      "option_b_false_alarm_pct": 0.86,
       "recon_false_alarm_pct": 0.04
     },
     "armchair_d0.0200": {
       "density": 0.02,
       "edge_type": "armchair",
       "n_test_samples": 2550,
-      "option_b_false_alarm_pct": 0.24,
+      "option_b_false_alarm_pct": 0.39,
       "recon_false_alarm_pct": 0.82
     },
     "armchair_d0.0400": {
       "density": 0.04,
       "edge_type": "armchair",
       "n_test_samples": 2550,
-      "option_b_false_alarm_pct": 0.79,
+      "option_b_false_alarm_pct": 1.06,
       "recon_false_alarm_pct": 6.27
     },
     "zigzag_d0.0050": {
       "density": 0.005,
       "edge_type": "zigzag",
       "n_test_samples": 2100,
-      "option_b_false_alarm_pct": 1.76,
+      "option_b_false_alarm_pct": 1.48,
       "recon_false_alarm_pct": 0.0
     },
     "zigzag_d0.0100": {
       "density": 0.01,
       "edge_type": "zigzag",
       "n_test_samples": 2100,
-      "option_b_false_alarm_pct": 1.86,
+      "option_b_false_alarm_pct": 1.48,
       "recon_false_alarm_pct": 0.0
     },
     "zigzag_d0.0200": {
       "density": 0.02,
       "edge_type": "zigzag",
       "n_test_samples": 2100,
-      "option_b_false_alarm_pct": 1.33,
+      "option_b_false_alarm_pct": 1.14,
       "recon_false_alarm_pct": 0.0
     },
     "zigzag_d0.0400": {
       "density": 0.04,
       "edge_type": "zigzag",
       "n_test_samples": 2100,
-      "option_b_false_alarm_pct": 0.81,
+      "option_b_false_alarm_pct": 0.52,
       "recon_false_alarm_pct": 0.0
     },
     "all_d0.0050": {
@@ -154,7 +154,7 @@
       "density": 0.01,
       "edge_type": "all",
       "n_test_samples": 4650,
-      "option_b_false_alarm_pct": 1.16,
+      "option_b_false_alarm_pct": 1.14,
       "recon_false_alarm_pct": 0.02
     },
     "all_d0.0200": {
@@ -168,7 +168,7 @@
       "density": 0.04,
       "edge_type": "all",
       "n_test_samples": 4650,
-      "option_b_false_alarm_pct": 0.8,
+      "option_b_false_alarm_pct": 0.82,
       "recon_false_alarm_pct": 3.44
     }
   }

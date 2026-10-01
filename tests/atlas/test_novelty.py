@@ -52,8 +52,8 @@ def test_class_conditional_balances_tight_and_broad_classes(tmp_path):
                         refs_per_model=250, seed=1, threads=2, max_seed=419, val_seed_min=350)
 
     # Calibrate Option B on validation seeds
-    atlas.calibrate_novelty(store, reg, reg.ids(), val_seed_min=350, max_seed=419)
-    assert atlas.novelty == "class_conditional_v1"
+    atlas.calibrate_novelty(store, reg, reg.ids(), val_seed_min=350, max_seed=419, n0=0)
+    assert atlas.novelty == "class_conditional_v2"
     assert m_tight.model_id in atlas.threshold_table
     assert m_broad.model_id in atlas.threshold_table
 
@@ -101,10 +101,12 @@ def test_save_load_preserves_threshold_table(tmp_path):
     atlas.save(save_dir)
 
     loaded = Atlas.load(save_dir)
-    assert loaded.novelty == "class_conditional_v1"
+    assert loaded.novelty == "class_conditional_v2"
     assert loaded.threshold_table == atlas.threshold_table
     assert loaded.threshold_params == atlas.threshold_params
     assert loaded.z_star == atlas.z_star
+    assert loaded.w_edge == atlas.w_edge
+    assert loaded.n0 == atlas.n0
     assert len(loaded._model_nns) == len(atlas._model_nns)
 
     T = toy_spectrum(1.0, 7, 0.01, 80_000)[None]
@@ -114,3 +116,103 @@ def test_save_load_preserves_threshold_table(tmp_path):
     assert loc_orig.unknown == loc_load.unknown
     assert pytest.approx(loc_orig.novelty_ratio, rel=1e-5) == loc_load.novelty_ratio
     assert pytest.approx(loc_orig.novelty_s, rel=1e-5) == loc_load.novelty_s
+
+
+def test_per_edge_z_star_balances_different_edge_tails(tmp_path):
+    """Per-edge z* balances false alarm rates when two edges have different score tails."""
+    store = CloudStore(tmp_path / "store")
+    m_arm = RibbonModel("synth", "armchair", 7, 1.0, 14, 3.0)
+    m_zig = RibbonModel("synth", "zigzag", 6, 1.0, 12, 3.0)
+    reg = Registry([m_arm, m_zig])
+
+    pris_arm = np.clip(1.0 * (1 + np.floor(E * 7 / 3.0)), 0, None)
+    pris_arm[E > 3.0] = 0.0
+    pris_zig = np.clip(1.0 * (1 + np.floor(E * 6 / 3.0)), 0, None)
+    pris_zig[E > 3.0] = 0.0
+
+    store.write_pristine(m_arm.model_id, E, pris_arm)
+    store.write_pristine(m_zig.model_id, E, pris_zig)
+
+    r = np.random.default_rng(123)
+    n_seeds = 300
+    # Armchair has light (Gaussian) noise
+    specs_arm = []
+    for _ in range(n_seeds):
+        sp = np.clip(pris_arm * 0.8 + r.normal(0, 0.02, E.size), 0, None)
+        sp[E > 3.0] = 0.0
+        specs_arm.append(sp)
+
+    # Zigzag has heavy-tailed noise (occasional large deviations)
+    specs_zig = []
+    for _ in range(n_seeds):
+        heavy_noise = r.normal(0, 0.02, E.size) + r.exponential(0.05, E.size) * (r.random(E.size) < 0.2)
+        sp = np.clip(pris_zig * 0.8 + heavy_noise, 0, None)
+        sp[E > 3.0] = 0.0
+        specs_zig.append(sp)
+
+    seeds = np.arange(n_seeds)
+    store.write_cloud(m_arm.model_id, 0.02, m_arm.impurities_for_density(0.02), np.array(specs_arm), seeds, E, max_excess_tol=None)
+    store.write_cloud(m_zig.model_id, 0.02, m_zig.impurities_for_density(0.02), np.array(specs_zig), seeds, E, max_excess_tol=None)
+
+    # 150 train, 75 val (150..224), 75 test (225..299)
+    atlas = Atlas.build(store, reg, reg.ids(), InputSpec(), latent=8, epochs=8, patience=3, k=5,
+                        refs_per_model=120, seed=42, threads=2, max_seed=224, val_seed_min=150)
+    atlas.calibrate_novelty(store, reg, reg.ids(), val_seed_min=150, max_seed=224, n0=0)
+
+    # Zigzag's heavier tail requires higher z* than armchair
+    assert isinstance(atlas.z_star, dict)
+    assert atlas.z_star["zigzag"] > atlas.z_star["armchair"]
+
+    # Both edges achieve low, balanced false alarms on test set (seeds 225..299)
+    loc_arm_test = atlas.locate(np.array(specs_arm)[225:], E, band_top_t=3.0)
+    loc_zig_test = atlas.locate(np.array(specs_zig)[225:], E, band_top_t=3.0)
+
+    fa_arm = np.mean([r.unknown for r in loc_arm_test])
+    fa_zig = np.mean([r.unknown for r in loc_zig_test])
+
+    assert fa_arm <= 0.06, f"fa_arm={fa_arm}"
+    assert fa_zig <= 0.06, f"fa_zig={fa_zig}"
+
+
+def test_scale_shrinkage_reduces_small_sample_dispersion(tmp_path):
+    """Shrinking per-class scale toward edge median reduces dispersion when sample size is small."""
+    store = CloudStore(tmp_path / "store")
+    # 3 widths of armchair with identical underlying noise distribution
+    models = [
+        RibbonModel("synth", "armchair", 6, 1.0, 12, 3.0),
+        RibbonModel("synth", "armchair", 8, 1.0, 16, 3.0),
+        RibbonModel("synth", "armchair", 10, 1.0, 20, 3.0)
+    ]
+    reg = Registry(models)
+    r = np.random.default_rng(999)
+
+    for m in models:
+        pris = np.clip(1.0 * (1 + np.floor(E * m.width / 3.0)), 0, None)
+        pris[E > 3.0] = 0.0
+        store.write_pristine(m.model_id, E, pris)
+
+        # 200 samples per model
+        specs = []
+        for _ in range(200):
+            sp = np.clip(pris * 0.85 + r.normal(0, 0.05, E.size), 0, None)
+            sp[E > 3.0] = 0.0
+            specs.append(sp)
+        store.write_cloud(m.model_id, 0.02, m.impurities_for_density(0.02), np.array(specs), np.arange(200), E, max_excess_tol=None)
+
+    # Train on seeds 0..99
+    atlas = Atlas.build(store, reg, reg.ids(), InputSpec(), latent=8, epochs=6, patience=3, k=5,
+                        refs_per_model=80, seed=7, threads=2, max_seed=119, val_seed_min=100)
+
+    # Calibrate with small validation sample (seeds 100..114, N=15) without shrinkage (n0=0)
+    atlas.calibrate_novelty(store, reg, reg.ids(), val_seed_min=100, max_seed=114, n0=0)
+    raw_scales = [atlas.threshold_params[m.model_id]["0.0200"]["w"] for m in models]
+    raw_scale_var = float(np.var(raw_scales))
+
+    # Calibrate with shrinkage (n0=50)
+    atlas.calibrate_novelty(store, reg, reg.ids(), val_seed_min=100, max_seed=114, n0=50)
+    shrunk_scales = [atlas.threshold_params[m.model_id]["0.0200"]["w"] for m in models]
+    shrunk_scale_var = float(np.var(shrunk_scales))
+
+    # Shrinkage pulls scales toward the common edge median, reducing variance across classes
+    assert shrunk_scale_var < raw_scale_var
+
