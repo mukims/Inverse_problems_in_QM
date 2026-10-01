@@ -46,3 +46,5 @@ How to make the unknown flag useful across classes:
 - **C.** Keep the flag as it is and document that it is conservative for high-disorder, wide armchair ribbons.
 
 None of these changes the identification results above.
+
+> **Decision (human, 2026-10-01): option B.** Implement it from `2026-10-01-class-conditional-novelty.md`.

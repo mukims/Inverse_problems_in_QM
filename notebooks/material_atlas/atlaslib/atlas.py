@@ -25,14 +25,29 @@ class Located:
     unknown: bool
     recon_error: float
     width_vote: float = 0.0
+    unknown_recon: bool = False
+    novelty_ratio: float = 0.0
+    novelty_s: float = 0.0
 
 
 class Atlas:
-    def __init__(self, spec, encoder, mu, sd, refs, ref_model, ref_density, models, threshold, k):
+    def __init__(self, spec, encoder, mu, sd, refs, ref_model, ref_density, models, threshold, k,
+                 threshold_table=None, novelty="reconstruction_v1"):
         self.spec, self.encoder, self.mu, self.sd = spec, encoder, mu, sd
         self.refs, self.ref_model, self.ref_density = refs, ref_model, ref_density
         self.models, self.threshold, self.k = list(models), float(threshold), int(k)
+        self.threshold_table = threshold_table or {}
+        self.novelty = novelty
         self._nn = NearestNeighbors(n_neighbors=self.k).fit(self.refs)
+        self._build_model_nns()
+
+    def _build_model_nns(self):
+        self._model_nns = {}
+        for i in range(len(self.models)):
+            mask = (self.ref_model == i)
+            if np.any(mask):
+                k_m = min(self.k, int(np.sum(mask)))
+                self._model_nns[i] = NearestNeighbors(n_neighbors=k_m).fit(self.refs[mask])
 
     # ---------- building ----------
     @staticmethod
@@ -82,6 +97,36 @@ class Atlas:
         atlas.threshold = float(np.percentile(rec[val], 99)) if np.any(val) else float(np.percentile(rec, 99))
         return atlas
 
+    def calibrate_novelty(self, store, registry, model_ids, val_seed_min=None, max_seed=None):
+        """Calibrate class-conditional thresholds tau(model, density) on validation seeds.
+        Uses log-normal 99th percentile: exp(mean(log s) + 2.326 * sd(log s))."""
+        table = {}
+        for mid in model_ids:
+            m = registry.get(mid)
+            e_t, _ = store.read_pristine(mid)
+            table[mid] = {}
+            for d in store.densities(mid):
+                c, s = store.read_cloud(mid, d)
+                if val_seed_min is not None:
+                    mask = (s >= val_seed_min)
+                else:
+                    mask = (s >= np.quantile(s, 0.85))
+                if max_seed is not None:
+                    mask &= (s <= max_seed)
+                c_val = c[mask]
+                if len(c_val) == 0:
+                    continue
+                loc = self.locate(c_val, e_t, m.band_top_t)
+                s_vals = np.array([r.novelty_s for r in loc])
+                log_s = np.log(np.maximum(s_vals, 1e-12))
+                mean_log = float(np.mean(log_s))
+                sd_log = float(np.std(log_s, ddof=1)) if len(log_s) > 1 else 0.0
+                tau = float(np.exp(mean_log + 2.326 * sd_log))
+                table[mid][f"{d:.4f}"] = tau
+        self.threshold_table = table
+        self.novelty = "class_conditional_v1"
+        return table
+
     # ---------- querying ----------
     def _novelty(self, Zs):
         dist, _ = self._nn.kneighbors(Zs)
@@ -111,9 +156,45 @@ class Atlas:
             nov = float(dist[r].mean())
             vals, counts = np.unique(w, return_counts=True)
             width_vote = float(vals[np.argmax(counts)])
-            out.append(Located(mat, edge, width, extrap, float(np.median(self.ref_density[idx[r][members]])),
-                               len(members) / self.k, nov, bool(rec[r] > self.threshold), float(rec[r]),
-                               width_vote=width_vote))
+            pred_dens = float(np.median(self.ref_density[idx[r][members]]))
+
+            # Target model identification for class-conditional score s
+            target_idx = None
+            for i, m in enumerate(self.models):
+                if (m.material, m.edge) == (mat, edge) and round(m.width) == round(width_vote):
+                    target_idx = i
+                    break
+            if target_idx is None:
+                m_vals, m_counts = np.unique(nb[members], return_counts=True)
+                target_idx = int(m_vals[np.argmax(m_counts)])
+
+            # Score s: mean distance to k=15 nearest references of that model only
+            if target_idx in self._model_nns:
+                m_dist, _ = self._model_nns[target_idx].kneighbors(Zs[r:r+1])
+                s = float(m_dist.mean())
+            else:
+                s = nov
+
+            target_mid = self.models[target_idx].model_id
+            unk_recon = bool(rec[r] > self.threshold)
+
+            # Class-conditional threshold lookup
+            if self.threshold_table and target_mid in self.threshold_table:
+                d_map = self.threshold_table[target_mid]
+                avail_d = [float(k_d) for k_d in d_map.keys()]
+                snapped_d = min(avail_d, key=lambda x: abs(x - pred_dens))
+                snapped_key = f"{snapped_d:.4f}"
+                tau = float(d_map.get(snapped_key, d_map[min(d_map.keys(), key=lambda k_d: abs(float(k_d) - pred_dens))]))
+                is_unk = bool(s > tau)
+                ratio = float(s / tau)
+            else:
+                is_unk = unk_recon
+                ratio = float(rec[r] / self.threshold) if self.threshold > 0 else 0.0
+
+            out.append(Located(mat, edge, width, extrap, pred_dens,
+                               len(members) / self.k, nov, is_unk, float(rec[r]),
+                               width_vote=width_vote, unknown_recon=unk_recon,
+                               novelty_ratio=ratio, novelty_s=s))
         return out
 
     def add_models(self, store, registry, model_ids):
@@ -129,6 +210,7 @@ class Atlas:
             self.ref_model = np.concatenate([self.ref_model, np.full(len(Zs), len(self.models) - 1)])
             self.ref_density = np.concatenate([self.ref_density, dens])
             self._nn = NearestNeighbors(n_neighbors=self.k).fit(self.refs)
+        self._build_model_nns()
         return report
 
     # ---------- persistence ----------
@@ -141,6 +223,7 @@ class Atlas:
                  mu=self.mu, sd=self.sd)
         (path / "manifest.json").write_text(json.dumps({
             "spec": self.spec.as_dict(), "models": [asdict(m) for m in self.models], "threshold": self.threshold,
+            "threshold_table": self.threshold_table, "novelty": self.novelty,
             "k": self.k, "created": date.today().isoformat()}, indent=2))
 
     @classmethod
@@ -152,5 +235,8 @@ class Atlas:
         enc.load_state_dict(ck["state"])
         enc.eval()
         r = np.load(path / "refs.npz")
+        threshold_table = man.get("threshold_table", {})
+        novelty = man.get("novelty", "reconstruction_v1")
         return cls(InputSpec(**man["spec"]), enc, r["mu"], r["sd"], r["refs"], r["ref_model"], r["ref_density"],
-                   [RibbonModel(**m) for m in man["models"]], man["threshold"], man["k"])
+                   [RibbonModel(**m) for m in man["models"]], man["threshold"], man["k"],
+                   threshold_table=threshold_table, novelty=novelty)

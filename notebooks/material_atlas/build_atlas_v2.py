@@ -33,6 +33,8 @@ def main():
     ap.add_argument("--spec-version", default="v2", choices=["v1", "v2"])
     ap.add_argument("--holdout-widths", action="store_true", default=False,
                     help="Run legacy Gate 5 diagnostic with held-out widths (armchair 8, 12, 13; zigzag 8)")
+    ap.add_argument("--retrain", action="store_true", default=False,
+                    help="Force retraining autoencoder instead of loading existing weights")
     a = ap.parse_args()
     grid_models = GRIDS[a.grid]
     store, spec, out = CloudStore(a.store), InputSpec(version=a.spec_version), Path(a.out)
@@ -79,19 +81,25 @@ def main():
         val_seed_min = int(np.floor(n_seeds * 0.70))
         test_seed_min = int(np.floor(n_seeds * 0.85))
 
-    print(f"[INFO] Building Atlas v2 across all {len(train_ids)} models...")
-    print(f"[INFO] Seed split: train < {val_seed_min}, val [{val_seed_min}..{train_val_max}], test >= {test_seed_min}")
+    if (out / "encoder.pt").exists() and not a.retrain:
+        print(f"[INFO] Loading existing Atlas v2 from {out}...")
+        atlas = Atlas.load(out)
+    else:
+        print(f"[INFO] Building Atlas v2 across all {len(train_ids)} models...")
+        print(f"[INFO] Seed split: train < {val_seed_min}, val [{val_seed_min}..{train_val_max}], test >= {test_seed_min}")
+        atlas = Atlas.build(store, reg, train_ids, spec, threads=a.threads,
+                            max_seed=train_val_max, val_seed_min=val_seed_min)
 
-    atlas = Atlas.build(store, reg, train_ids, spec, threads=a.threads,
-                        max_seed=train_val_max, val_seed_min=val_seed_min)
+    print(f"[INFO] Calibrating class-conditional thresholds (Option B) on validation seeds [{val_seed_min}..{train_val_max}]...")
+    atlas.calibrate_novelty(store, reg, train_ids, val_seed_min=val_seed_min, max_seed=train_val_max)
     atlas.save(out)
 
     ident_res = {}
     gate5_pass = True
 
     print(f"\n[INFO] Evaluating on held-out test seeds (seeds >= {test_seed_min}):")
-    print(f"{'Model':<30} | {'Dens':<6} | {'MatAcc':<7} | {'EdgeAcc':<7} | {'WidthAcc':<8} | {'Med|W-N|':<8} | {'Unknown%':<8} | {'PredDens':<8}")
-    print("-" * 102)
+    print(f"{'Model':<30} | {'Dens':<6} | {'MatAcc':<7} | {'EdgeAcc':<7} | {'WidthAcc':<8} | {'Med|W-N|':<8} | {'Unknown%':<8} | {'UnkRecon%':<9} | {'PredDens':<8}")
+    print("-" * 114)
 
     for (mat, edge), widths in grid_models.items():
         for n in widths:
@@ -113,9 +121,11 @@ def main():
                 w_cont_acc = float(np.mean([round(r.width) == n for r in loc]) * 100)
                 w_cont_diff = float(np.median([abs(r.width - n) for r in loc]))
                 unknown_pct = float(np.mean([r.unknown for r in loc]) * 100)
+                unknown_recon_pct = float(np.mean([r.unknown_recon for r in loc]) * 100)
+                nov_ratio = float(np.median([r.novelty_ratio for r in loc]))
                 pred_dens = float(np.median([r.density for r in loc]))
 
-                if mat_acc < 100.0 or edge_acc < 99.0 or w_acc < 99.0:
+                if mat_acc < 100.0 or edge_acc < 99.0 or w_acc < 99.0 or unknown_pct > 2.0:
                     gate5_pass = False
 
                 model_stats[f"{d:.4f}"] = {
@@ -126,18 +136,20 @@ def main():
                     "width_continuous_accuracy": round(w_cont_acc, 2),
                     "median_width_continuous_diff": round(w_cont_diff, 4),
                     "share_flagged_unknown": round(unknown_pct, 2),
+                    "share_flagged_unknown_recon": round(unknown_recon_pct, 2),
+                    "median_novelty_ratio": round(nov_ratio, 4),
                     "median_predicted_density": round(pred_dens, 4),
                     "true_density": float(d),
                     "n_test_samples": len(c_test)
                 }
-                print(f"{mid:<30} | {d:<6.4f} | {mat_acc:<7.1f} | {edge_acc:<7.1f} | {w_acc:<8.1f} | {w_diff:<8.4f} | {unknown_pct:<8.1f} | {pred_dens:<8.4f}")
+                print(f"{mid:<30} | {d:<6.4f} | {mat_acc:<7.1f} | {edge_acc:<7.1f} | {w_acc:<8.1f} | {w_diff:<8.4f} | {unknown_pct:<8.1f} | {unknown_recon_pct:<9.1f} | {pred_dens:<8.4f}")
             ident_res[mid] = model_stats
 
-    # Pooled per-density statistics across widths (Smoke Gate 5)
+    # Pooled per-density statistics across widths
     pooled = {}
     print("\n[INFO] Pooled Evaluation by Density and Edge Type:")
-    print(f"{'Group':<22} | {'Dens':<6} | {'Samples':<8} | {'MatAcc':<7} | {'EdgeAcc':<7} | {'WidthAcc':<8} | {'Unknown%'}")
-    print("-" * 78)
+    print(f"{'Group':<22} | {'Dens':<6} | {'Samples':<8} | {'MatAcc':<7} | {'EdgeAcc':<7} | {'WidthAcc':<8} | {'Unknown%':<8} | {'UnkRecon%'}")
+    print("-" * 90)
     for edge_filter in ["armchair", "zigzag", "all"]:
         for d in [0.005, 0.01, 0.02, 0.04]:
             matches = [
@@ -152,6 +164,7 @@ def main():
                 p_edge = sum(s["edge_accuracy"] * s["n_test_samples"] for s in matches) / total_n
                 p_width = sum(s["width_accuracy"] * s["n_test_samples"] for s in matches) / total_n
                 p_unk = sum(s["share_flagged_unknown"] * s["n_test_samples"] for s in matches) / total_n
+                p_unk_recon = sum(s["share_flagged_unknown_recon"] * s["n_test_samples"] for s in matches) / total_n
                 key = f"{edge_filter}_d{d:.4f}"
                 pooled[key] = {
                     "edge_type": edge_filter,
@@ -160,9 +173,10 @@ def main():
                     "material_accuracy": round(p_mat, 2),
                     "edge_accuracy": round(p_edge, 2),
                     "width_accuracy": round(p_width, 2),
-                    "share_flagged_unknown": round(p_unk, 2)
+                    "share_flagged_unknown": round(p_unk, 2),
+                    "share_flagged_unknown_recon": round(p_unk_recon, 2)
                 }
-                print(f"{edge_filter:<22} | {d:<6.4f} | {total_n:<8} | {p_mat:<7.1f} | {p_edge:<7.1f} | {p_width:<8.1f} | {p_unk:<7.1f}")
+                print(f"{edge_filter:<22} | {d:<6.4f} | {total_n:<8} | {p_mat:<7.1f} | {p_edge:<7.1f} | {p_width:<8.1f} | {p_unk:<8.1f} | {p_unk_recon:<8.1f}")
 
     full_output = {
         "per_model": ident_res,

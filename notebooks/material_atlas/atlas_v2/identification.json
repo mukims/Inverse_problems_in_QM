@@ -8,7 +8,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.5352,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -20,7 +22,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6133,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -32,7 +36,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7057,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -44,7 +50,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7593,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -58,7 +66,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 5.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6345,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -70,7 +80,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 3.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7051,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -83,6 +95,8 @@
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
         "share_flagged_unknown": 0.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7229,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -94,7 +108,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 1.33,
+        "median_novelty_ratio": 0.7713,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -108,7 +124,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 4.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.5603,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -120,7 +138,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 4.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6226,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -132,7 +152,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6986,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -144,7 +166,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 7.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7627,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -158,7 +182,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6296,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -170,7 +196,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.674,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -183,6 +211,8 @@
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
         "share_flagged_unknown": 0.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7339,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -194,7 +224,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 97.33,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown": 3.33,
+        "share_flagged_unknown_recon": 1.33,
+        "median_novelty_ratio": 0.7589,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -208,7 +240,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 3.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.488,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -220,7 +254,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.5082,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -233,6 +269,8 @@
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
         "share_flagged_unknown": 0.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6592,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -245,6 +283,8 @@
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
         "share_flagged_unknown": 0.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7421,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -258,7 +298,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6873,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -270,7 +312,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.67,
+        "median_novelty_ratio": 0.735,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -283,6 +327,8 @@
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
         "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.67,
+        "median_novelty_ratio": 0.8035,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -294,7 +340,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 2.67,
+        "median_novelty_ratio": 0.8171,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -309,6 +357,8 @@
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
         "share_flagged_unknown": 0.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.5201,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -320,7 +370,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6115,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -332,7 +384,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 4.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7186,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -344,7 +398,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 98.67,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 2.67,
+        "median_novelty_ratio": 0.739,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -358,7 +414,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7018,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -370,7 +428,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7361,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -382,7 +442,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 2.67,
+        "median_novelty_ratio": 0.804,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -394,7 +456,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 6.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 6.0,
+        "median_novelty_ratio": 0.7568,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -408,7 +472,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6077,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -420,7 +486,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 3.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6904,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -432,7 +500,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.67,
+        "median_novelty_ratio": 0.7674,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -445,6 +515,8 @@
         "width_continuous_accuracy": 98.0,
         "median_width_continuous_diff": 0.0,
         "share_flagged_unknown": 4.0,
+        "share_flagged_unknown_recon": 4.0,
+        "median_novelty_ratio": 0.7894,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -458,7 +530,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.679,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -470,7 +544,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 4.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7317,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -482,7 +558,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7933,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -494,7 +572,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 4.67,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 4.67,
+        "median_novelty_ratio": 0.804,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -508,7 +588,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.5859,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -520,7 +602,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6279,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -532,7 +616,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7195,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -544,7 +630,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown": 3.33,
+        "share_flagged_unknown_recon": 2.0,
+        "median_novelty_ratio": 0.7847,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -558,7 +646,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6833,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -570,7 +660,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7255,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -582,7 +674,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown_recon": 1.33,
+        "median_novelty_ratio": 0.7692,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -594,7 +688,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 10.0,
+        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown_recon": 10.0,
+        "median_novelty_ratio": 0.8047,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -608,7 +704,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7191,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -620,7 +718,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 3.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7521,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -632,7 +732,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.67,
+        "median_novelty_ratio": 0.7982,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -644,7 +746,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 6.67,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 6.67,
+        "median_novelty_ratio": 0.7707,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -658,7 +762,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6965,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -670,7 +776,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7516,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -682,7 +790,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.67,
+        "median_novelty_ratio": 0.8185,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -694,7 +804,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 10.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 10.0,
+        "median_novelty_ratio": 0.8099,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -708,7 +820,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7409,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -720,7 +834,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7739,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -732,7 +848,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown_recon": 0.67,
+        "median_novelty_ratio": 0.7493,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -744,7 +862,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 14.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 14.0,
+        "median_novelty_ratio": 0.747,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -758,7 +878,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7645,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -770,7 +892,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7766,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -782,7 +906,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 5.33,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 5.33,
+        "median_novelty_ratio": 0.7343,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -794,7 +920,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 22.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 22.0,
+        "median_novelty_ratio": 0.759,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -808,7 +936,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7404,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -820,7 +950,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7234,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -832,7 +964,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 1.33,
+        "median_novelty_ratio": 0.7684,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -844,7 +978,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 19.33,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 19.33,
+        "median_novelty_ratio": 0.7868,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -858,7 +994,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6081,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -870,7 +1008,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6563,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -882,7 +1022,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 4.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7876,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -894,7 +1036,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.8208,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -908,7 +1052,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 4.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6214,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -920,7 +1066,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7025,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -932,7 +1080,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7257,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -944,7 +1094,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.8074,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -958,7 +1110,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6971,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -970,7 +1124,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 4.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7227,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -982,7 +1138,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 3.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.752,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -994,7 +1152,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.8166,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -1008,7 +1168,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7214,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -1020,7 +1182,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6778,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -1032,7 +1196,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 4.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7713,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -1044,7 +1210,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.8202,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -1058,7 +1226,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.659,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -1070,7 +1240,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6664,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -1082,7 +1254,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7304,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -1094,7 +1268,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.805,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -1108,7 +1284,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 5.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.744,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -1120,7 +1298,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 6.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6716,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -1132,7 +1312,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 3.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7638,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -1145,6 +1327,8 @@
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
         "share_flagged_unknown": 0.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7943,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -1158,7 +1342,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6593,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -1170,7 +1356,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6993,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -1182,7 +1370,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7655,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -1194,7 +1384,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.8158,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -1208,7 +1400,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 3.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7023,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -1220,7 +1414,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.684,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -1232,7 +1428,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7263,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -1244,7 +1442,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.8137,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -1258,7 +1458,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7205,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -1270,7 +1472,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7265,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -1282,7 +1486,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 3.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7802,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -1294,7 +1500,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 4.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.8053,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -1308,7 +1516,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7486,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -1320,7 +1530,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7441,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -1332,7 +1544,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7893,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -1344,7 +1558,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7908,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -1358,7 +1574,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6977,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -1370,7 +1588,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 0.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6893,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -1382,7 +1602,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7374,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -1394,7 +1616,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7884,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -1408,7 +1632,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 4.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7288,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -1420,7 +1646,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6792,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -1432,7 +1660,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7401,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -1444,7 +1674,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 3.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7732,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -1458,7 +1690,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6562,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -1470,7 +1704,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 4.0,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7218,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -1482,7 +1718,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 2.67,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7629,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -1494,7 +1732,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7663,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -1508,7 +1748,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 1.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.6667,
         "median_predicted_density": 0.005,
         "true_density": 0.005,
         "n_test_samples": 150
@@ -1520,7 +1762,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 3.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7044,
         "median_predicted_density": 0.01,
         "true_density": 0.01,
         "n_test_samples": 150
@@ -1532,7 +1776,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 3.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7929,
         "median_predicted_density": 0.02,
         "true_density": 0.02,
         "n_test_samples": 150
@@ -1544,7 +1790,9 @@
         "median_width_diff": 0.0,
         "width_continuous_accuracy": 100.0,
         "median_width_continuous_diff": 0.0,
-        "share_flagged_unknown": 0.0,
+        "share_flagged_unknown": 5.33,
+        "share_flagged_unknown_recon": 0.0,
+        "median_novelty_ratio": 0.7669,
         "median_predicted_density": 0.04,
         "true_density": 0.04,
         "n_test_samples": 150
@@ -1559,7 +1807,8 @@
       "material_accuracy": 100.0,
       "edge_accuracy": 100.0,
       "width_accuracy": 100.0,
-      "share_flagged_unknown": 0.0
+      "share_flagged_unknown": 1.73,
+      "share_flagged_unknown_recon": 0.0
     },
     "armchair_d0.0100": {
       "edge_type": "armchair",
@@ -1568,7 +1817,8 @@
       "material_accuracy": 100.0,
       "edge_accuracy": 100.0,
       "width_accuracy": 100.0,
-      "share_flagged_unknown": 0.04
+      "share_flagged_unknown": 2.12,
+      "share_flagged_unknown_recon": 0.04
     },
     "armchair_d0.0200": {
       "edge_type": "armchair",
@@ -1577,7 +1827,8 @@
       "material_accuracy": 100.0,
       "edge_accuracy": 100.0,
       "width_accuracy": 100.0,
-      "share_flagged_unknown": 0.82
+      "share_flagged_unknown": 1.18,
+      "share_flagged_unknown_recon": 0.82
     },
     "armchair_d0.0400": {
       "edge_type": "armchair",
@@ -1586,7 +1837,8 @@
       "material_accuracy": 100.0,
       "edge_accuracy": 100.0,
       "width_accuracy": 99.84,
-      "share_flagged_unknown": 6.27
+      "share_flagged_unknown": 1.92,
+      "share_flagged_unknown_recon": 6.27
     },
     "zigzag_d0.0050": {
       "edge_type": "zigzag",
@@ -1595,7 +1847,8 @@
       "material_accuracy": 100.0,
       "edge_accuracy": 100.0,
       "width_accuracy": 100.0,
-      "share_flagged_unknown": 0.0
+      "share_flagged_unknown": 2.43,
+      "share_flagged_unknown_recon": 0.0
     },
     "zigzag_d0.0100": {
       "edge_type": "zigzag",
@@ -1604,7 +1857,8 @@
       "material_accuracy": 100.0,
       "edge_accuracy": 100.0,
       "width_accuracy": 100.0,
-      "share_flagged_unknown": 0.0
+      "share_flagged_unknown": 2.52,
+      "share_flagged_unknown_recon": 0.0
     },
     "zigzag_d0.0200": {
       "edge_type": "zigzag",
@@ -1613,7 +1867,8 @@
       "material_accuracy": 100.0,
       "edge_accuracy": 100.0,
       "width_accuracy": 100.0,
-      "share_flagged_unknown": 0.0
+      "share_flagged_unknown": 2.81,
+      "share_flagged_unknown_recon": 0.0
     },
     "zigzag_d0.0400": {
       "edge_type": "zigzag",
@@ -1622,7 +1877,8 @@
       "material_accuracy": 100.0,
       "edge_accuracy": 100.0,
       "width_accuracy": 100.0,
-      "share_flagged_unknown": 0.0
+      "share_flagged_unknown": 2.05,
+      "share_flagged_unknown_recon": 0.0
     },
     "all_d0.0050": {
       "edge_type": "all",
@@ -1631,7 +1887,8 @@
       "material_accuracy": 100.0,
       "edge_accuracy": 100.0,
       "width_accuracy": 100.0,
-      "share_flagged_unknown": 0.0
+      "share_flagged_unknown": 2.04,
+      "share_flagged_unknown_recon": 0.0
     },
     "all_d0.0100": {
       "edge_type": "all",
@@ -1640,7 +1897,8 @@
       "material_accuracy": 100.0,
       "edge_accuracy": 100.0,
       "width_accuracy": 100.0,
-      "share_flagged_unknown": 0.02
+      "share_flagged_unknown": 2.3,
+      "share_flagged_unknown_recon": 0.02
     },
     "all_d0.0200": {
       "edge_type": "all",
@@ -1649,7 +1907,8 @@
       "material_accuracy": 100.0,
       "edge_accuracy": 100.0,
       "width_accuracy": 100.0,
-      "share_flagged_unknown": 0.45
+      "share_flagged_unknown": 1.91,
+      "share_flagged_unknown_recon": 0.45
     },
     "all_d0.0400": {
       "edge_type": "all",
@@ -1658,7 +1917,8 @@
       "material_accuracy": 100.0,
       "edge_accuracy": 100.0,
       "width_accuracy": 99.91,
-      "share_flagged_unknown": 3.44
+      "share_flagged_unknown": 1.98,
+      "share_flagged_unknown_recon": 3.44
     }
   },
   "revised_gate5_pass_per_line": false
