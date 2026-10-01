@@ -52,3 +52,5 @@ The "FULL-1 (Global Recon)" column of the comparison table is wrong. The reconst
 ## For the human
 - **Accept.** Pooled 1.0% with both edges balanced, and the worst line at 6.7% (against 22% under FULL-1). The flag catches unseen materials and untrained widths.
 - **Or one more step:** give the few heavy-tailed classes their own empirical quantile from a larger sample, for example by drawing extra calibration seeds from the training range for those classes only. This adds complexity for a handful of lines.
+
+> **Decision (human, 2026-10-01): accept FULL-3 and move to Stage 3.** See `2026-10-01-stage3-concentration.md`, whose Part 0 is the table fix.
