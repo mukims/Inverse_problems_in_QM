@@ -389,7 +389,7 @@ Artifacts written:
        - 6 / 150 flagged (4.00%): 1 line (0.8%)
        - 7 / 150 flagged (4.67%): 2 lines (1.6%)
        - 8 / 150 flagged (5.33%): 2 lines (1.6%) (Armchair N9 $d=0.0050$, Zigzag N9 $d=0.0100$)
-     - Over 98.4% of lines (122 / 124) exhibit $\le 7 / 150$ false alarms.
+     - **Per-Line Criterion Gate Assessment**: While 122 of 124 lines (98.4%) satisfy $\le 7 / 150$, the per-line criterion ("no line at or above 8 of 150") fails narrowly on 2 lines (both sit at exactly 8 / 150). The wider-than-binomial spread stems from estimation variance on 150 validation seeds per class and the shared global $z^* = 3.144$. An optional refinement (per-edge $z^*$ plus empirical Bayes scale shrinkage $w_{\text{shrunk}} = (150 w + n_0 w_{\text{edge}})/(150 + n_0)$) has been detailed in `docs/superpowers/plans/2026-10-01-full2-review.md` pending human decision.
 
 | Group / Edge Filter | Density ($d$) | Test Samples ($n_{\text{test}}$) | Recon Error False Alarm (%) | Option B Initial Log-Normal (%) | Option B Robust Final (%) |
 |---|:---:|:---:|:---:|:---:|:---:|
