@@ -485,11 +485,11 @@ Artifacts written:
 | **Edge Accuracy (Test)** | 100.0% | 100.0% | **100.0%** | $\ge 99.0\%$ | **PASS** |
 | **Width Classification Accuracy (Test)** | 99.98% | 99.98% | **99.98%** | $\ge 99.0\%$ | **PASS** |
 | **Median Absolute Width Error** | 0.0000 | 0.0000 | **0.0000** | $\le 0.10$ | **PASS** |
-| **Overall Pooled False Alarms** | 1.84% | 1.001% (186 / 18,600) | **1.000% (186 / 18,600)** | $\le 1.5\%$ | **PASS** |
-| **Pooled False Alarms (Armchair)** | 2.05% | 0.61% (62 / 10,200) | **0.87% (89 / 10,200)** | $\le 1.5\%$ (expect $\sim 1\%$) | **PASS** |
-| **Pooled False Alarms (Zigzag)** | 1.59% | 1.48% (124 / 8,400) | **1.15% (97 / 8,400)** | $\le 1.5\%$ (expect $\sim 1\%$) | **PASS** |
+| **Overall Pooled False Alarms** | 0.979% (182 / 18,600) | 1.001% (186 / 18,600) | **1.000% (186 / 18,600)** | $\le 1.5\%$ | **PASS** |
+| **Pooled False Alarms (Armchair)** | 1.785% (182 / 10,200) | 0.61% (62 / 10,200) | **0.87% (89 / 10,200)** | $\le 1.5\%$ (expect $\sim 1\%$) | **PASS** |
+| **Pooled False Alarms (Zigzag)** | 0.000% (0 / 8,400) | 1.48% (124 / 8,400) | **1.15% (97 / 8,400)** | $\le 1.5\%$ (expect $\sim 1\%$) | **PASS** |
 | **Max Line False Alarms** | 33 / 150 (22.0%) | 8 / 150 (5.33%) | **10 / 150 (6.67%)** | $< 8 / 150$ | **FAIL (Narrow)** |
-| **Lines at or above 8 / 150** | 11 lines | 2 lines (armchair N9 d=0.005: 8, zigzag N9 d=0.01: 8) | **3 lines** (armchair N9 d=0.005: 10, N6 d=0.01: 9, N6 d=0.005: 8) | 0 lines | **FAIL (Narrow)** |
+| **Lines at or above 8 / 150** | 8 lines | 2 lines (armchair N9 d=0.005: 8, zigzag N9 d=0.01: 8) | **3 lines** (armchair N9 d=0.005: 10, N6 d=0.01: 9, N6 d=0.005: 8) | 0 lines | **FAIL (Narrow)** |
 | **Test Dispersion Index ($\text{Var}/\text{Mean}$)** | 4.78 | 2.40 | **2.65** | 1.0 (pure binomial noise) | Reported |
 | **Square Strip N10 Detection** | 100.0% | 100.0% (AUROC 1.000) | **100.0% (AUROC 0.9999)** | $\ge 95.0\%$ | **PASS** |
 | **Leave-One-Out Armchair N13 Detection** | 9.5% | 99.0% | **99.5%** | Reported | Reported |
