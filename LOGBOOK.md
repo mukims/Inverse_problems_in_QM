@@ -281,6 +281,23 @@ Artifacts written:
    - **Resolution**: Updated `check_store.py` to use a spike-robust per-seed mean: `mean(min(T, pristine + 1) - pristine) <= 0.05` over unmasked channels (`check_seed_excess`). Added unit tests in `tests/tbribbon/test_check_store.py` (2/2 passed; 88/88 test suite passing).
    - **Validation Result (ALL PASS)**: Rerunning `check_store.py --store ~/atlas_store/engine_v1 --narrow-only` produced **ALL PASS** across all 21 models (`report.json` written to `~/atlas_store/engine_v1/report.json`). Clean channel error $\le 4.3\times 10^{-5}$ for zigzag and $0.00$ for armchair; 0 cross-density duplicates; 100% valid seed nesting.
 
+4. **Wide-Block Generation Progress (30 / 31 Models Complete, 120,000 Spectra)**:
+   - Following narrow-block verification, wide-ribbon production generation proceeded continuously on 16 parallel workers (`OMP_NUM_THREADS=1`):
+     - **Zigzag $N=16$** (Caroli): 4,000 spectra across 4 densities in 1,250s (wall 0.31s/spec, worker median 3.38s/spec).
+     - **Armchair $N=20$** (`agnr_lib_IL_1e-5`, cell v2): 4,000 spectra in 2,102s (wall 0.53s/spec, worker median 5.86s/spec).
+     - **Zigzag $N=20$** (Caroli): 4,000 spectra in 1,967s (wall 0.49s/spec, worker median 5.45s/spec).
+     - **Armchair $N=27$** (`agnr_lib_IL_1e-5`, cell v2): 4,000 spectra in 3,940s (wall 0.98s/spec, worker median 11.28s/spec; crossed 100,000 spectra milestone).
+     - **Zigzag $N=27$** (Caroli): 4,000 spectra in 3,877s (wall 0.97s/spec, worker median 10.96s/spec).
+     - **Armchair $N=31$** (`agnr_lib_IL_1e-5`, cell v2): 4,000 spectra in 5,414s (wall 1.35s/spec, worker median 15.52s/spec).
+     - **Armchair $N=40$** (`agnr_lib_IL_1e-5`, cell v2): 4,000 spectra in 10,360s (wall 2.59s/spec, worker median 29.45s/spec).
+     - **Zigzag $N=40$** (Caroli): 4,000 spectra in 10,804s (wall 2.70s/spec, worker median 30.56s/spec).
+     - **Armchair $N=50$** (`agnr_lib_IL_1e-5`, cell v2): 4,000 spectra in 18,297s (wall 4.57s/spec, worker median 51.92s/spec).
+     - **Zigzag $N=50$** (Caroli): in progress on pool 1 ($d=0.0050$), the 31st and final model.
+   - **Empirical 16-Worker Scaling & Throughput**:
+     - Measured parallel speedup across wide models remains exceptionally stable at $11.1\times$ to $11.6\times$ (accounting for the 8 P-cores + 8 E-cores architecture of the i7-13700).
+     - Variance between pools of identical geometry is $< 0.4\%$.
+     - Total generated spectra on disk: **120,000+ / 124,000** (96.8% of planned sparse-grid dataset).
+
 ---
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
