@@ -32,11 +32,13 @@ class Located:
 
 class Atlas:
     def __init__(self, spec, encoder, mu, sd, refs, ref_model, ref_density, models, threshold, k,
-                 threshold_table=None, novelty="reconstruction_v1"):
+                 threshold_table=None, novelty="reconstruction_v1", threshold_params=None, z_star=None):
         self.spec, self.encoder, self.mu, self.sd = spec, encoder, mu, sd
         self.refs, self.ref_model, self.ref_density = refs, ref_model, ref_density
         self.models, self.threshold, self.k = list(models), float(threshold), int(k)
         self.threshold_table = threshold_table or {}
+        self.threshold_params = threshold_params or {}
+        self.z_star = float(z_star) if z_star is not None else None
         self.novelty = novelty
         self._nn = NearestNeighbors(n_neighbors=self.k).fit(self.refs)
         self._build_model_nns()
@@ -99,12 +101,13 @@ class Atlas:
 
     def calibrate_novelty(self, store, registry, model_ids, val_seed_min=None, max_seed=None):
         """Calibrate class-conditional thresholds tau(model, density) on validation seeds.
-        Uses log-normal 99th percentile: exp(mean(log s) + 2.326 * sd(log s))."""
-        table = {}
+        Uses median/MAD standardization per class, followed by empirical 99th percentile
+        of pooled standardized scores z = (log s - c) / w across all validation spectra."""
+        class_stats = {}
+        all_z = []
         for mid in model_ids:
             m = registry.get(mid)
             e_t, _ = store.read_pristine(mid)
-            table[mid] = {}
             for d in store.densities(mid):
                 c, s = store.read_cloud(mid, d)
                 if val_seed_min is not None:
@@ -119,11 +122,29 @@ class Atlas:
                 loc = self.locate(c_val, e_t, m.band_top_t)
                 s_vals = np.array([r.novelty_s for r in loc])
                 log_s = np.log(np.maximum(s_vals, 1e-12))
-                mean_log = float(np.mean(log_s))
-                sd_log = float(np.std(log_s, ddof=1)) if len(log_s) > 1 else 0.0
-                tau = float(np.exp(mean_log + 2.326 * sd_log))
-                table[mid][f"{d:.4f}"] = tau
+                c_median = float(np.median(log_s))
+                mad = float(np.median(np.abs(log_s - c_median)))
+                w = 1.4826 * mad
+                if w < 1e-8:
+                    w = float(np.std(log_s, ddof=1)) if len(log_s) > 1 and np.std(log_s, ddof=1) > 1e-8 else 1.0
+                z = (log_s - c_median) / w
+                all_z.extend(z)
+                class_stats[(mid, f"{d:.4f}")] = {"c": c_median, "w": w}
+
+        z_star = float(np.percentile(all_z, 99)) if len(all_z) > 0 else 2.326
+        table = {}
+        params = {}
+        for (mid, d_str), stats in class_stats.items():
+            if mid not in table:
+                table[mid] = {}
+                params[mid] = {}
+            tau = float(np.exp(stats["c"] + z_star * stats["w"]))
+            table[mid][d_str] = tau
+            params[mid][d_str] = {"c": stats["c"], "w": stats["w"]}
+
         self.threshold_table = table
+        self.threshold_params = params
+        self.z_star = z_star
         self.novelty = "class_conditional_v1"
         return table
 
@@ -223,7 +244,8 @@ class Atlas:
                  mu=self.mu, sd=self.sd)
         (path / "manifest.json").write_text(json.dumps({
             "spec": self.spec.as_dict(), "models": [asdict(m) for m in self.models], "threshold": self.threshold,
-            "threshold_table": self.threshold_table, "novelty": self.novelty,
+            "threshold_table": self.threshold_table, "threshold_params": self.threshold_params,
+            "z_star": self.z_star, "novelty": self.novelty,
             "k": self.k, "created": date.today().isoformat()}, indent=2))
 
     @classmethod
@@ -236,7 +258,10 @@ class Atlas:
         enc.eval()
         r = np.load(path / "refs.npz")
         threshold_table = man.get("threshold_table", {})
+        threshold_params = man.get("threshold_params", {})
+        z_star = man.get("z_star", None)
         novelty = man.get("novelty", "reconstruction_v1")
         return cls(InputSpec(**man["spec"]), enc, r["mu"], r["sd"], r["refs"], r["ref_model"], r["ref_density"],
                    [RibbonModel(**m) for m in man["models"]], man["threshold"], man["k"],
-                   threshold_table=threshold_table, novelty=novelty)
+                   threshold_table=threshold_table, novelty=novelty,
+                   threshold_params=threshold_params, z_star=z_star)

@@ -136,6 +136,7 @@ def main():
                     "width_continuous_accuracy": round(w_cont_acc, 2),
                     "median_width_continuous_diff": round(w_cont_diff, 4),
                     "share_flagged_unknown": round(unknown_pct, 2),
+                    "n_flagged_unknown": int(round(unknown_pct / 100 * len(c_test))),
                     "share_flagged_unknown_recon": round(unknown_recon_pct, 2),
                     "median_novelty_ratio": round(nov_ratio, 4),
                     "median_predicted_density": round(pred_dens, 4),
@@ -178,15 +179,46 @@ def main():
                 }
                 print(f"{edge_filter:<22} | {d:<6.4f} | {total_n:<8} | {p_mat:<7.1f} | {p_edge:<7.1f} | {p_width:<8.1f} | {p_unk:<8.1f} | {p_unk_recon:<8.1f}")
 
+    # Sound false-alarm gate (Correction 2 from reviewer: pooled <= 1.5%, max line < 8 of 150)
+    all_line_stats = [s for mstats in ident_res.values() for s in mstats.values()]
+    total_test = sum(s["n_test_samples"] for s in all_line_stats)
+    total_unk = sum(s["n_flagged_unknown"] for s in all_line_stats)
+    pooled_fa = (total_unk / total_test) * 100.0 if total_test > 0 else 0.0
+
+    counts = [s["n_flagged_unknown"] for s in all_line_stats]
+    from collections import Counter
+    hist = Counter(counts)
+    max_count = max(counts) if counts else 0
+
+    pooled_pass = bool(pooled_fa <= 1.5)
+    per_line_pass = bool(max_count < 8)
+    sound_gate_pass = pooled_pass and per_line_pass
+
+    print("\n[INFO] Novelty False Alarm Histogram (flagged count out of 150 across 124 lines):")
+    for cnt in sorted(hist.keys()):
+        print(f"  {cnt:2d}/150 flagged: {hist[cnt]:3d} lines ({hist[cnt]/len(all_line_stats)*100:.1f}%)")
+    print(f"[INFO] Pooled False Alarm Rate: {pooled_fa:.2f}% (gate <= 1.5%: {'PASS' if pooled_pass else 'FAIL'})")
+    print(f"[INFO] Max Line Flagged Count: {max_count}/150 ({max_count/150*100:.2f}%) (gate < 8/150: {'PASS' if per_line_pass else 'FAIL'})")
+
     full_output = {
         "per_model": ident_res,
         "pooled": pooled,
+        "novelty_gate": {
+            "pooled_false_alarm_pct": round(pooled_fa, 3),
+            "pooled_gate_pass": pooled_pass,
+            "max_line_flagged_count": max_count,
+            "max_line_flagged_pct": round(max_count / 150 * 100, 2),
+            "per_line_gate_pass": per_line_pass,
+            "flagged_count_histogram": {str(k): v for k, v in sorted(hist.items())},
+            "overall_pass": sound_gate_pass
+        },
         "revised_gate5_pass_per_line": gate5_pass
     }
     out.mkdir(parents=True, exist_ok=True)
     (out / "identification.json").write_text(json.dumps(full_output, indent=2))
     print("-" * 102)
     print(f"[RESULT] Identification report written to {out / 'identification.json'}")
+    print(f"[RESULT] Sound False Alarm Gate (pooled <= 1.5%, max line < 8/150): {'PASS' if sound_gate_pass else 'FAIL'}")
     print(f"[RESULT] Revised Gate 5 (100% material, >=99% edge, >=99% width on test seeds): {'PASS' if gate5_pass else 'FAIL (per-line 7-sample noise; check pooled)'}")
 
 

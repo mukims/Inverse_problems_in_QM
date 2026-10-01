@@ -103,6 +103,8 @@ def test_save_load_preserves_threshold_table(tmp_path):
     loaded = Atlas.load(save_dir)
     assert loaded.novelty == "class_conditional_v1"
     assert loaded.threshold_table == atlas.threshold_table
+    assert loaded.threshold_params == atlas.threshold_params
+    assert loaded.z_star == atlas.z_star
     assert len(loaded._model_nns) == len(atlas._model_nns)
 
     T = toy_spectrum(1.0, 7, 0.01, 80_000)[None]

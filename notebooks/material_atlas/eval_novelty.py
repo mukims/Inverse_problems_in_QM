@@ -139,15 +139,13 @@ def eval_leave_one_out(engine_store_path, loo_atlas_path):
         print(f"[INFO] Building Leave-One-Out Atlas (omitting armchair N13, zigzag N8)...")
         atlas_loo = Atlas.build(store, reg_loo, train_ids, spec, threads=4,
                                 max_seed=train_val_max, val_seed_min=val_seed_min)
-        print("[INFO] Calibrating LOO Option B on validation seeds...")
-        atlas_loo.calibrate_novelty(store, reg_loo, train_ids, val_seed_min=val_seed_min, max_seed=train_val_max)
-        atlas_loo.save(loo_dir)
     else:
         print(f"[INFO] Loading existing LOO Atlas from {loo_dir}...")
         atlas_loo = Atlas.load(loo_dir)
-        if not atlas_loo.threshold_table:
-            atlas_loo.calibrate_novelty(store, reg_loo, train_ids, val_seed_min=val_seed_min, max_seed=train_val_max)
-            atlas_loo.save(loo_dir)
+
+    print("[INFO] Calibrating LOO Option B on validation seeds...")
+    atlas_loo.calibrate_novelty(store, reg_loo, train_ids, val_seed_min=val_seed_min, max_seed=train_val_max)
+    atlas_loo.save(loo_dir)
 
     # Evaluate held-out widths: armchair N13 and zigzag N8 on test seeds 850..999
     reg_full = Registry()
