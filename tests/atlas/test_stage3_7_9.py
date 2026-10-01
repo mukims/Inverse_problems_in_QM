@@ -28,7 +28,6 @@ def test_toy_interval_coverage():
 
 def test_unknown_flagged_spectra_get_no_estimate_unit():
     """Unit test verifying that spectra marked unknown receive no concentration estimate (NaN)."""
-    # Create synthetic test predictions
     n = 100
     unknown_flags = np.zeros(n, dtype=bool)
     unknown_flags[10:20] = True # 10 spectra flagged unknown
@@ -50,11 +49,26 @@ def test_unknown_flagged_spectra_get_no_estimate_unit():
     assert np.all(c_hat_unflagged[~unknown_flags] <= hi[~unknown_flags])
 
 
+def test_vote_outside_7_9_gets_no_estimate_unit():
+    """Unit test verifying that spectra whose atlas width vote is outside {7, 9} receive no estimate (NaN)."""
+    n = 50
+    w_votes = np.array([7] * 20 + [9] * 20 + [6] * 5 + [10] * 5)
+    has_model = np.isin(w_votes, [7, 9])
+    c_hat = np.full(n, np.nan)
+    for w in [7, 9]:
+        m = has_model & (w_votes == w)
+        c_hat[m] = 10.0 # dummy prediction
+
+    assert np.all(np.isnan(c_hat[~has_model])), "Votes outside {7, 9} must receive NaN"
+    assert np.all(~np.isnan(c_hat[has_model])), "Votes in {7, 9} must receive estimates"
+
+
 @pytest.mark.skipif(not METRICS_PATH.exists(), reason="Stage 3 run must complete first")
 def test_stage3_metrics_json_exists_and_satisfies_criteria():
     data = json.loads(METRICS_PATH.read_text())
 
     required_keys = {
+        "routing",
         "width_accuracy",
         "end_to_end_mae",
         "end_to_end_mae_all",
@@ -63,7 +77,7 @@ def test_stage3_metrics_json_exists_and_satisfies_criteria():
         "coverage_90",
         "interval_relative_halfwidth",
         "n_test",
-        "n_unflagged",
+        "n_estimated",
         "criteria_met",
         "concentration_breakdown",
     }
@@ -71,29 +85,39 @@ def test_stage3_metrics_json_exists_and_satisfies_criteria():
 
     assert data["n_test"] == 37350, f"Expected 37,350 test spectra, got {data['n_test']}"
     assert data["width_accuracy"] >= 99.5, f"Width accuracy {data['width_accuracy']:.2f}% < 99.5%"
-    assert "mae<=1.98" in data["criteria_met"]
-    assert data["end_to_end_mae"] <= 2.05, f"End-to-end MAE {data['end_to_end_mae']:.3f} > 2.05"
+    assert data["end_to_end_mae"] <= 1.98, f"End-to-end MAE {data['end_to_end_mae']:.3f} > 1.98"
     assert abs(data["coverage_90"] - 90.0) <= 2.0, f"Coverage {data['coverage_90']:.2f}% outside 90 +- 2%"
+    assert data["criteria_met"]["width_accuracy>=99.5"] is True
+    assert data["criteria_met"]["mae<=1.98"] is True
+    assert data["criteria_met"]["coverage_90+-2"] is True
 
 
 @pytest.mark.skipif(not PREDS_PATH.exists(), reason="Stage 3 test predictions must exist")
 def test_saved_stage3_test_predictions_consistency():
     preds = np.load(PREDS_PATH)
     y_true = preds["y_true"]
-    c_hat_unf = preds["c_hat_unflagged"]
+    c_hat_est = preds["c_hat_estimated"]
     unknown = preds["unknown"]
     lo = preds["lo"]
     hi = preds["hi"]
-    w_hat = preds["w_hat"]
-    w_true = preds["w_true"]
+    w_vote = preds["w_vote"]
 
     assert len(y_true) == 37350
+
     # Flagged unknown must receive NaN
-    assert np.all(np.isnan(c_hat_unf[unknown])), "Flagged spectra received non-NaN estimate"
+    assert np.all(np.isnan(c_hat_est[unknown])), "Flagged spectra received non-NaN estimate"
     assert np.all(np.isnan(lo[unknown])), "Flagged spectra received non-NaN lo bound"
     assert np.all(np.isnan(hi[unknown])), "Flagged spectra received non-NaN hi bound"
 
-    # Unflagged must receive valid finite estimates
-    assert np.all(np.isfinite(c_hat_unf[~unknown])), "Unflagged spectra missing estimate"
-    assert np.all(lo[~unknown] <= c_hat_unf[~unknown])
-    assert np.all(c_hat_unf[~unknown] <= hi[~unknown])
+    # Spectra with vote outside {7, 9} must receive NaN
+    if "no_stage3_model" in preds:
+        no_model = preds["no_stage3_model"]
+        assert np.all(np.isnan(c_hat_est[no_model])), "Spectra with vote outside {7, 9} received non-NaN estimate"
+        assert np.all(np.isnan(lo[no_model])), "Spectra with vote outside {7, 9} received non-NaN lo bound"
+        assert np.all(np.isnan(hi[no_model])), "Spectra with vote outside {7, 9} received non-NaN hi bound"
+
+    # Estimated spectra must receive valid finite estimates
+    estimated = preds["estimated"] if "estimated" in preds else (~unknown & np.isin(w_vote, [7, 9]))
+    assert np.all(np.isfinite(c_hat_est[estimated])), "Estimated spectra missing estimate"
+    assert np.all(lo[estimated] <= c_hat_est[estimated])
+    assert np.all(c_hat_est[estimated] <= hi[estimated])

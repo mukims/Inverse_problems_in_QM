@@ -25,7 +25,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-15** | 2026-10-01 | **31-Model Sparse Ribbon Grid (FULL-1 Production Run)** | **Atlas v2** (Conv1dAE + Option A Modal Width-Vote Retrieval + InputSpec v2) | `~/atlas_store/engine_v1/` (31 models $\times$ 4 densities $\times$ 1,000 seeds = **124,000 spectra**; test on held-out seeds 850–999 = **18,600 test spectra**) | `InputSpec v2` (cap=64.0, 400-ch $[0, 4.0t)$, label-free $\log(1+T)/\log(65)$); Caroli for ZGNR; corrected cell v2 for AGNR; config-seed split 70/15/15 | **100.0% Mat<br>100.0% Edge<br>99.98% Width** | N/A (Stage 1–2 identification) | N/A | **Completed (FULL-1 & Revised Gate 5 Verified)**: 100.0% Material Accuracy (18,600/18,600), 100.0% Edge Accuracy (18,600/18,600), 99.98% Width Accuracy across 18,600 held-out test spectra. 123 of 124 lines pass $\ge 99.0\%$ (122 at 100.0%). Only line below 99% is Armchair N8 at $d=0.0400$ (98.0%, 3 errors, intra-family $3p+2 \to 3p+2$). All 31 models pass `check_store.py`. Effective speedup over single core: ~6.4× (concurrency ~11.4×). |
 | **BUILD-16** | 2026-10-01 | **31-Model Sparse Ribbon Grid + Square Strip N10 (FULL-2)** | **Option B Class-Conditional Novelty & Robust Calibration** | `~/atlas_store/engine_v1/` (18,600 known test spectra) + `~/atlas_store/novelty_v1/` (600 square strip spectra) + LOO (Armchair N13, Zigzag N8) | Class-conditional $s$ ($k=15$ intra-model NN distance) + robust median/MAD per class + pooled 99th percentile $z^* = 3.144$; same frozen encoder weights | **100.0% Mat<br>100.0% Edge<br>99.98% Width** | N/A (Stage 1–2 novelty calibration) | N/A | **Completed (FULL-2 Verified)**: Robust calibration fixes the initial log-normal underestimate (skewed log scores, 2.06% pooled rate) to achieve exactly **1.00%** pooled false alarms on held-out test spectra (gate $\le 1.5\%$: PASS). High-disorder armchair ribbons dropped to zero/near-zero false alarms (N40 $d=0.04$ from 22.0% to 0.0%, pooled $d=0.04$ from 6.3% to 0.8%). Identification metrics 100% byte-identical to commit `1ffaff0db`. Gate 3 passed: 100.00% detection of unseen Square N10 strip (AUROC 0.9998). Untrained width detection (LOO): 99.00% on Armchair N13 (vs 9.5% for recon) and 100.00% on Zigzag N8 (vs 0.0% for recon). |
 | **BUILD-17** | 2026-10-01 | **31-Model Sparse Ribbon Grid + Square Strip N10 (FULL-3)** | **FULL-3 Reviewer Novelty Refinement (Per-Edge Tail & Scale Shrinkage)** | `~/atlas_store/engine_v1/` (18,600 test spectra) + `novelty_v1/` + LOO (Armchair N13, Zigzag N8) | Validation-selected $n_0 = 0$ (dispersion 3.39 vs 3.65–3.95); per-edge $z^*_{\text{arm}} = 2.9854$, $z^*_{\text{zz}} = 3.3498$; zero test leakage | **100.0% Mat<br>100.0% Edge<br>99.98% Width** | N/A (Stage 1–2 novelty refinement) | N/A | **Completed (FULL-3 Verified)**: Human-accepted. Pooled false alarms armchair 0.87%, zigzag 1.15% (both $\le 1.5\%$). Zigzag completely cleared ($\le 7/150$). Armchair 3 lines $\ge 8/150$ (N9 d=0.005 at 10, N6 d=0.01 at 9, N6 d=0.005 at 8). Square N10 strip 100.0% detected (AUROC 0.9999). LOO Armchair N13: 99.5%, Zigzag N8: 100.0%. Identification 100% byte-identical. |
-| **STAGE3-1** | 2026-10-01 | **7-AGNR & 9-AGNR** | **Stage 3 Production Pipeline** (Atlas v2 Front End + Stage 3 XGBoost + Conformal) | `size_7.npy` + `size_9.npy` (XGB train seeds 0–2099, cal seeds 2100–2549, test seeds 2550–2999; 37,350 test spectra across 83 concentrations) | Stage 1–2: `InputSpec v2` (400-ch $[0, 4.0t)$, label-free $\log(1+T)/\log(65)$); class-conditional novelty filter ($s \le \tau$); Stage 3: predicted width pristine division + 3-decimal rounding | **99.82%** (vote 99.87%) | **1.981 (Unflagged)**<br>1.615 (7)<br>2.230 (9)<br>1.981 (All) | **2.966 (Unflagged)**<br>3.071 (All) | **Completed (Stage 3 Part A Verified)**: End-to-end integration of frozen Atlas v2 front end with Stage 3 XGBoost regressors and split-conformal intervals on legacy dense data. Label-free width accuracy 99.82% ($\ge 99.5\%$: PASS); 90% conformal coverage 90.02% (within $90 \pm 2\%$, $q = 0.0896$: PASS); End-to-end MAE 1.981 (narrowly misses 1.980 gate by 0.001; 7-AGNR improves to 1.615 vs 1.655 in BUILD-13, 9-AGNR is 2.230). Unknown flag rate 5.56% overall (6.84% for 7-AGNR, 4.66% for 9-AGNR), concentrated outside atlas training density range ($c=2$ in 9-AGNR at 97.6% unk due to $d=0.11\% \ll 0.5\%$; $c \ge 58$ in 7-AGNR rising to 15.3% unk due to $d > 4.0\%$). Stored in `notebooks/material_atlas/stage3_7_9/`. |
+| **STAGE3-1** | 2026-10-01 | **7-AGNR & 9-AGNR** | **Stage 3 Production Pipeline** (Atlas v2 Front End + Stage 3 XGBoost + Conformal) | `size_7.npy` + `size_9.npy` (XGB train seeds 0–2099, cal seeds 2100–2549, test seeds 2550–2999; 37,350 test spectra across 83 concentrations) | Stage 1–2: `InputSpec v2` (400-ch $[0, 4.0t)$, label-free $\log(1+T)/\log(65)$); class-conditional novelty filter ($s \le \tau$); open-world `width_vote` routing (votes outside {7, 9} get no estimate, counted as `no_stage3_model`); Stage 3: predicted width pristine division + 3-decimal rounding | **99.87%** (vote) | **1.958 (Estimated)**<br>1.615 (7)<br>2.191 (9)<br>1.981 (Superseded snapped) | **2.830 (Estimated)**<br>3.071 (All) | **Completed (Stage 3 Part A Verified & All Gates Passed)**: End-to-end integration of frozen Atlas v2 front end with Stage 3 XGBoost regressors and split-conformal intervals on legacy dense data. Routing by open-world `width_vote` resolves closed-world assumption: label-free vote width accuracy 99.87% ($\ge 99.5\%$: PASS); 90% conformal coverage 90.04% (within $90 \pm 2\%$, $q = 0.0894$: PASS); End-to-end MAE 1.958 ($\le 1.980$: PASS; 7-AGNR: 1.615, 9-AGNR: 2.191). Unknown flag rate 5.56% (2,075 / 37,350); votes outside {7, 9} are only 9 spectra (0.02%, all voted 6, safely unestimated). Total evaluated spectra: 35,266 / 37,350. Snapped-routing MAE 1.981 documented as superseded. Stored in `notebooks/material_atlas/stage3_7_9/`. |
 
 ---
 
@@ -534,34 +534,36 @@ Artifacts updated:
 ---
 
 ### [2026-10-01] STAGE3-1: Stage 3 Concentration Models on Production Atlas v2 Front End
-* **Objective**: Execute Stage 3 Part A (`docs/superpowers/plans/2026-10-01-stage3-concentration.md`), integrating the frozen production `atlas_v2` front end (`InputSpec v2`, class-conditional novelty filter) with width-specific XGBoost concentration regressors on legacy dense 7/9-AGNR datasets (`size_7.npy`, `size_9.npy`).
+* **Objective**: Execute Stage 3 Part A (`docs/superpowers/plans/2026-10-01-stage3-concentration.md` and reviewer correction `docs/superpowers/plans/2026-10-01-stage3-routing-fix.md`), integrating the frozen production `atlas_v2` front end (`InputSpec v2`, class-conditional novelty filter) with width-specific XGBoost concentration regressors on legacy dense 7/9-AGNR datasets (`size_7.npy`, `size_9.npy`).
 * **Integrity Guardrail Adherence** (`docs/superpowers/plans/2026-10-01-no-test-tuning.md`):
   - Model regressors trained on seeds 0–2099 only.
   - Conformal relative interval calibrated on seeds 2100–2549 only.
   - Evaluated on held-out test seeds 2550–2999 across all 83 legacy concentrations ($n_{\text{test}} = 37,350$ spectra).
   - Zero test-set tuning; all results reported exactly as observed.
-* **Pipeline Structure**:
+* **Pipeline Structure & Open-World Routing**:
   1. **Atlas v2 Front End**: Label-free location of each spectrum via `atlas_v2.locate(T, e_t, band_top_t=3.0)`.
   2. **Novelty Unknown Guard**: Spectra flagged `unknown=True` ($s > \tau(\text{model}, \text{density})$) receive no concentration estimate and are counted separately (2,075 / 37,350 = 5.56%).
-  3. **Width Routing**: Label-free predicted width routes the unflagged spectrum to the corresponding width regressor ($w \in \{7, 9\}$) and its pristine spectrum.
+  3. **Open-World `width_vote` Routing**: The atlas's discrete decision is `width_vote`. To remove the closed-world assumption of binary snapping ($|w-7| < |w-9|$):
+     - Vote 7 $\to$ 7-AGNR regressor and pristine.
+     - Vote 9 $\to$ 9-AGNR regressor and pristine.
+     - Vote outside $\{7, 9\}$ $\to$ receives **no estimate**, tracked as `no_stage3_model` (9 spectra out of 37,350, 0.02%, all voted 6).
   4. **Stage 3 Regressor Back End**: One XGBoost per width (`n_estimators=800, max_depth=8, learning_rate=0.04, subsample=0.8, colsample_bytree=0.8, reg_lambda=1.0, tree_method="hist", random_state=42`) trained on seeds 0–2099 on inputs normalized by predicted width's pristine with 3-decimal rounding guard (Data Validity Rule #3).
-  5. **Split-Conformal Calibration**: Relative split-conformal calibration on unflagged calibration seeds 2100–2549 (35,412 unflagged samples, $\alpha=0.10$), yielding relative halfwidth $q = 0.0896$.
+  5. **Split-Conformal Calibration**: Relative split-conformal calibration on estimated calibration seeds 2100–2549 (35,398 samples, $\alpha=0.10$), yielding relative halfwidth $q = 0.0894$.
 
-* **Comparison: BUILD-13 (2-Model Atlas) vs STAGE3-1 (Production 31-Model Atlas v2)**:
+* **Comparison: BUILD-13 vs STAGE3-1 (Production Atlas v2)**:
 
-| Metric | BUILD-13 (Gate 1 Reference) | STAGE3-1 (Production Atlas v2) | Target / Spec Gate | Status |
-|---|:---:|:---:|:---:|:---:|
-| **Front End Atlas** | 2-Model Conv1dAE (7 & 9 only) | **31-Model Production Atlas v2** (armchair, zigzag, square) | Production Map | **PASS** |
-| **Input Specification** | `InputSpec v1` (cap=20.0, $[0, 4.0t)$) | **`InputSpec v2`** (cap=64.0, $[0, 4.0t)$) | Versioned Spec | **PASS** |
-| **Novelty Filtering** | None (100% evaluated) | **Class-conditional $s \le \tau$** (unflagged only get estimate) | Filter Unknowns | **PASS** |
-| **Unknown Flag Rate** | 0.0% | **5.56% (2,075 / 37,350)**<br>7-AGNR: 6.84%, 9-AGNR: 4.66% | Tracked separately | **Reported** |
-| **Label-free Width Accuracy** | 99.86% (37,298 / 37,350) | **99.82% (37,283 / 37,350)**<br>Vote: 99.87%, Round: 99.61%<br>Unflagged: 99.90% | $\ge 99.5\%$ | **PASS** |
-| **End-to-End Concentration MAE (Unflagged)** | 1.973 (all) | **1.981** (7-AGNR: **1.615**, 9-AGNR: **2.230**) | $\le 1.980$ | **Narrow Miss (1.981 vs 1.980)** |
-| **End-to-End Concentration MAE (All Spectra)** | 1.973 | **1.981** (7-AGNR: 1.671, 9-AGNR: 2.196) | Baseline | Baseline |
-| **End-to-End Concentration RMSE (Unflagged)** | 3.034 | **2.966** (7-AGNR: **2.342**, 9-AGNR: **3.323**) | Baseline | **Improved vs BUILD-13** |
-| **End-to-End Concentration RMSE (All Spectra)** | 3.034 | **3.071** (7-AGNR: 2.517, 9-AGNR: 3.403) | Baseline | Baseline |
-| **90% Conformal Interval Coverage** | 90.00% ($q = 0.0897$) | **90.02%** ($q = 0.0896$, 31,755 / 35,275 covered) | $90 \pm 2\%$ ($[88\%, 92\%]$) | **PASS** |
-| **Test Set Size ($n_{\text{test}}$)** | 37,350 spectra | **37,350 spectra** (35,275 unflagged, 2,075 flagged unknown) | Held-out seeds 2550–2999 | **PASS** |
+| Metric | BUILD-13 (Gate 1 Reference) | STAGE3-1 (Superseded Snapped) | STAGE3-1 (Production `width_vote`) | Target / Spec Gate | Status |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Front End Atlas** | 2-Model Reference Conv1dAE | 31-Model Atlas v2 | **31-Model Production Atlas v2** | Production Map | **PASS** |
+| **Routing Mechanism** | Closed-World Binary Snapping | Closed-World Binary Snapping | **Open-World `width_vote`** (no est if $\notin \{7, 9\}$) | Open-World Routing | **PASS** |
+| **Input Specification** | `InputSpec v1` (cap=20.0) | `InputSpec v2` (cap=64.0) | **`InputSpec v2`** (cap=64.0, $[0, 4.0t)$) | Versioned Spec | **PASS** |
+| **Novelty Unknown Flag Rate** | 0.0% | 5.56% (2,075 / 37,350) | **5.56% (2,075 / 37,350)**<br>7-AGNR: 6.84%, 9-AGNR: 4.66% | Tracked separately | **Reported** |
+| **No Stage 3 Model Rate** | 0.0% | 0.0% | **0.02% (9 / 37,350)** (all voted 6) | Tracked separately | **Reported** |
+| **Label-free Width Accuracy** | 99.86% (37,298 / 37,350) | 99.82% (37,283 / 37,350) | **99.87% (37,302 / 37,350)**<br>On estimated: 99.90% | $\ge 99.5\%$ | **PASS** |
+| **End-to-End MAE (Estimated)** | 1.973 | 1.981 (narrow miss) | **1.958** (7-AGNR: **1.615**, 9-AGNR: **2.191**) | $\le 1.980$ | **PASS** |
+| **End-to-End RMSE (Estimated)** | 3.034 | 2.966 | **2.830** (7-AGNR: **2.342**, 9-AGNR: **3.170**) | Baseline | **Improved vs BUILD-13** |
+| **90% Conformal Interval Coverage** | 90.00% ($q = 0.0897$) | 90.02% ($q = 0.0896$) | **90.04%** ($q = 0.0894$, 31,755 / 35,266 covered) | $90 \pm 2\%$ ($[88\%, 92\%]$) | **PASS** |
+| **Total Evaluated Spectra** | 37,350 | 35,275 | **35,266 spectra** | Held-out seeds 2550–2999 | **PASS** |
 
 * **Analysis of Unknown Flags & Density Extrapolation**:
   Legacy datasets contain concentrations spanning densities outside the atlas's trained range ($d \in [0.005, 0.040]$):
@@ -574,9 +576,9 @@ Artifacts updated:
   3. **High-density boundary ($d > 0.0400$)**:
      - In 7-AGNR for $c \ge 58$ ($d \ge 0.0414$ up to $d=0.0486$ at $c=68$), the unknown flag rate rises steadily from 11.3% to **15.3%** at $c=66$. The atlas correctly signals that disorder exceeds its training envelope. Width accuracy remains robust at $\ge 99.6\%$.
      - In 9-AGNR for $c \ge 80$ ($d \ge 0.0444$ up to $d=0.0544$ at $c=98$), heavy disorder broadens the features; the unknown rate remains 2.2%–5.6%, while continuous width classification accuracy dips to 98.2%–98.9% (modal vote remains 99.1%–99.6%).
-  4. **MAE Impact**:
-     - For 7-AGNR, filtering unknowns **improves** concentration MAE from 1.671 (all) to **1.615** (unflagged), surpassing BUILD-13 (1.655).
-     - Overall MAE on unflagged is **1.981**, narrowly missing the 1.980 gate by 0.001. Per the specification directives (`2026-10-01-no-test-tuning.md`), this result is reported truthfully without post-hoc test tuning.
+  4. **Open-World Routing Impact**:
+     - Eliminating binary snapping avoids routing spectra voted as width 6 to the width 7 regressor. The 9 unflagged spectra with vote 6 safely receive no estimate.
+     - On the 35,266 evaluated spectra, concentration MAE improves from 1.981 down to **1.958**, comfortably satisfying the Gate 1 spec ($\le 1.980$: **PASS**).
 
 Artifacts written:
 - `notebooks/material_atlas/stage3_7_9/run_stage3_7_9.py` (Stage 3 runner with Atlas v2 front end, unknown filter, XGBoost, and conformal intervals)

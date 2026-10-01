@@ -143,67 +143,89 @@ def main():
     print("Locating calibration spectra via Atlas v2...")
     loc_cal = atlas.locate(T_["cal"], e_t, band_top_t=3.0)
     unk_cal = np.array([r.unknown for r in loc_cal], dtype=bool)
-    w_hat_cal = np.array([7 if abs(r.width - 7) < abs(r.width - 9) else 9 for r in loc_cal])
+    w_vote_cal = np.array([int(round(r.width_vote)) for r in loc_cal])
+    has_model_cal = np.isin(w_vote_cal, list(WIDTHS.keys()))
+    estimated_cal_mask = (~unk_cal) & has_model_cal
 
-    # Unflagged calibration spectra get estimates
+    # Spectra routed to {7, 9} get estimates
     c_hat_cal = np.full(len(T_["cal"]), np.nan)
     for w in WIDTHS:
-        m = (~unk_cal) & (w_hat_cal == w)
+        m = estimated_cal_mask & (w_vote_cal == w)
         if np.any(m):
             c_hat_cal[m] = regs[w].predict(norm(T_["cal"][m], pris[w]))
 
-    # Fit relative conformal interval on unflagged calibration predictions
-    unflagged_cal_mask = ~unk_cal
-    q = fit_relative(c_hat_cal[unflagged_cal_mask], C_["cal"][unflagged_cal_mask], alpha=0.1)
-    print(f"Conformal calibration (alpha=0.1): unflagged={np.sum(unflagged_cal_mask)}/{len(unk_cal)} (unk={np.mean(unk_cal)*100:.2f}%), relative halfwidth q={q:.6f}")
+    # Fit relative conformal interval on calibration spectra that received estimates
+    q = fit_relative(c_hat_cal[estimated_cal_mask], C_["cal"][estimated_cal_mask], alpha=0.1)
+    print(f"Conformal calibration (alpha=0.1): estimated={np.sum(estimated_cal_mask)}/{len(unk_cal)} (unk={np.mean(unk_cal)*100:.2f}%, no_stage3_model={np.sum((~unk_cal) & (~has_model_cal))}), relative halfwidth q={q:.6f}")
 
     print("Locating test spectra via Atlas v2...")
     loc_te = atlas.locate(T_["te"], e_t, band_top_t=3.0)
     unk_te = np.array([r.unknown for r in loc_te], dtype=bool)
-    w_hat_te = np.array([7 if abs(r.width - 7) < abs(r.width - 9) else 9 for r in loc_te])
-    w_round_te = np.array([round(r.width) for r in loc_te])
-    w_vote_te = np.array([round(r.width_vote) for r in loc_te])
+    w_vote_te = np.array([int(round(r.width_vote)) for r in loc_te])
+    w_round_te = np.array([int(round(r.width)) for r in loc_te])
+    w_snapped_te = np.array([7 if abs(r.width - 7) < abs(r.width - 9) else 9 for r in loc_te])
     recon_err_te = np.array([r.recon_error for r in loc_te])
     s_te = np.array([r.novelty_s for r in loc_te])
     pred_dens_te = np.array([r.density for r in loc_te])
 
-    # Test predictions: unflagged get estimates; flagged get NaN (no estimate)
-    c_hat_unflagged = np.full(len(T_["te"]), np.nan)
-    c_hat_all = np.empty(len(T_["te"]))
+    has_model_te = np.isin(w_vote_te, list(WIDTHS.keys()))
+    estimated_te_mask = (~unk_te) & has_model_te
+    no_stage3_model_te = (~unk_te) & (~has_model_te)
 
+    # Test predictions routed by width_vote:
+    # - unflagged with vote in {7, 9} receive estimates;
+    # - flagged unknown or vote outside {7, 9} receive NaN (no estimate).
+    c_hat_estimated = np.full(len(T_["te"]), np.nan)
     for w in WIDTHS:
-        m_unflagged = (~unk_te) & (w_hat_te == w)
-        if np.any(m_unflagged):
-            c_hat_unflagged[m_unflagged] = regs[w].predict(norm(T_["te"][m_unflagged], pris[w]))
-        m_all = (w_hat_te == w)
+        m = estimated_te_mask & (w_vote_te == w)
+        if np.any(m):
+            c_hat_estimated[m] = regs[w].predict(norm(T_["te"][m], pris[w]))
+
+    # Superseded closed-world snapped predictions (for comparison)
+    c_hat_snapped = np.full(len(T_["te"]), np.nan)
+    for w in WIDTHS:
+        m = (~unk_te) & (w_snapped_te == w)
+        if np.any(m):
+            c_hat_snapped[m] = regs[w].predict(norm(T_["te"][m], pris[w]))
+
+    c_hat_all = np.empty(len(T_["te"]))
+    for w in WIDTHS:
+        m_all = (w_snapped_te == w)
         if np.any(m_all):
             c_hat_all[m_all] = regs[w].predict(norm(T_["te"][m_all], pris[w]))
 
     lo_te, hi_te = np.full(len(T_["te"]), np.nan), np.full(len(T_["te"]), np.nan)
-    unflagged_te_mask = ~unk_te
-    lo_te[unflagged_te_mask], hi_te[unflagged_te_mask] = intervals(c_hat_unflagged[unflagged_te_mask], q)
+    lo_te[estimated_te_mask], hi_te[estimated_te_mask] = intervals(c_hat_estimated[estimated_te_mask], q)
 
-    cov_90 = float(coverage(lo_te[unflagged_te_mask], hi_te[unflagged_te_mask], C_["te"][unflagged_te_mask]) * 100)
-    mae_unflagged = float(np.mean(np.abs(c_hat_unflagged[unflagged_te_mask] - C_["te"][unflagged_te_mask])))
+    cov_90 = float(coverage(lo_te[estimated_te_mask], hi_te[estimated_te_mask], C_["te"][estimated_te_mask]) * 100)
+    mae_estimated = float(np.mean(np.abs(c_hat_estimated[estimated_te_mask] - C_["te"][estimated_te_mask])))
+    rmse_estimated = float(np.sqrt(np.mean((c_hat_estimated[estimated_te_mask] - C_["te"][estimated_te_mask])**2)))
+
+    mae_snapped_superseded = float(np.mean(np.abs(c_hat_snapped[~unk_te] - C_["te"][~unk_te])))
     mae_all = float(np.mean(np.abs(c_hat_all - C_["te"])))
 
-    width_acc = float(np.mean(w_hat_te == W_["te"]) * 100)
-    width_acc_round = float(np.mean(w_round_te == W_["te"]) * 100)
     width_acc_vote = float(np.mean(w_vote_te == W_["te"]) * 100)
-    width_acc_unflagged = float(np.mean(w_hat_te[unflagged_te_mask] == W_["te"][unflagged_te_mask]) * 100)
+    width_acc_snapped = float(np.mean(w_snapped_te == W_["te"]) * 100)
+    width_acc_round = float(np.mean(w_round_te == W_["te"]) * 100)
+    width_acc_vote_estimated = float(np.mean(w_vote_te[estimated_te_mask] == W_["te"][estimated_te_mask]) * 100)
 
     # Per-width breakdown
-    mae_by_width_unflagged = {}
+    mae_by_width_estimated = {}
+    mae_by_width_snapped = {}
     mae_by_width_all = {}
     unk_by_width = {}
+    no_model_by_width = {}
     width_acc_by_width = {}
     for w in WIDTHS:
         w_mask = (W_["te"] == w)
+        w_estimated = w_mask & estimated_te_mask
         w_unflagged = w_mask & (~unk_te)
-        mae_by_width_unflagged[str(w)] = float(np.mean(np.abs(c_hat_unflagged[w_unflagged] - C_["te"][w_unflagged])))
+        mae_by_width_estimated[str(w)] = float(np.mean(np.abs(c_hat_estimated[w_estimated] - C_["te"][w_estimated])))
+        mae_by_width_snapped[str(w)] = float(np.mean(np.abs(c_hat_snapped[w_unflagged] - C_["te"][w_unflagged])))
         mae_by_width_all[str(w)] = float(np.mean(np.abs(c_hat_all[w_mask] - C_["te"][w_mask])))
         unk_by_width[str(w)] = float(np.mean(unk_te[w_mask]) * 100)
-        width_acc_by_width[str(w)] = float(np.mean(w_hat_te[w_mask] == w) * 100)
+        no_model_by_width[str(w)] = int(np.sum(no_stage3_model_te[w_mask]))
+        width_acc_by_width[str(w)] = float(np.mean(w_vote_te[w_mask] == w) * 100)
 
     # Per-concentration breakdown
     conc_breakdown = {}
@@ -215,47 +237,62 @@ def main():
         for c in sorted(concs_w):
             c_mask = w_mask & (C_["te"] == c)
             d = c / n_sites
-            c_unf_mask = c_mask & (~unk_te)
+            c_est_mask = c_mask & estimated_te_mask
             n_tot = int(np.sum(c_mask))
-            n_unf = int(np.sum(c_unf_mask))
+            n_est = int(np.sum(c_est_mask))
+            n_unk = int(np.sum(unk_te[c_mask]))
+            n_nomod = int(np.sum(no_stage3_model_te[c_mask]))
             unk_pct = float(np.mean(unk_te[c_mask]) * 100)
-            w_acc_c = float(np.mean(w_hat_te[c_mask] == w) * 100)
-            mae_c_unf = float(np.mean(np.abs(c_hat_unflagged[c_unf_mask] - c))) if n_unf > 0 else None
+            w_acc_c = float(np.mean(w_vote_te[c_mask] == w) * 100)
+            mae_c_est = float(np.mean(np.abs(c_hat_estimated[c_est_mask] - c))) if n_est > 0 else None
             mae_c_all = float(np.mean(np.abs(c_hat_all[c_mask] - c)))
-            cov_c = float(coverage(lo_te[c_unf_mask], hi_te[c_unf_mask], c) * 100) if n_unf > 0 else None
+            cov_c = float(coverage(lo_te[c_est_mask], hi_te[c_est_mask], c) * 100) if n_est > 0 else None
             conc_breakdown[str(w)].append({
                 "concentration": int(c),
                 "density": float(d),
                 "n_total": n_tot,
-                "n_unflagged": n_unf,
+                "n_estimated": n_est,
+                "n_unknown": n_unk,
+                "n_no_stage3_model": n_nomod,
                 "unknown_rate": unk_pct,
                 "width_accuracy": w_acc_c,
-                "mae_unflagged": mae_c_unf,
+                "mae_estimated": mae_c_est,
                 "mae_all": mae_c_all,
                 "coverage_90": cov_c,
             })
 
     res = {
-        "width_accuracy": width_acc,
-        "width_accuracy_round": width_acc_round,
+        "routing": "width_vote",
+        "width_accuracy": width_acc_vote,
         "width_accuracy_vote": width_acc_vote,
-        "width_accuracy_unflagged": width_acc_unflagged,
+        "width_accuracy_on_estimated": width_acc_vote_estimated,
+        "width_accuracy_snapped_superseded": width_acc_snapped,
+        "width_accuracy_round": width_acc_round,
         "width_accuracy_by_width": width_acc_by_width,
         "unknown_flag_rate": float(np.mean(unk_te) * 100),
         "unknown_by_width": unk_by_width,
-        "end_to_end_mae": mae_unflagged,
+        "no_stage3_model_count": int(np.sum(no_stage3_model_te)),
+        "no_stage3_model_by_width": no_model_by_width,
+        "end_to_end_mae": mae_estimated,
+        "end_to_end_rmse": rmse_estimated,
         "end_to_end_mae_all": mae_all,
-        "mae_by_width": mae_by_width_unflagged,
+        "mae_by_width": mae_by_width_estimated,
         "mae_by_width_all": mae_by_width_all,
+        "mae_by_width_snapped_superseded": mae_by_width_snapped,
         "coverage_90": cov_90,
         "interval_relative_halfwidth": float(q),
         "n_test": int(len(T_["te"])),
-        "n_unflagged": int(np.sum(unflagged_te_mask)),
+        "n_estimated": int(np.sum(estimated_te_mask)),
         "n_unknown": int(np.sum(unk_te)),
+        "n_no_stage3_model": int(np.sum(no_stage3_model_te)),
         "criteria_met": {
-            "width_accuracy>=99.5": bool(width_acc >= 99.5),
-            "mae<=1.98": bool(mae_unflagged <= 1.98),
+            "width_accuracy>=99.5": bool(width_acc_vote >= 99.5),
+            "mae<=1.98": bool(mae_estimated <= 1.98),
             "coverage_90+-2": bool(abs(cov_90 - 90.0) <= 2.0),
+        },
+        "superseded_snapped": {
+            "end_to_end_mae": mae_snapped_superseded,
+            "width_accuracy": width_acc_snapped,
         },
         "concentration_breakdown": conc_breakdown,
     }
@@ -273,11 +310,15 @@ def main():
         w_true=W_["te"],
         seeds=Seeds_["te"],
         c_idx=C_idx_["te"],
-        w_hat=w_hat_te,
+        w_hat=w_snapped_te,
         w_round=w_round_te,
         w_vote=w_vote_te,
         unknown=unk_te,
-        c_hat_unflagged=c_hat_unflagged,
+        no_stage3_model=no_stage3_model_te,
+        estimated=estimated_te_mask,
+        c_hat_unflagged=c_hat_estimated,
+        c_hat_estimated=c_hat_estimated,
+        c_hat_snapped=c_hat_snapped,
         c_hat_all=c_hat_all,
         lo=lo_te,
         hi=hi_te,
@@ -292,13 +333,16 @@ def main():
     print("\n" + "=" * 60)
     print("STAGE 3 CONCENTRATION EVALUATION REPORT (STAGE3-1)")
     print("=" * 60)
-    print(f"Label-Free Width Accuracy:     {width_acc:.3f}% (round: {width_acc_round:.3f}%, vote: {width_acc_vote:.3f}%) [Gate >=99.5%: {'PASS' if res['criteria_met']['width_accuracy>=99.5'] else 'FAIL'}]")
-    print(f"End-to-End MAE (unflagged):    {mae_unflagged:.3f} impurities (7: {mae_by_width_unflagged['7']:.3f}, 9: {mae_by_width_unflagged['9']:.3f}) [Gate <=1.98: {'PASS' if res['criteria_met']['mae<=1.98'] else 'FAIL'}]")
-    print(f"End-to-End MAE (all spectra):  {mae_all:.3f} impurities (7: {mae_by_width_all['7']:.3f}, 9: {mae_by_width_all['9']:.3f})")
-    print(f"90% Conformal Coverage:        {cov_90:.2f}% (relative q={q:.4f}) [Gate 90+-2%: {'PASS' if res['criteria_met']['coverage_90+-2'] else 'FAIL'}]")
-    print(f"Unknown Flag Rate:             {res['unknown_flag_rate']:.2f}% ({res['n_unknown']} / {res['n_test']} flagged)")
-    print(f"  7-AGNR Unknown Rate:         {unk_by_width['7']:.2f}%")
-    print(f"  9-AGNR Unknown Rate:         {unk_by_width['9']:.2f}%")
+    print(f"Label-Free Width Accuracy (Vote): {width_acc_vote:.3f}% (snapped: {width_acc_snapped:.3f}%, round: {width_acc_round:.3f}%) [Gate >=99.5%: {'PASS' if res['criteria_met']['width_accuracy>=99.5'] else 'FAIL'}]")
+    print(f"End-to-End MAE (estimated):       {mae_estimated:.3f} impurities (7: {mae_by_width_estimated['7']:.3f}, 9: {mae_by_width_estimated['9']:.3f}) [Gate <=1.98: {'PASS' if res['criteria_met']['mae<=1.98'] else 'FAIL'}]")
+    print(f"End-to-End RMSE (estimated):      {rmse_estimated:.3f} impurities")
+    print(f"Superseded Snapped MAE:           {mae_snapped_superseded:.3f} impurities")
+    print(f"90% Conformal Coverage:           {cov_90:.2f}% (relative q={q:.4f}) [Gate 90+-2%: {'PASS' if res['criteria_met']['coverage_90+-2'] else 'FAIL'}]")
+    print(f"Unknown Flag Rate:                {res['unknown_flag_rate']:.2f}% ({res['n_unknown']} / {res['n_test']} flagged)")
+    print(f"  7-AGNR Unknown Rate:            {unk_by_width['7']:.2f}%")
+    print(f"  9-AGNR Unknown Rate:            {unk_by_width['9']:.2f}%")
+    print(f"No Stage 3 Model (Vote not 7/9):  {res['n_no_stage3_model']} spectra ({res['no_stage3_model_count'] / res['n_test'] * 100:.2f}%)")
+    print(f"Total Evaluated Spectra:          {res['n_estimated']} / {res['n_test']}")
     print("=" * 60)
 
 
