@@ -338,7 +338,13 @@ Artifacts written:
        - For Armchair $N=8$ at $d=0.0400$, the 3 misclassified test spectra (seeds 863, 879, 898) were all predicted as $N=5$, which belongs to the same $3p+2$ armchair family ($8 = 3(2)+2, 5 = 3(1)+2$). Seed 863 was additionally flagged as `unknown=True`.
        - For Armchair $N=13$ at $d=0.0400$ (99.33%, 1 error), seed 924 was predicted as $N=6$, and was flagged as `unknown=True`.
        - Across all 18,600 test spectra, there are **0 material errors** and **0 edge errors**.
-       - The overall false alarm rate is **0.979%** (182 / 18,600), easily satisfying the Gate 5 target of $\le 2\%$.
+       - **Unknown Flag / False Alarm Analysis**: While the pooled false alarm rate is **0.979%** (182 / 18,600), this rate near 1% is by construction because the threshold is calibrated to the 99th percentile of validation reconstruction error pooled over all models (`atlas.py:82`). The false alarms concentrate almost exclusively in high-disorder, wide armchair ribbons:
+         - Zigzag (all densities): **0.0%** flagged unknown.
+         - Armchair $d=0.005, 0.010, 0.020$: **0.0%**, **0.04%**, **0.82%** flagged unknown.
+         - Armchair $d=0.040$ (pooled across widths): **6.27%** flagged unknown.
+         - 13 lines exceed 2%: armchair $N \in \{10, 11, 12, 13, 14, 16, 20, 27, 31, 40, 50\}$ at $d=0.040$, and $N \in \{12, 40\}$ at $d=0.020$.
+         - In extreme cases ($d=0.040$), wide armchair ribbons exhibit high reconstruction error: $N=40$ at 22.0%, $N=50$ at 19.3%, $N=31$ at 14.0%, and $N \in \{16, 27\}$ at 10.0%.
+         - A design decision is pending on whether to introduce per-(edge, density) calibrated thresholds, reference distribution distance scoring, or retain and document this conservative behavior.
 
 Artifacts written:
 - `~/atlas_store/engine_v1/report.json`
