@@ -752,7 +752,7 @@ Artifacts written:
 * **Root Cause**: Hand-placed inter-row blocks were swapped. In zigzag ribbons, rows are sheared with row $i$ at $x = i/2$. For site $(i, c)$, neighbours in row $i+1$ lie at $\mathbf{R}_3 = (-1/2, \sqrt{3}/2)$ inside the same cell ($m=0$) and at $\mathbf{R}_3 + \mathbf{R}_1 = \mathbf{R}_2 = (1/2, \sqrt{3}/2)$ in the next cell ($m=1$). The manual code mistakenly placed $H(\mathbf{R}_2)$ inside the cell and $H(\mathbf{R}_3)$ in the inter-cell block. Armchair ribbons had analogous manual placement errors.
 * **Resolution**:
   1. Replaced manual block placement in `mos2_ribbon` (`notebooks/tbribbon/lattices.py`) with a unified geometric builder based on explicit Mo site coordinates and pairwise vector matching against $\pm \mathbf{R}_1, \pm \mathbf{R}_2, \pm \mathbf{R}_3$ using $H(-\mathbf{R}) = H(\mathbf{R})^T$.
-  2. States falling outside the projected bulk bands dropped from $55.9\% \to 3.66\%$ (zigzag N30) and $61.1\% \to 3.23\%$ (armchair N15), well within the physical $\le 8\%$ limit corresponding to localized edge states.
+  2. States falling outside the projected bulk bands dropped from $55.9\% \to 3.8\%$ (zigzag N30) and $61.1\% \to 6.6\%$ (armchair N15), well within the physical $\le 8\%$ limit corresponding to localized edge states.
   3. Added permanent bulk-projection and bulk-gap unit tests (`test_mos2_ribbon_bands_lie_in_bulk_projection`, `test_triangular_ribbon_bands_lie_in_bulk_projection`, `test_mos2_bulk_matches_liu_nn_model`, `test_phosphorene_wide_armchair_gap_approaches_bulk`) in `tests/tbribbon/test_real_materials.py`.
   4. Regenerated clean MoS₂ fingerprints in `~/atlas_store/materials_v1/mos2/` and updated `notebooks/tbribbon/fingerprints_real.png`.
 
