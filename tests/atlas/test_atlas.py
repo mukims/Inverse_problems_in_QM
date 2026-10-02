@@ -91,3 +91,17 @@ def test_width_vote_majority_rule():
         assert res[0].width_vote == 6.0
     finally:
         atlas_module.embed = orig_embed
+
+
+def test_v3_identifies_on_the_shared_ev_axis(tmp_path):
+    store, models = toy_store(tmp_path, t_ev=2.0)
+    reg = Registry(models)
+    atlas = Atlas.build(store, reg, reg.ids(), InputSpec(version="v3"), **FAST)
+    atlas.calibrate_novelty(store, reg, reg.ids())
+    T = np.stack([toy_spectrum(3.0, 9, 0.02, 50_000 + i) for i in range(30)])
+    res = atlas.locate(T, E * 2.0, band_top_t=6.0)                 # a measured spectrum arrives in eV
+    assert np.mean([r.material == "beta" for r in res]) >= 0.9
+    E_other = np.arange(0.0, 7.995, 0.015)                           # a different eV sampling still works
+    T_other = np.stack([np.interp(E_other, E * 2.0, t) for t in T])
+    res2 = atlas.locate(T_other, E_other, band_top_t=6.0)
+    assert np.mean([r.material == "beta" for r in res2]) >= 0.9

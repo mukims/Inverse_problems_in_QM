@@ -9,6 +9,7 @@ import torch
 from sklearn.neighbors import NearestNeighbors
 
 from .encoder import Conv1dAE, embed, train_autoencoder
+from .energy import on_axis
 from .registry import RibbonModel
 from .spec import InputSpec
 
@@ -66,7 +67,8 @@ class Atlas:
         for i, mid in enumerate(model_ids):
             m = registry.get(mid)
             e_t, pris = store.read_pristine(mid)
-            X.append(spec.to_input(pris[None], e_t, m.band_top_t))
+            e_ax, top = on_axis(spec, m, e_t, m.band_top_t)
+            X.append(spec.to_input(pris[None], e_ax, top))
             midx.append([i])
             dens.append([0.0])
             seeds.append([-1])
@@ -75,7 +77,7 @@ class Atlas:
                 if max_seed is not None:
                     mask = s <= max_seed
                     c, s = c[mask], s[mask]
-                X.append(spec.to_input(c, e_t, m.band_top_t))
+                X.append(spec.to_input(c, e_ax, top))
                 midx.append(np.full(len(s), i))
                 dens.append(np.full(len(s), d))
                 seeds.append(s)
@@ -134,7 +136,7 @@ class Atlas:
                 s_val = s[mask]
                 if len(c_val) == 0:
                     continue
-                loc = self.locate(c_val, e_t, m.band_top_t)
+                loc = self.locate(c_val, *on_axis(self.spec, m, e_t, m.band_top_t))
                 s_vals = np.array([r.novelty_s for r in loc])
                 pred_dens = np.array([r.density for r in loc])
                 class_samples[(mid, f"{d:.4f}", m.edge)] = {

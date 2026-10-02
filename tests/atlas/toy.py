@@ -15,11 +15,11 @@ def toy_spectrum(level, width, density, seed):
 
 
 def toy_store(tmp_path, materials=(("alpha", 1.0), ("beta", 3.0)), widths=(7, 9, 14),
-              densities=(0.01, 0.04), n_seeds=40):
+              densities=(0.01, 0.04), n_seeds=40, t_ev=1.0):
     store, models = CloudStore(tmp_path / "store"), []
     for name, level in materials:
         for w in widths:
-            m = RibbonModel(name, "armchair", w, 1.0, 2 * w, 3.0)
+            m = RibbonModel(name, "armchair", w, t_ev, 2 * w, 3.0)
             models.append(m)
             store.write_pristine(m.model_id, E, toy_spectrum(level, w, 0.0, 10**6))
             for d in densities:
