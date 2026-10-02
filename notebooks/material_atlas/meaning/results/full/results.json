@@ -1,0 +1,399 @@
+{
+  "results": [
+    {
+      "model": "AE (atlas_v2_loo)",
+      "known_identification_pct": 99.99,
+      "median_nearest_distance_relative_to_known": {
+        "known": 1.0,
+        "armchair N13": 3.463,
+        "zigzag N8": 2.011,
+        "square N10": 4.244
+      },
+      "auroc_untrained_vs_known": 0.9238,
+      "auroc_unseen_vs_untrained": 0.9777,
+      "placement": {
+        "armchair N13": [
+          [
+            "armchair N6",
+            271
+          ],
+          [
+            "zigzag N12",
+            224
+          ],
+          [
+            "armchair N27",
+            42
+          ],
+          [
+            "armchair N10",
+            30
+          ]
+        ],
+        "zigzag N8": [
+          [
+            "zigzag N9",
+            291
+          ],
+          [
+            "zigzag N7",
+            176
+          ],
+          [
+            "zigzag N11",
+            78
+          ],
+          [
+            "zigzag N12",
+            27
+          ]
+        ],
+        "square N10": [
+          [
+            "armchair N50",
+            421
+          ],
+          [
+            "armchair N40",
+            164
+          ],
+          [
+            "armchair N14",
+            14
+          ],
+          [
+            "armchair N31",
+            1
+          ]
+        ]
+      },
+      "spearman_embedding_vs_clean_distance": {
+        "armchair N13": 0.531,
+        "zigzag N8": 0.633,
+        "square N10": 0.231
+      }
+    },
+    {
+      "model": "paraphrase",
+      "history": [
+        {
+          "step": 1,
+          "train_loss": 5.9584150314331055,
+          "val_loss": 5.750410079956055
+        },
+        {
+          "step": 250,
+          "train_loss": 2.724896192550659,
+          "val_loss": 2.7269389629364014
+        },
+        {
+          "step": 500,
+          "train_loss": 2.7181975841522217,
+          "val_loss": 2.7191107273101807
+        },
+        {
+          "step": 750,
+          "train_loss": 2.7161736488342285,
+          "val_loss": 2.7165653705596924
+        },
+        {
+          "step": 1000,
+          "train_loss": 2.7144107818603516,
+          "val_loss": 2.7155165672302246
+        },
+        {
+          "step": 1250,
+          "train_loss": 2.7135651111602783,
+          "val_loss": 2.7146811485290527
+        },
+        {
+          "step": 1500,
+          "train_loss": 2.7130205631256104,
+          "val_loss": 2.714215040206909
+        },
+        {
+          "step": 1750,
+          "train_loss": 2.712289333343506,
+          "val_loss": 2.713716983795166
+        },
+        {
+          "step": 2000,
+          "train_loss": 2.712099075317383,
+          "val_loss": 2.7136335372924805
+        },
+        {
+          "step": 2250,
+          "train_loss": 2.7126011848449707,
+          "val_loss": 2.7135677337646484
+        },
+        {
+          "step": 2500,
+          "train_loss": 2.7124361991882324,
+          "val_loss": 2.7135682106018066
+        }
+      ],
+      "known_identification_pct": 100.0,
+      "median_nearest_distance_relative_to_known": {
+        "known": 1.0,
+        "armchair N13": 7.709,
+        "zigzag N8": 7.606,
+        "square N10": 7.72
+      },
+      "auroc_untrained_vs_known": 1.0,
+      "auroc_unseen_vs_untrained": 0.5113,
+      "placement": {
+        "armchair N13": [
+          [
+            "armchair N27",
+            318
+          ],
+          [
+            "armchair N6",
+            201
+          ],
+          [
+            "zigzag N7",
+            39
+          ],
+          [
+            "armchair N16",
+            25
+          ]
+        ],
+        "zigzag N8": [
+          [
+            "zigzag N10",
+            206
+          ],
+          [
+            "zigzag N9",
+            205
+          ],
+          [
+            "zigzag N11",
+            92
+          ],
+          [
+            "zigzag N7",
+            68
+          ]
+        ],
+        "square N10": [
+          [
+            "armchair N50",
+            346
+          ],
+          [
+            "armchair N31",
+            191
+          ],
+          [
+            "zigzag N50",
+            41
+          ],
+          [
+            "armchair N20",
+            11
+          ]
+        ]
+      },
+      "spearman_embedding_vs_clean_distance": {
+        "armchair N13": 0.111,
+        "zigzag N8": 0.4,
+        "square N10": -0.213
+      }
+    },
+    {
+      "model": "physics",
+      "history": [
+        {
+          "step": 1,
+          "train_loss": 6.008066654205322,
+          "val_loss": 5.809666156768799
+        },
+        {
+          "step": 250,
+          "train_loss": 5.197790145874023,
+          "val_loss": 5.198864936828613
+        },
+        {
+          "step": 500,
+          "train_loss": 5.189208984375,
+          "val_loss": 5.189751148223877
+        },
+        {
+          "step": 750,
+          "train_loss": 5.185495376586914,
+          "val_loss": 5.1858978271484375
+        },
+        {
+          "step": 1000,
+          "train_loss": 5.184831142425537,
+          "val_loss": 5.18529748916626
+        },
+        {
+          "step": 1250,
+          "train_loss": 5.183244228363037,
+          "val_loss": 5.183858394622803
+        },
+        {
+          "step": 1500,
+          "train_loss": 5.182890892028809,
+          "val_loss": 5.183349609375
+        },
+        {
+          "step": 1750,
+          "train_loss": 5.182382583618164,
+          "val_loss": 5.183047294616699
+        },
+        {
+          "step": 2000,
+          "train_loss": 5.182153701782227,
+          "val_loss": 5.182758808135986
+        },
+        {
+          "step": 2250,
+          "train_loss": 5.181933879852295,
+          "val_loss": 5.182596683502197
+        },
+        {
+          "step": 2500,
+          "train_loss": 5.181913375854492,
+          "val_loss": 5.182572364807129
+        }
+      ],
+      "known_identification_pct": 100.0,
+      "median_nearest_distance_relative_to_known": {
+        "known": 1.0,
+        "armchair N13": 6.388,
+        "zigzag N8": 4.261,
+        "square N10": 6.79
+      },
+      "auroc_untrained_vs_known": 1.0,
+      "auroc_unseen_vs_untrained": 0.8365,
+      "placement": {
+        "armchair N13": [
+          [
+            "armchair N16",
+            458
+          ],
+          [
+            "armchair N10",
+            95
+          ],
+          [
+            "armchair N20",
+            30
+          ],
+          [
+            "armchair N15",
+            16
+          ]
+        ],
+        "zigzag N8": [
+          [
+            "zigzag N9",
+            432
+          ],
+          [
+            "zigzag N7",
+            149
+          ],
+          [
+            "zigzag N10",
+            12
+          ],
+          [
+            "armchair N14",
+            5
+          ]
+        ],
+        "square N10": [
+          [
+            "zigzag N50",
+            256
+          ],
+          [
+            "armchair N50",
+            145
+          ],
+          [
+            "armchair N31",
+            81
+          ],
+          [
+            "armchair N27",
+            59
+          ]
+        ]
+      },
+      "spearman_embedding_vs_clean_distance": {
+        "armchair N13": 0.88,
+        "zigzag N8": 0.987,
+        "square N10": 0.257
+      }
+    }
+  ],
+  "physics_nearest_by_clean_spectrum": {
+    "armchair N13": [
+      [
+        "armchair N12",
+        0.027
+      ],
+      [
+        "armchair N15",
+        0.036
+      ],
+      [
+        "armchair N14",
+        0.043
+      ],
+      [
+        "armchair N16",
+        0.046
+      ]
+    ],
+    "zigzag N8": [
+      [
+        "zigzag N9",
+        0.034
+      ],
+      [
+        "armchair N14",
+        0.034
+      ],
+      [
+        "zigzag N7",
+        0.035
+      ],
+      [
+        "armchair N11",
+        0.048
+      ]
+    ],
+    "square N10": [
+      [
+        "armchair N20",
+        0.18
+      ],
+      [
+        "zigzag N12",
+        0.19
+      ],
+      [
+        "zigzag N11",
+        0.191
+      ],
+      [
+        "armchair N27",
+        0.191
+      ]
+    ]
+  },
+  "sigma": 0.03797048599544736,
+  "steps": 2500,
+  "refs_per_ribbon": 2000,
+  "tau": 0.1,
+  "batch": 464,
+  "runtime_s": 197
+}

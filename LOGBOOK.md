@@ -26,6 +26,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-16** | 2026-10-01 | **31-Model Sparse Ribbon Grid + Square Strip N10 (FULL-2)** | **Option B Class-Conditional Novelty & Robust Calibration** | `~/atlas_store/engine_v1/` (18,600 known test spectra) + `~/atlas_store/novelty_v1/` (600 square strip spectra) + LOO (Armchair N13, Zigzag N8) | Class-conditional $s$ ($k=15$ intra-model NN distance) + robust median/MAD per class + pooled 99th percentile $z^* = 3.144$; same frozen encoder weights | **100.0% Mat<br>100.0% Edge<br>99.98% Width** | N/A (Stage 1–2 novelty calibration) | N/A | **Completed (FULL-2 Verified)**: Robust calibration fixes the initial log-normal underestimate (skewed log scores, 2.06% pooled rate) to achieve exactly **1.00%** pooled false alarms on held-out test spectra (gate $\le 1.5\%$: PASS). High-disorder armchair ribbons dropped to zero/near-zero false alarms (N40 $d=0.04$ from 22.0% to 0.0%, pooled $d=0.04$ from 6.3% to 0.8%). Identification metrics 100% byte-identical to commit `1ffaff0db`. Gate 3 passed: 100.00% detection of unseen Square N10 strip (AUROC 0.9998). Untrained width detection (LOO): 99.00% on Armchair N13 (vs 9.5% for recon) and 100.00% on Zigzag N8 (vs 0.0% for recon). |
 | **BUILD-17** | 2026-10-01 | **31-Model Sparse Ribbon Grid + Square Strip N10 (FULL-3)** | **FULL-3 Reviewer Novelty Refinement (Per-Edge Tail & Scale Shrinkage)** | `~/atlas_store/engine_v1/` (18,600 test spectra) + `novelty_v1/` + LOO (Armchair N13, Zigzag N8) | Validation-selected $n_0 = 0$ (dispersion 3.39 vs 3.65–3.95); per-edge $z^*_{\text{arm}} = 2.9854$, $z^*_{\text{zz}} = 3.3498$; zero test leakage | **100.0% Mat<br>100.0% Edge<br>99.98% Width** | N/A (Stage 1–2 novelty refinement) | N/A | **Completed (FULL-3 Verified)**: Human-accepted. Pooled false alarms armchair 0.87%, zigzag 1.15% (both $\le 1.5\%$). Zigzag completely cleared ($\le 7/150$). Armchair 3 lines $\ge 8/150$ (N9 d=0.005 at 10, N6 d=0.01 at 9, N6 d=0.005 at 8). Square N10 strip 100.0% detected (AUROC 0.9999). LOO Armchair N13: 99.5%, Zigzag N8: 100.0%. Identification 100% byte-identical. |
 | **STAGE3-1** | 2026-10-01 | **7-AGNR & 9-AGNR** | **Stage 3 Production Pipeline** (Atlas v2 Front End + Stage 3 XGBoost + Conformal) | `size_7.npy` + `size_9.npy` (XGB train seeds 0–2099, cal seeds 2100–2549, test seeds 2550–2999; 37,350 test spectra across 83 concentrations) | Stage 1–2: `InputSpec v2` (400-ch $[0, 4.0t)$, label-free $\log(1+T)/\log(65)$); class-conditional novelty filter ($s \le \tau$); open-world `width_vote` routing (votes outside {7, 9} get no estimate, counted as `no_stage3_model`); Stage 3: predicted width pristine division + 3-decimal rounding | **99.87%** (vote) | **1.958 (Estimated)**<br>1.615 (7)<br>2.191 (9)<br>1.981 (Superseded snapped) | **2.830 (Estimated)**<br>3.071 (All) | **Completed (Stage 3 Part A Verified & All Gates Passed)**: End-to-end integration of frozen Atlas v2 front end with Stage 3 XGBoost regressors and split-conformal intervals on legacy dense data. Routing by open-world `width_vote` resolves closed-world assumption: label-free vote width accuracy 99.87% ($\ge 99.5\%$: PASS); 90% conformal coverage 90.04% (within $90 \pm 2\%$, $q = 0.0894$: PASS); End-to-end MAE 1.958 ($\le 1.980$: PASS; 7-AGNR: 1.615, 9-AGNR: 2.191). Unknown flag rate 5.56% (2,075 / 37,350); votes outside {7, 9} are only 9 spectra (0.02%, all voted 6, safely unestimated). Total evaluated spectra: 35,266 / 37,350. Snapped-routing MAE 1.981 documented as superseded. Stored in `notebooks/material_atlas/stage3_7_9/`. |
+| **BUILD-18** | 2026-10-02 | 29 graphene ribbons (armchair N13, zigzag N8 held out) + square strip N10 | Shazam meaning-embedding prototype: AE (atlas_v2_loo) vs paraphrase vs physics contrastive encoders | engine_v1 seeds 0–699 train, 700–849 validation, 850–999 test; novelty_v1 square strip (600) | InputSpec v2, label-free | **99.99% (AE)<br>100.0% (Para)<br>100.0% (Phys)** | N/A | N/A | Prototype, production Shazam unchanged. auroc_unseen_vs_untrained: AE 0.9777, paraphrase 0.5113, physics 0.8365. `notebooks/material_atlas/meaning/` |
 
 ---
 
@@ -585,6 +586,49 @@ Artifacts written:
 - `notebooks/material_atlas/stage3_7_9/metrics.json` (comprehensive metrics, width accuracies, conformal coverage, and per-concentration breakdown)
 - `notebooks/material_atlas/stage3_7_9/predictions_test.npz` (saved test predictions, true/predicted widths, true/predicted concentrations, unknown flags, bounds, and scores)
 - `tests/atlas/test_stage3_7_9.py` (unit tests verifying toy interval coverage, unknown-flagged spectra receiving no estimate, and prediction consistency)
+
+---
+
+### [2026-10-02] BUILD-18: Shazam Meaning-Embedding Prototype (MEANING-1)
+* **Objective & Design**: Test whether a contrastive "meaning" objective gives Shazam (the material atlas, `atlaslib`) a physically meaningful similarity between spectra, comparing two contrastive encoders against the existing leave-one-out autoencoder on the same 29 graphene ribbons (armchair N13 and zigzag N8 held out).
+  - **AE (Baseline)**: `atlas_v2_loo`'s frozen autoencoder (reconstruction objective).
+  - **Paraphrase**: Supervised contrastive encoder pulling different impurity configurations of the same ribbon together as paraphrases.
+  - **Physics**: Soft contrastive encoder with target similarities $\exp(-D_{\text{clean}} / \sigma)$ where $\sigma = 0.0380$ (median over ribbons of the distance to the nearest other ribbon's clean spectrum).
+  - **Fixed Hyperparameters**: Latent dim 32, temperature $\tau = 0.1$, 16 spectra/ribbon/batch (batch size 464), 2,500 steps Adam with cosine decay, 2,000 references/ribbon, $k=15$ nearest neighbours. Configuration-seed split: 0–699 train, 700–849 validation, 850–999 test.
+
+* **Encoder Comparison Table**:
+
+| Model / Metric | Known Identification (%) | Rel. Median Dist (armchair N13) | Rel. Median Dist (zigzag N8) | Rel. Median Dist (square N10) | AUROC (Untrained vs Known) | AUROC (Unseen vs Untrained) | Spearman $\rho$ (armchair N13) | Spearman $\rho$ (zigzag N8) | Spearman $\rho$ (square N10) |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **AE (`atlas_v2_loo`)** | **99.99%** | 3.463 | 2.011 | 4.244 | 0.9238 | **0.9777** | 0.531 | 0.633 | 0.231 |
+| **Paraphrase** | **100.0%** | 7.709 | 7.606 | 7.720 | **1.0000** | 0.5113 | 0.111 | 0.400 | -0.213 |
+| **Physics** | **100.0%** | 6.388 | 4.261 | 6.790 | **1.0000** | 0.8365 | **0.880** | **0.987** | **0.257** |
+
+* **Held-out Group Placement vs Clean-Spectrum Physical Neighbours**:
+
+| Held-out Group | Physical Nearest by Clean Spectrum ($D_{\text{clean}}$) | AE Placement (Top 4) | Paraphrase Placement (Top 4) | Physics Placement (Top 4) |
+|---|---|---|---|---|
+| **Armchair N13** | armchair N12 (0.027)<br>armchair N15 (0.036)<br>armchair N14 (0.043)<br>armchair N16 (0.046) | armchair N6 (271)<br>zigzag N12 (224)<br>armchair N27 (42)<br>armchair N10 (30) | armchair N27 (318)<br>armchair N6 (201)<br>zigzag N7 (39)<br>armchair N16 (25) | **armchair N16 (458)**<br>armchair N10 (95)<br>armchair N20 (30)<br>armchair N15 (16) |
+| **Zigzag N8** | zigzag N9 (0.034)<br>armchair N14 (0.034)<br>zigzag N7 (0.035)<br>armchair N11 (0.048) | zigzag N9 (291)<br>zigzag N7 (176)<br>zigzag N11 (78)<br>zigzag N12 (27) | zigzag N10 (206)<br>zigzag N9 (205)<br>zigzag N11 (92)<br>zigzag N7 (68) | **zigzag N9 (432)**<br>zigzag N7 (149)<br>zigzag N10 (12)<br>armchair N14 (5) |
+| **Square N10** | armchair N20 (0.180)<br>zigzag N12 (0.190)<br>zigzag N11 (0.191)<br>armchair N27 (0.191) | armchair N50 (421)<br>armchair N40 (164)<br>armchair N14 (14)<br>armchair N31 (1) | armchair N50 (346)<br>armchair N31 (191)<br>zigzag N50 (41)<br>armchair N20 (11) | zigzag N50 (256)<br>armchair N50 (145)<br>armchair N31 (81)<br>armchair N27 (59) |
+
+* **Pre-Registered Expectations Assessment**:
+  1. **Known identification $\ge 99.5\%$**: **MET** across all three encoders (AE: 99.99%, Paraphrase: 100.0%, Physics: 100.0%).
+  2. **Graded similarity (Spearman $\rho$)**: **SUBSTANTIALLY SUPERIOR** for Physics encoder. Graded correlation between embedding distance to centroids and clean physical distance reaches **0.880** for armchair N13 (vs 0.531 AE, 0.111 paraphrase) and **0.987** for zigzag N8 (vs 0.633 AE, 0.400 paraphrase).
+  3. **Placement by edge**: **MET** for Physics encoder. Armchair N13 is placed into armchair ribbons in 599 / 600 spectra (99.8%) with primary vote armchair N16, while AE misplaces 224 spectra (37.3%) into zigzag N12. Zigzag N8 is placed into zigzag ribbons in 593 / 600 spectra (98.8%) with primary vote zigzag N9 (matching top clean-spectrum neighbour).
+  4. **Ordering ($d_{\text{known}} < d_{\text{untrained}} < d_{\text{unseen}}$) & AUROC unseen vs untrained $\ge 0.9$**:
+     - Paraphrase reaches AUROC 0.5113 (MISSED $\ge 0.9$; hard class repulsion pushes all out-of-training spectra equally far to $\sim 7.6$–$7.7\times$).
+     - Physics reaches AUROC 0.8365 (MISSED $\ge 0.9$ target, but preserves monotonic median progression: known 1.0 < zigzag N8 4.261 < armchair N13 6.388 < square N10 6.790).
+     - AE achieves AUROC 0.9777 (untrained widths stay closer in reconstruction error than square strip, but at the cost of degraded edge consistency and lower physical grading).
+
+Artifacts written:
+- `notebooks/material_atlas/meaning/distances.py` (clean-spectrum RMS distance, distance matrix, and kernel sigma calculation)
+- `notebooks/material_atlas/meaning/contrastive.py` (StructureEncoder, class-balanced batch sampler, paraphrase and soft physics contrastive loss, training loop)
+- `notebooks/material_atlas/meaning/metrics.py` (identification, relative nearest distance, AUROC ordering, placement, and Spearman rank correlation)
+- `notebooks/material_atlas/meaning/split.py` (configuration-seed split and ribbon set verification)
+- `notebooks/material_atlas/meaning/run_meaning_proto.py` (prototype pipeline runner with `--smoke` and full evaluation)
+- `notebooks/material_atlas/meaning/results/full/results.json` & `notebooks/material_atlas/meaning/results/smoke/results.json`
+- `tests/meaning/` (20 unit tests covering distances, contrastive loss, training reproducibility, evaluation metrics, and split guards)
 
 ---
 
