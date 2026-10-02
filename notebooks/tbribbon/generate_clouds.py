@@ -11,6 +11,7 @@ from pathlib import Path
 import numpy as np
 
 from atlaslib import CloudStore, InputSpec
+from atlaslib.energy import generation_grid_t
 from tbribbon.disorder import impurity_shifts
 from tbribbon.leads import LeadCache
 from tbribbon.materials import hamiltonian_for, make_model
@@ -60,12 +61,14 @@ def _one_agnr(seed):
 
 
 def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", seeds=None):
-    ctx = mp.get_context("spawn")
-    e_t, wrote = spec.energies_t(), []
+    ctx, wrote = mp.get_context("spawn"), []
     for m in models:
         is_agnr = (m.material == "graphene-ideal" and m.edge == "armchair")
         is_zgnr = (m.material == "graphene-ideal" and m.edge == "zigzag")
         if is_agnr:
+            if spec.unit == "eV":
+                raise ValueError("graphene armchair clouds come from agnr_lib on its own grid; "
+                                 "they reach the eV axis by resampling, not regeneration")
             model_formula = "agnr_lib_IL_1e-5"
             leads = agnr_lib.load_leads(m.width)
             grid_e = agnr_lib.energy_grid()
@@ -91,15 +94,23 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
                 sec_per = dt / len(sd)
                 print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula}) in {dt:.2f}s (wall {sec_per:.4f} s/spec, worker compute median {median_t_spec:.4f} s/spec)", flush=True)
         else:
+            e_t = generation_grid_t(spec, m)
+            n_live = (int(np.searchsorted(e_t, m.band_top_t + 0.01, side="right"))
+                      if spec.unit == "eV" else len(e_t))
+            e_live = e_t[:n_live]
+
+            def pad(X):
+                return np.pad(np.atleast_2d(np.asarray(X)), ((0, 0), (0, len(e_t) - n_live)))
+
             h = hamiltonian_for(m)
-            leads = LeadCache(h.H0, h.H1, e_t)
+            leads = LeadCache(h.H0, h.H1, e_live)
             is_symmetric_h1 = bool(np.allclose(h.H1, h.H1.T))
             model_formula = formula if (formula == "legacy_trace" and is_symmetric_h1) else "caroli"
             pristine_path = store._dir(m.model_id) / "pristine.npy"
             if not pristine_path.exists():
-                with ctx.Pool(1, _init, (h.H0, h.H1, e_t, 1, h.H0.shape[0], 0, 0.0, model_formula, leads)) as p:
+                with ctx.Pool(1, _init, (h.H0, h.H1, e_live, 1, h.H0.shape[0], 0, 0.0, model_formula, leads)) as p:
                     pris_spec, _ = p.map(_one, [0])[0]
-                    store.write_pristine(m.model_id, e_t, pris_spec, formula=model_formula)
+                    store.write_pristine(m.model_id, e_t, pad(pris_spec)[0], formula=model_formula)
             for d in densities:
                 n_imp = m.impurities_for_density(d)
                 actual = n_imp / m.n_sites
@@ -107,13 +118,13 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
                     continue
                 sd = np.arange(seeds_for_width(m.width)) if seeds is None else np.asarray(list(seeds))
                 t0 = time.time()
-                with ctx.Pool(n_jobs, _init, (h.H0, h.H1, e_t, m.n_cells, h.H0.shape[0], n_imp, m.impurity_v_t, model_formula, leads, m.orbitals_per_site)) as p:
+                with ctx.Pool(n_jobs, _init, (h.H0, h.H1, e_live, m.n_cells, h.H0.shape[0], n_imp, m.impurity_v_t, model_formula, leads, m.orbitals_per_site)) as p:
                     res = p.map(_one, sd, chunksize=4)
                 dt = time.time() - t0
                 spectra = np.array([r[0] for r in res])
                 times = np.array([r[1] for r in res])
                 median_t_spec = float(np.median(times))
-                store.write_cloud(m.model_id, actual, n_imp, spectra, sd, e_t, formula=model_formula, t_spectrum_sec=median_t_spec)
+                store.write_cloud(m.model_id, actual, n_imp, pad(spectra), sd, e_t, formula=model_formula, t_spectrum_sec=median_t_spec)
                 wrote.append((m.model_id, actual))
                 sec_per = dt / len(sd)
                 print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula}) in {dt:.2f}s (wall {sec_per:.4f} s/spec, worker compute median {median_t_spec:.4f} s/spec)", flush=True)
@@ -143,8 +154,11 @@ if __name__ == "__main__":
     ap.add_argument("--n-jobs", type=int, default=4)
     ap.add_argument("--formula", default="legacy_trace")
     ap.add_argument("--n-seeds", type=int, default=None, help="Fixed number of seeds per model (e.g. 50 for smoke build)")
-    ap.add_argument("--grid", choices=["sparse31", "custom"], default="sparse31",
-                    help="Grid schedule: 'sparse31' (31 models ordered narrowest first) or 'custom'")
+    ap.add_argument("--grid", choices=["sparse31", "custom", "materials"], default="sparse31",
+                    help="Grid schedule: 'sparse31', 'custom', or 'materials'")
+    ap.add_argument("--materials", default="hbn,phosphorene,mos2,triangular")
+    ap.add_argument("--widths", default="7,9,14,27")
+    ap.add_argument("--spec-version", default="v2", choices=["v2", "v3"])
     ap.add_argument("--armchair-widths", default="5-16", help="Armchair widths for custom grid")
     ap.add_argument("--zigzag-widths", default="4-12", help="Zigzag widths for custom grid")
     a = ap.parse_args()
@@ -161,10 +175,13 @@ if __name__ == "__main__":
         ]
         wide_ms = [make_model("graphene-ideal", edge, n) for edge, n in sorted(wide_specs, key=lambda x: x[1])]
         ms = narrow_ms + wide_ms
+    elif a.grid == "materials":
+        ms = [make_model(mat, edge, n) for mat in a.materials.split(",")
+              for edge in ("armchair", "zigzag") for n in _parse_widths(a.widths)]
     else:
         arm_widths = _parse_widths(a.armchair_widths)
         zig_widths = _parse_widths(a.zigzag_widths)
         ms = ([make_model("graphene-ideal", "armchair", n) for n in arm_widths]
               + [make_model("graphene-ideal", "zigzag", n) for n in zig_widths])
     seeds = range(a.n_seeds) if a.n_seeds is not None else None
-    generate(CloudStore(a.store), ms, [0.005, 0.01, 0.02, 0.04], InputSpec(version="v2"), n_jobs=a.n_jobs, formula=a.formula, seeds=seeds)
+    generate(CloudStore(a.store), ms, [0.005, 0.01, 0.02, 0.04], InputSpec(version=a.spec_version), n_jobs=a.n_jobs, formula=a.formula, seeds=seeds)
