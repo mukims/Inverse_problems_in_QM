@@ -316,7 +316,7 @@ Artifacts written:
 6. **Full-Scale Atlas v2 Training & Revised Gate 5 Benchmark**:
    - **Architecture & Spec**: 1D Conv Autoencoder (32-dim latent space) with `InputSpec v2` (cap = 64.0, 400 channels $[0, 4.0t)$, label-free $\log(1+T)/\log(65)$).
    - **Data Split**: Strict configuration-seed split 70% train (seeds 0–699, $n=21,700$ training samples), 15% validation (seeds 700–849, $n=4,650$ samples), 15% test (seeds 850–999, $n=18,600$ samples across 124 lines with 150 test spectra per line).
-   - **Reference Library**: 700 reference embeddings per (model, density) = 86,800 reference embeddings.
+   - **Reference Library**: 2,000 reference embeddings per model = 62,000 in total (`Atlas.build`, `refs_per_model=2000`), drawn at random from each model's training spectra (seeds 0–699, all four densities, plus its clean spectrum): 465–526 per (model, density), median 500. *(Corrected 2026-10-02: this line previously read "700 per (model, density) = 86,800". The encoder was trained on all training seeds; only the reference library is the 2,000-per-model subset.)*
    - **Overall Pooled Benchmark Metrics (18,600 Held-Out Test Spectra)**:
 
 | Group / Edge Filter | Density ($d$) | Test Samples ($n_{\text{test}}$) | Material Acc (%) | Edge Acc (%) | Width-Vote Acc (%) | Flagged Unknown (%) |
