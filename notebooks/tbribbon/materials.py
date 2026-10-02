@@ -11,7 +11,8 @@ MATERIALS = {
     "triangular": {"builder": "triangular", "params": {"t": 1.0, "onsite": 0.0}, "t_ev": 1.0, "source": "idealised triangular lattice"},
     "hbn": {"builder": "hbn", "params": {"t": 2.30, "delta": 3.625}, "t_ev": 2.30, "source": "Galvani 2016 GW"},
     "phosphorene": {"builder": "phosphorene", "params": {}, "t_ev": 3.665, "source": "Rudenko 2014 5-hopping"},
-    "mos2": {"builder": "mos2", "params": {}, "t_ev": 1.0, "source": "Liu 2013 3-band GGA"},
+    "mos2": {"builder": "mos2", "params": {}, "t_ev": 1.0, "orbitals_per_site": 3, "impurity_v_t": 0.2535,
+             "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"},
 }
 
 
@@ -40,4 +41,5 @@ def make_model(material, edge, width):
     spec = MATERIALS[material]
     h = _build(material, edge, width)
     return RibbonModel(material, edge, width, spec["t_ev"], h.H0.shape[0],
-                       round(band_edges(h.H0, h.H1)[1], 3), source=spec["source"])
+                       round(band_edges(h.H0, h.H1)[1], 3), impurity_v_t=spec.get("impurity_v_t", 0.5),
+                       orbitals_per_site=spec.get("orbitals_per_site", 1), source=spec["source"])

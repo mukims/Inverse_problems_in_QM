@@ -29,16 +29,16 @@ def seeds_for_width(width):
     return 1000 if width <= 14 else (300 if width <= 27 else 100)
 
 
-def _init(H0, H1, energies, n_cells, spc, n_imp, v, formula, leads=None):
+def _init(H0, H1, energies, n_cells, spc, n_imp, v, formula, leads=None, k=1):
     if leads is None:
         leads = LeadCache(H0, H1, energies)
     _W.update(H0=H0, H1=H1, E=energies, n_cells=n_cells, spc=spc, n_imp=n_imp, v=v, formula=formula,
-              leads=leads)
+              leads=leads, k=k)
 
 
 def _one(seed):
     t0 = time.perf_counter()
-    s = impurity_shifts(_W["n_cells"], _W["spc"], _W["n_imp"], seed, _W["v"])
+    s = impurity_shifts(_W["n_cells"], _W["spc"], _W["n_imp"], seed, _W["v"], _W.get("k", 1))
     spec = spectrum(_W["H0"], _W["H1"], _W["E"], s, _W["leads"], formula=_W["formula"])
     dt = time.perf_counter() - t0
     return spec, dt
@@ -107,7 +107,7 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
                     continue
                 sd = np.arange(seeds_for_width(m.width)) if seeds is None else np.asarray(list(seeds))
                 t0 = time.time()
-                with ctx.Pool(n_jobs, _init, (h.H0, h.H1, e_t, m.n_cells, h.H0.shape[0], n_imp, m.impurity_v_t, model_formula, leads)) as p:
+                with ctx.Pool(n_jobs, _init, (h.H0, h.H1, e_t, m.n_cells, h.H0.shape[0], n_imp, m.impurity_v_t, model_formula, leads, m.orbitals_per_site)) as p:
                     res = p.map(_one, sd, chunksize=4)
                 dt = time.time() - t0
                 spectra = np.array([r[0] for r in res])

@@ -16,6 +16,7 @@ class RibbonModel:
     band_top_t: float          # top of the clean band, units of t
     n_cells: int = 100
     impurity_v_t: float = 0.5
+    orbitals_per_site: int = 1
     source: str = ""
 
     def __post_init__(self):
@@ -30,7 +31,7 @@ class RibbonModel:
 
     @property
     def n_sites(self) -> int:
-        return self.n_cells * self.sites_per_cell
+        return self.n_cells * self.sites_per_cell // self.orbitals_per_site
 
     def impurities_for_density(self, density: float) -> int:
         return max(1, int(round(density * self.n_sites)))
