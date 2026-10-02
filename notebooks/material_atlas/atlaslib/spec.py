@@ -2,6 +2,15 @@
 from dataclasses import asdict, dataclass
 
 import numpy as np
+from numpy.lib.stride_tricks import sliding_window_view
+
+
+def despike(T, half=2):
+    """Label-free removal of 1-2 channel artefact spikes (legacy trace formula): a channel above twice its
+    (2*half+1)-channel median plus 2 is replaced by that median. Subband steps and narrow +2 plateaus are kept."""
+    T = np.atleast_2d(np.asarray(T, dtype=np.float64))
+    m = np.median(sliding_window_view(np.pad(T, ((0, 0), (half, half)), mode="edge"), 2 * half + 1, axis=1), axis=-1)
+    return np.where(T > 2 * m + 2, m, T)
 
 
 @dataclass(frozen=True)
@@ -11,15 +20,18 @@ class InputSpec:
     step_t: float = 0.01     # channel step, same unit
     cap: float = 20.0        # G0; clipped before the log so spikes cannot dominate
     unit: str = "t"          # "t" or "eV"
+    despike: bool = False    # v4: remove 1-2 channel artefact spikes on the native grid before resampling
 
     def __post_init__(self):
         if self.version == "v2" and self.cap == 20.0:
             object.__setattr__(self, "cap", 64.0)
-        elif self.version == "v3":
+        elif self.version in ("v3", "v4"):
             object.__setattr__(self, "unit", "eV")
             object.__setattr__(self, "e_max_t", 8.32)
             object.__setattr__(self, "step_t", 0.02)
             object.__setattr__(self, "cap", 64.0)
+            if self.version == "v4":
+                object.__setattr__(self, "despike", True)
         elif self.version not in ("v1", "v2"):
             raise ValueError(f"unknown InputSpec version: {self.version}")
 
@@ -42,6 +54,8 @@ class InputSpec:
             raise ValueError(f"T has {T.shape[1]} channels but e_t has {e_t.size}")
         if abs(e_t[0]) > 1e-9 or np.any(np.diff(e_t) <= 0):
             raise ValueError("e_t must start at 0 and increase")
+        if self.despike:
+            T = despike(np.round(T, 3))
         grid = self.energies_t()
         if band_top_t is None:
             inside = np.ones(grid.size, dtype=bool)
