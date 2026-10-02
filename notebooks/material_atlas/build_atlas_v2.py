@@ -31,7 +31,7 @@ def main():
     ap.add_argument("--out", default=str(Path(__file__).resolve().parent / "atlas_v2"))
     ap.add_argument("--threads", type=int, default=4)
     ap.add_argument("--grid", choices=["baseline21", "sparse31"], default="sparse31")
-    ap.add_argument("--spec-version", default="v2", choices=["v1", "v2", "v3"])
+    ap.add_argument("--spec-version", default="v2", choices=["v1", "v2", "v3", "v4"])
     ap.add_argument("--holdout-widths", action="store_true", default=False,
                     help="Run legacy Gate 5 diagnostic with held-out widths (armchair 8, 12, 13; zigzag 8)")
     ap.add_argument("--retrain", action="store_true", default=False,

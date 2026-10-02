@@ -190,7 +190,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--atlas", default="notebooks/material_atlas/atlas_v2")
     ap.add_argument("--loo-atlas", default="notebooks/material_atlas/atlas_v2_loo")
-    ap.add_argument("--spec-version", default="v2", choices=["v2", "v3"])
+    ap.add_argument("--spec-version", default="v2", choices=["v2", "v3", "v4"])
     a = ap.parse_args()
     atlas_path, loo_atlas_path = Path(a.atlas), Path(a.loo_atlas)
     engine_store_path = os.path.expanduser("~/atlas_store/engine_v1")
