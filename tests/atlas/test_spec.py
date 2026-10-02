@@ -71,3 +71,23 @@ def test_no_clean_spectrum_in_grid_reaches_cap():
         _, pris = store.read_pristine(mid)
         assert np.max(pris) < s2.cap, f"{mid} pristine reaches or exceeds cap {s2.cap}"
 
+
+def test_v3_is_a_shared_ev_axis():
+    s = InputSpec(version="v3")
+    assert s.unit == "eV" and s.cap == 64.0
+    assert s.n_channels == 416
+    g = s.energies_t()
+    assert g[0] == 0.0 and g[-1] == pytest.approx(8.30) and np.allclose(np.diff(g), 0.02)
+
+
+def test_v3_round_trips_through_as_dict():
+    s = InputSpec(version="v3")
+    assert InputSpec(**s.as_dict()) == s
+
+
+def test_manifest_without_unit_loads_as_units_of_t():
+    d = InputSpec(version="v2").as_dict()
+    d.pop("unit")
+    assert InputSpec(**d).unit == "t"
+
+

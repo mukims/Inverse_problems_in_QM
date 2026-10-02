@@ -7,12 +7,18 @@ import numpy as np
 @dataclass(frozen=True)
 class InputSpec:
     version: str = "v1"
-    e_max_t: float = 4.0     # window [0, e_max_t) in units of the material's hopping t
-    step_t: float = 0.01
+    e_max_t: float = 4.0     # window [0, e_max_t) in the spec's unit: the material's own t (v1, v2) or eV (v3)
+    step_t: float = 0.01     # channel step, same unit
     cap: float = 20.0        # G0; clipped before the log so spikes cannot dominate
+    unit: str = "t"          # "t" or "eV"
 
     def __post_init__(self):
         if self.version == "v2" and self.cap == 20.0:
+            object.__setattr__(self, "cap", 64.0)
+        elif self.version == "v3":
+            object.__setattr__(self, "unit", "eV")
+            object.__setattr__(self, "e_max_t", 8.32)
+            object.__setattr__(self, "step_t", 0.02)
             object.__setattr__(self, "cap", 64.0)
         elif self.version not in ("v1", "v2"):
             raise ValueError(f"unknown InputSpec version: {self.version}")
@@ -41,13 +47,13 @@ class InputSpec:
             inside = np.ones(grid.size, dtype=bool)
             top = grid[-1]
             if e_t[-1] < top - self.step_t / 2:
-                raise ValueError(f"data ends at {e_t[-1]:.3f} t but window extends to {top:.3f} t")
+                raise ValueError(f"data ends at {e_t[-1]:.3f} {self.unit} but window extends to {top:.3f} {self.unit}")
         else:
             top = float(band_top_t)
             inside = grid < top - 1e-9
             required_top = grid[inside][-1] if np.any(inside) else 0.0
             if e_t[-1] < required_top - self.step_t / 2:
-                raise ValueError(f"data ends at {e_t[-1]:.3f} t but the band extends to {top:.3f} t; "
+                raise ValueError(f"data ends at {e_t[-1]:.3f} {self.unit} but the band extends to {top:.3f} {self.unit}; "
                                  "zero-filling would erase real signal")
         out = np.zeros((T.shape[0], grid.size))
         n = int(inside.sum())
