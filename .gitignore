@@ -46,5 +46,5 @@ create_notebook.py
 # Agent scratch & notes
 .agents/
 ORIGINAL_REQUEST.md
-docs/superpowers/plans/
+docs/
 plans/
