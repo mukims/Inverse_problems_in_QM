@@ -4,6 +4,7 @@
 2. Leave-one-out untrained widths: Armchair N13, Zigzag N8 in notebooks/material_atlas/atlas_v2_loo
 3. Write atlas_v2/novelty.json
 """
+import argparse
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,7 @@ import numpy as np
 from sklearn.metrics import roc_auc_score
 
 from atlaslib import Atlas, CloudStore, InputSpec, Registry
+from atlaslib.energy import on_axis
 from tbribbon.materials import make_model
 from tbribbon.generate_clouds import generate
 
@@ -50,7 +52,7 @@ def eval_square_strip(atlas_path, novelty_store_path, engine_store_path, out_dir
     sq_dens_results = {}
     for d in densities:
         c, s = store.read_cloud(m_sq.model_id, d)
-        loc = atlas.locate(c, e_t, band_top_t=None)
+        loc = atlas.locate(c, *on_axis(atlas.spec, m_sq, e_t, m_sq.band_top_t if atlas.spec.unit == "eV" else None))
         sq_locs.extend(loc)
         unk_b = np.mean([r.unknown for r in loc]) * 100
         unk_recon = np.mean([r.unknown_recon for r in loc]) * 100
@@ -81,7 +83,7 @@ def eval_square_strip(atlas_path, novelty_store_path, engine_store_path, out_dir
         for d in engine_store.densities(mid):
             c, s = engine_store.read_cloud(mid, d)
             c_test = c[s >= 850]
-            loc_k = atlas.locate(c_test, e_known, bt)
+            loc_k = atlas.locate(c_test, *on_axis(atlas.spec, reg.get(mid), e_known, bt))
             known_scores_b.extend([r.novelty_ratio for r in loc_k])
             known_scores_recon.extend([r.recon_error for r in loc_k])
 
@@ -111,13 +113,13 @@ def eval_square_strip(atlas_path, novelty_store_path, engine_store_path, out_dir
     }
 
 
-def eval_leave_one_out(engine_store_path, loo_atlas_path):
+def eval_leave_one_out(engine_store_path, loo_atlas_path, spec_version="v2"):
     print("\n" + "=" * 80)
     print("STEP 4: Leave-One-Out Untrained Width Evaluation")
     print("=" * 80)
 
     store = CloudStore(engine_store_path)
-    spec = InputSpec(version="v2")
+    spec = InputSpec(version=spec_version)
     loo_dir = Path(loo_atlas_path)
 
     # Exclude Armchair N13 and Zigzag N8
@@ -162,7 +164,7 @@ def eval_leave_one_out(engine_store_path, loo_atlas_path):
         for d in store.densities(mid):
             c, s = store.read_cloud(mid, d)
             c_test = c[s >= test_seed_min]
-            loc = atlas_loo.locate(c_test, e_t, bt)
+            loc = atlas_loo.locate(c_test, *on_axis(atlas_loo.spec, reg_full.get(mid), e_t, bt))
             all_locs.extend(loc)
             unk_b = np.mean([r.unknown for r in loc]) * 100
             unk_recon = np.mean([r.unknown_recon for r in loc]) * 100
@@ -185,13 +187,17 @@ def eval_leave_one_out(engine_store_path, loo_atlas_path):
 
 
 def main():
-    atlas_path = Path("notebooks/material_atlas/atlas_v2")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--atlas", default="notebooks/material_atlas/atlas_v2")
+    ap.add_argument("--loo-atlas", default="notebooks/material_atlas/atlas_v2_loo")
+    ap.add_argument("--spec-version", default="v2", choices=["v2", "v3"])
+    a = ap.parse_args()
+    atlas_path, loo_atlas_path = Path(a.atlas), Path(a.loo_atlas)
     engine_store_path = os.path.expanduser("~/atlas_store/engine_v1")
     novelty_store_path = os.path.expanduser("~/atlas_store/novelty_v1")
-    loo_atlas_path = Path("notebooks/material_atlas/atlas_v2_loo")
 
     sq_results = eval_square_strip(atlas_path, novelty_store_path, engine_store_path, atlas_path)
-    loo_results = eval_leave_one_out(engine_store_path, loo_atlas_path)
+    loo_results = eval_leave_one_out(engine_store_path, loo_atlas_path, spec_version=a.spec_version)
 
     # Load identification results to extract per-line and pooled false alarms
     ident_file = atlas_path / "identification.json"

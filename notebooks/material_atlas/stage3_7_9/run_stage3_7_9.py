@@ -36,6 +36,9 @@ def find_repo_root() -> Path:
 
 REPO = find_repo_root()
 sys.path.insert(0, str(REPO / "notebooks/material_atlas"))
+sys.path.insert(0, str(REPO / "notebooks"))
+from tbribbon.materials import make_model  # noqa: E402
+from atlaslib.energy import on_axis  # noqa: E402
 
 from atlaslib import Atlas
 from atlaslib.conformal import coverage, fit_relative, intervals
@@ -92,6 +95,7 @@ def main():
     print(f"Atlas v2 loaded: {len(atlas.models)} models, novelty={atlas.novelty}, n0={atlas.n0}, z*={atlas.z_star}")
 
     e_t = np.arange(300) * 0.01
+    e_front, top_front = on_axis(atlas.spec, make_model("graphene-ideal", "armchair", 7), e_t, 3.0)
     pris = {w: np.load(REPO / f"{w}_agnr_pris.npy")[:300] for w in WIDTHS}
 
     print(f"Loading legacy dense data from {DATA}...")
@@ -141,7 +145,7 @@ def main():
         regs[w] = reg
 
     print("Locating calibration spectra via Atlas v2...")
-    loc_cal = atlas.locate(T_["cal"], e_t, band_top_t=3.0)
+    loc_cal = atlas.locate(T_["cal"], e_front, band_top_t=top_front)
     unk_cal = np.array([r.unknown for r in loc_cal], dtype=bool)
     w_vote_cal = np.array([int(round(r.width_vote)) for r in loc_cal])
     has_model_cal = np.isin(w_vote_cal, list(WIDTHS.keys()))
@@ -159,7 +163,7 @@ def main():
     print(f"Conformal calibration (alpha=0.1): estimated={np.sum(estimated_cal_mask)}/{len(unk_cal)} (unk={np.mean(unk_cal)*100:.2f}%, no_stage3_model={np.sum((~unk_cal) & (~has_model_cal))}), relative halfwidth q={q:.6f}")
 
     print("Locating test spectra via Atlas v2...")
-    loc_te = atlas.locate(T_["te"], e_t, band_top_t=3.0)
+    loc_te = atlas.locate(T_["te"], e_front, band_top_t=top_front)
     unk_te = np.array([r.unknown for r in loc_te], dtype=bool)
     w_vote_te = np.array([int(round(r.width_vote)) for r in loc_te])
     w_round_te = np.array([int(round(r.width)) for r in loc_te])

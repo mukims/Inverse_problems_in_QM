@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 
 from atlaslib import Atlas, CloudStore, InputSpec, Registry
+from atlaslib.energy import on_axis
 from tbribbon.materials import make_model
 
 HELD_OUT = {("graphene-ideal", "armchair"): [8, 12, 13], ("graphene-ideal", "zigzag"): [8]}
@@ -30,7 +31,7 @@ def main():
     ap.add_argument("--out", default=str(Path(__file__).resolve().parent / "atlas_v2"))
     ap.add_argument("--threads", type=int, default=4)
     ap.add_argument("--grid", choices=["baseline21", "sparse31"], default="sparse31")
-    ap.add_argument("--spec-version", default="v2", choices=["v1", "v2"])
+    ap.add_argument("--spec-version", default="v2", choices=["v1", "v2", "v3"])
     ap.add_argument("--holdout-widths", action="store_true", default=False,
                     help="Run legacy Gate 5 diagnostic with held-out widths (armchair 8, 12, 13; zigzag 8)")
     ap.add_argument("--retrain", action="store_true", default=False,
@@ -54,7 +55,7 @@ def main():
                 mid = f"{mat}/{edge}/N{n}"
                 T = np.concatenate([store.read_cloud(mid, d)[0] for d in store.densities(mid)])
                 e_t, _ = store.read_pristine(mid)
-                loc = atlas.locate(T, e_t, reg.get(mid).band_top_t)
+                loc = atlas.locate(T, *on_axis(spec, reg.get(mid), e_t, reg.get(mid).band_top_t))
                 w = np.array([r.width for r in loc])
                 res[mid] = {"material_accuracy": float(np.mean([r.material == mat for r in loc]) * 100),
                             "edge_accuracy": float(np.mean([r.edge == edge for r in loc]) * 100),
@@ -113,7 +114,7 @@ def main():
                 c_test = c[test_mask]
                 if len(c_test) == 0:
                     continue
-                loc = atlas.locate(c_test, e_t, band_top)
+                loc = atlas.locate(c_test, *on_axis(spec, reg.get(mid), e_t, band_top))
                 mat_acc = float(np.mean([r.material == mat for r in loc]) * 100)
                 edge_acc = float(np.mean([r.edge == edge for r in loc]) * 100)
                 w_acc = float(np.mean([round(r.width_vote) == n for r in loc]) * 100)
