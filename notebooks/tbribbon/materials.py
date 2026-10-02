@@ -2,11 +2,14 @@
 from atlaslib.registry import RibbonModel
 
 from .bands import band_edges
-from .lattices import honeycomb_ribbon, square_strip
+from .lattices import honeycomb_ribbon, square_strip, hbn_ribbon, phosphorene_ribbon, mos2_ribbon
 
 MATERIALS = {
     "graphene-ideal": {"builder": "honeycomb", "params": {"t": 1.0}, "t_ev": 1.0, "source": "idealised nearest-neighbour"},
     "square": {"builder": "square", "params": {"t": 1.0}, "t_ev": 1.0, "source": "idealised square strip"},
+    "hbn": {"builder": "hbn", "params": {"t": 2.30, "delta": 3.625}, "t_ev": 2.30, "source": "Galvani 2016 GW"},
+    "phosphorene": {"builder": "phosphorene", "params": {}, "t_ev": 3.665, "source": "Rudenko 2014 5-hopping"},
+    "mos2": {"builder": "mos2", "params": {}, "t_ev": 1.0, "source": "Liu 2013 3-band GGA"},
 }
 
 
@@ -16,6 +19,12 @@ def _build(material, edge, width):
         return honeycomb_ribbon(width, edge, **spec["params"])
     if spec["builder"] == "square":
         return square_strip(width, **spec["params"])
+    if spec["builder"] == "hbn":
+        return hbn_ribbon(width, edge, **spec["params"])
+    if spec["builder"] == "phosphorene":
+        return phosphorene_ribbon(width, edge, **spec["params"])
+    if spec["builder"] == "mos2":
+        return mos2_ribbon(width, edge, **spec["params"])
     raise KeyError(spec["builder"])
 
 

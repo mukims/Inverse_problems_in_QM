@@ -628,7 +628,29 @@ Artifacts written:
 - `notebooks/material_atlas/meaning/split.py` (configuration-seed split and ribbon set verification)
 - `notebooks/material_atlas/meaning/run_meaning_proto.py` (prototype pipeline runner with `--smoke` and full evaluation)
 - `notebooks/material_atlas/meaning/results/full/results.json` & `notebooks/material_atlas/meaning/results/smoke/results.json`
-- `tests/meaning/` (20 unit tests covering distances, contrastive loss, training reproducibility, evaluation metrics, and split guards)
+### [2026-10-02] BUILD-19: Real Materials Tight-Binding Expansion (Phase 3b: hBN, Phosphorene, MoS2)
+* **Objective & Physics Realization**:
+  - Implemented real tight-binding Hamiltonians in `notebooks/tbribbon/lattices.py` and registered them in `notebooks/tbribbon/materials.py` (`hbn`, `phosphorene`, `mos2`):
+    - **hBN** (Galvani et al. PRB 2016 GW): Honeycomb lattice with staggered on-site energies $\pm \Delta/t = \pm 3.625/2.30 \approx \pm 1.576$. Direct gap $2\Delta = 7.25\,\text{eV}$ ($3.152\,t$). Bulk transmission strictly zero for $E < 1.576\,t$. Clean $T \equiv N_{\text{open}}$ matches to $< 10^{-3}$ for armchair and zigzag.
+    - **Phosphorene** (Rudenko & Katsnelson PRB 2014 5-hopping GW): Puckered orthorhombic lattice mapped to honeycomb coordinate grid with $t_1 = -1.220\,\text{eV}$, $t_2 = +3.665\,\text{eV}$, $t_3 = -0.205\,\text{eV}$, $t_4 = -0.105\,\text{eV}$, $t_5 = -0.055\,\text{eV}$. Midgap shifted to $0.0\,\text{eV}$ ($+0.420\,\text{eV}$ offset); energy unit $t_{\text{ref}} = |t_2| = 3.665\,\text{eV}$. Clean $T \equiv N_{\text{open}}$ matches to $< 6 \times 10^{-4}$ for armchair and zigzag.
+    - **$\text{MoS}_2$** (Liu et al. PRB 2013 3-band GGA): $\{d_{z^2}, d_{xy}, d_{x^2-y^2}\}$ basis on triangular lattice. Exact real-space $3 \times 3$ hopping matrices $H(\mathbf{R}_1) \dots H(\mathbf{R}_6)$ derived analytically with SymPy. Midgap shifted to $0.0\,\text{eV}$ ($-0.7666\,\text{eV}$ offset); energy unit $t_{\text{ref}} = 1.0\,\text{eV}$. Clean $T \equiv N_{\text{open}}$ matches to $< 7 \times 10^{-4}$ for armchair and zigzag away from subband steps.
+* **Formula Routing & Numerical Verification**:
+  - Non-symmetric inter-cell coupling $H_1 \ne H_1^T$ for all three real materials strictly routes to Caroli formula (`formula="caroli"` via Sancho-Rubio decimation in `LeadCache`). Updated `generate_clouds.py` to route to Caroli automatically when $H_1$ is non-symmetric.
+* **Pristine Fingerprints Generation & Cloud Smoke Validation**:
+  - `notebooks/tbribbon/fingerprints_real.py`: Computed clean fingerprints for $N \in \{7, 9, 14, 27\}$ for armchair and zigzag across all 3 materials (24 ribbons total). Pristine spectra written to dedicated store `~/atlas_store/materials_v1/`. Saved multi-panel comparison plot to `notebooks/tbribbon/fingerprints_real.png`.
+  - Verified cloud generation via `generate_clouds.py` on smoke test (2 seeds, $d=0.01$) across real materials without unphysical scattering violations or crashes.
+* **Test Suite & Regression Verification**:
+  - Added `tests/tbribbon/test_real_materials.py` (12 tests) verifying Hermiticity, bulk gap, and $T \equiv N_{\text{open}}$ channel-invariance away from subband steps for all 3 materials in both armchair and zigzag orientations.
+  - Full test suite passes: **130 passed** in 84.6s (118 previous + 12 new).
+
+Artifacts written:
+- `notebooks/tbribbon/lattices.py` (`hbn_ribbon`, `phosphorene_ribbon`, `mos2_ribbon`)
+- `notebooks/tbribbon/materials.py` (registered `"hbn"`, `"phosphorene"`, `"mos2"`)
+- `notebooks/tbribbon/generate_clouds.py` (automatic Caroli routing for non-symmetric ribbons)
+- `notebooks/tbribbon/fingerprints_real.py` (clean fingerprints generator)
+- `notebooks/tbribbon/fingerprints_real.png` (3-panel clean transmission diagnostic plot)
+- `~/atlas_store/materials_v1/` (pristine spectra for 24 real-material models)
+- `tests/tbribbon/test_real_materials.py` (12 unit tests)
 
 ---
 

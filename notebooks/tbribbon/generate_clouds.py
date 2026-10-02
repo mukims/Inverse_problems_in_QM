@@ -93,7 +93,8 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
         else:
             h = hamiltonian_for(m)
             leads = LeadCache(h.H0, h.H1, e_t)
-            model_formula = "caroli" if is_zgnr else formula
+            is_symmetric_h1 = bool(np.allclose(h.H1, h.H1.T))
+            model_formula = formula if (formula == "legacy_trace" and is_symmetric_h1) else "caroli"
             pristine_path = store._dir(m.model_id) / "pristine.npy"
             if not pristine_path.exists():
                 with ctx.Pool(1, _init, (h.H0, h.H1, e_t, 1, h.H0.shape[0], 0, 0.0, model_formula, leads)) as p:
