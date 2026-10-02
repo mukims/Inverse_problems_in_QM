@@ -27,6 +27,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-17** | 2026-10-01 | **31-Model Sparse Ribbon Grid + Square Strip N10 (FULL-3)** | **FULL-3 Reviewer Novelty Refinement (Per-Edge Tail & Scale Shrinkage)** | `~/atlas_store/engine_v1/` (18,600 test spectra) + `novelty_v1/` + LOO (Armchair N13, Zigzag N8) | Validation-selected $n_0 = 0$ (dispersion 3.39 vs 3.65–3.95); per-edge $z^*_{\text{arm}} = 2.9854$, $z^*_{\text{zz}} = 3.3498$; zero test leakage | **100.0% Mat<br>100.0% Edge<br>99.98% Width** | N/A (Stage 1–2 novelty refinement) | N/A | **Completed (FULL-3 Verified)**: Human-accepted. Pooled false alarms armchair 0.87%, zigzag 1.15% (both $\le 1.5\%$). Zigzag completely cleared ($\le 7/150$). Armchair 3 lines $\ge 8/150$ (N9 d=0.005 at 10, N6 d=0.01 at 9, N6 d=0.005 at 8). Square N10 strip 100.0% detected (AUROC 0.9999). LOO Armchair N13: 99.5%, Zigzag N8: 100.0%. Identification 100% byte-identical. |
 | **STAGE3-1** | 2026-10-01 | **7-AGNR & 9-AGNR** | **Stage 3 Production Pipeline** (Atlas v2 Front End + Stage 3 XGBoost + Conformal) | `size_7.npy` + `size_9.npy` (XGB train seeds 0–2099, cal seeds 2100–2549, test seeds 2550–2999; 37,350 test spectra across 83 concentrations) | Stage 1–2: `InputSpec v2` (400-ch $[0, 4.0t)$, label-free $\log(1+T)/\log(65)$); class-conditional novelty filter ($s \le \tau$); open-world `width_vote` routing (votes outside {7, 9} get no estimate, counted as `no_stage3_model`); Stage 3: predicted width pristine division + 3-decimal rounding | **99.87%** (vote) | **1.958 (Estimated)**<br>1.615 (7)<br>2.191 (9)<br>1.981 (Superseded snapped) | **2.830 (Estimated)**<br>3.071 (All) | **Completed (Stage 3 Part A Verified & All Gates Passed)**: End-to-end integration of frozen Atlas v2 front end with Stage 3 XGBoost regressors and split-conformal intervals on legacy dense data. Routing by open-world `width_vote` resolves closed-world assumption: label-free vote width accuracy 99.87% ($\ge 99.5\%$: PASS); 90% conformal coverage 90.04% (within $90 \pm 2\%$, $q = 0.0894$: PASS); End-to-end MAE 1.958 ($\le 1.980$: PASS; 7-AGNR: 1.615, 9-AGNR: 2.191). Unknown flag rate 5.56% (2,075 / 37,350); votes outside {7, 9} are only 9 spectra (0.02%, all voted 6, safely unestimated). Total evaluated spectra: 35,266 / 37,350. Snapped-routing MAE 1.981 documented as superseded. Stored in `notebooks/material_atlas/stage3_7_9/`. |
 | **BUILD-18** | 2026-10-02 | 29 graphene ribbons (armchair N13, zigzag N8 held out) + square strip N10 | Shazam meaning-embedding prototype: AE (atlas_v2_loo) vs paraphrase vs physics contrastive encoders | engine_v1 seeds 0–699 train, 700–849 validation, 850–999 test; novelty_v1 square strip (600) | InputSpec v2, label-free | **99.99% (AE)<br>100.0% (Para)<br>100.0% (Phys)** | N/A | N/A | Prototype, production Shazam unchanged. auroc_unseen_vs_untrained: AE 0.9777, paraphrase 0.5113, physics 0.8365. `notebooks/material_atlas/meaning/` |
+| **BUILD-21** | 2026-10-02 | **31-Model Sparse Ribbon Grid (Shazam v3) + Stage 3 7/9-AGNR** | **Atlas v3** (Shared eV Axis, 416-ch $[0, 8.32)\,\text{eV}$, Conv1dAE + Option B Novelty + Stage 3 XGBoost) | `engine_v1` (18,600 test spectra) + `novelty_v1` + LOO + `consolidated_data` (37,350 test spectra) | InputSpec v3 (unit="eV", $E \in [0, 8.32)\,\text{eV}$, step 0.02, cap 64.0), no transport recomputed, graphene $t = 2.7\,\text{eV}$ | **100.0% Mat<br>100.0% Edge<br>99.97% Width** | **1.894 (Estimated)** | **2.748 (Estimated)** | **Completed (Gates Checked)**: Shared eV axis. 4/5 gates pass: Material 100%, Edge 100%, Width 99.97% ($\ge 99.9\%$); False alarms pooled arm 0.92%, zz 1.39% (0.5–1.5%); Square strip 100.0% ($\ge 99\%$); LOO N13 99.67%, N8 100.0% ($\ge 95\%$); Stage 3 MAE 1.894 ($\le 1.98$), coverage 90.04% ($90 \pm 2\%$). Stage 3 width vote on all test spectra is 98.97% (Gate $\ge 99.5\%$ MISSED; 306/307 errors are correctly flagged unknown). |
 
 ---
 
@@ -668,10 +669,49 @@ Artifacts written:
 
 Artifacts written:
 - `notebooks/tbribbon/lattices.py` (`triangular_ribbon`)
-- `notebooks/tbribbon/materials.py` (registered `"triangular"`)
+- `notebooks/tbribbon/materials.py` (`triangular`)
 - `notebooks/tbribbon/fingerprints_triangular.png` (clean transport fingerprints for $N \in \{4, 6, 8, 10, 12\}$)
 - `~/atlas_store/materials_v1/triangular/` (pristine spectra)
 - `tests/tbribbon/test_triangular.py` (9 unit tests)
+
+### [2026-10-02] BUILD-21: Shared eV Axis & Shazam v3 Evaluation
+
+* **Objective & Axis Definition**:
+  - Implemented `InputSpec(version="v3")` with a universal energy axis in physical eV: window $[0, 8.32)\,\text{eV}$, channel step $0.02\,\text{eV}$, **416 channels** (multiple of 8 for Conv1d autoencoder) and cap $64.0$.
+  - Scaled materials by physical hopping parameter $t_{\text{eV}}$:
+    - Graphene (ideal NN): $t_{\text{eV}} = 2.7\,\text{eV}$ (Castro Neto 2009; Son 2006). Band top: 7.38–8.10 eV (stored data reaches 10.80 eV).
+    - hBN: $t_{\text{eV}} = 2.30\,\text{eV}$. Band top: 7.49–7.79 eV (reaches 9.20 eV).
+    - Phosphorene: $t_{\text{eV}} = 3.665\,\text{eV}$. Band top: 7.05–7.28 eV (reaches 14.66 eV).
+    - $\text{MoS}_2$: $t_{\text{eV}} = 1.0\,\text{eV}$ (internal unit). Band top: 2.70–2.72 eV (reaches 4.00 eV).
+    - Triangular (toy): $t_{\text{eV}} = 1.0\,\text{eV}$. Band top: 2.65–2.96 eV (reaches 4.00 eV).
+    - Square (toy): $t_{\text{eV}} = 1.0\,\text{eV}$. Band top: 3.92 eV (reaches 4.00 eV).
+    - Legacy 7/9-AGNR: $t_{\text{eV}} = 2.7\,\text{eV}$. Band top: 7.69–7.84 eV (reaches 8.07 eV).
+  - **Zero transport recomputation**: All 124,000 existing graphene spectra in `engine_v1` and legacy 7/9-AGNR spectra are preserved on disk in units of $t$. At ingestion (`on_axis` helper in `atlaslib/energy.py`), energies are multiplied by $t_{\text{eV}}$ and resampled onto the 416-channel eV grid. Zero-filling above band tops is exact because every band ends inside 8.32 eV and stored data reaches beyond all band tops.
+
+* **Pre-Registered Gate Assessment**:
+
+| Gate | Requirement | Production (v2) | Shazam v3 | Status |
+|---|---|---|---|:---:|
+| **Identification, test seeds (18,600)** | material and edge 100%; width ≥ 99.9% | 100% / 100% / 99.98% | **100.00% / 100.00% / 99.97%** (18,594 / 18,600) | **PASS** |
+| **Unknown flag, recalibrated on val** | pooled false alarms 0.5–1.5% on each edge | 0.87% armchair, 1.15% zigzag | **0.92% armchair, 1.39% zigzag** | **PASS** |
+| **Unseen square strip** | ≥ 99% flagged | 100% | **100.00%** (AUROC 1.0000) | **PASS** |
+| **Untrained widths (leave-one-out)** | armchair N13 & zigzag N8 each ≥ 95% flagged | 99.5% / 100% | **99.67%** (N13) / **100.00%** (N8) | **PASS** |
+| **Stage 3 front end: width vote** | ≥ 99.5% | 99.87% | **98.972%** (36,966 / 37,350) | **MISSED** (98.97% < 99.5%)* |
+| **Stage 3 front end: MAE** | ≤ 1.98 | 1.958 | **1.894** (7: 1.608, 9: 2.085) | **PASS** |
+| **Stage 3 front end: coverage** | 88%–92% | 90.04% | **90.04%** ($q = 0.0891$) | **PASS** |
+
+*\*Note on Stage 3 width vote*: On estimated (unflagged) spectra, width vote accuracy is 100.0% (34,458 / 34,459; 1 vote routed outside {7,9} to 15). The 307 misclassified spectra across all 37,350 test spectra occur at high concentration disorder and 306 of 307 are correctly flagged unknown ($s > \tau$) by the novelty detector. However, `run_stage3_7_9.py` calculates overall `width_accuracy_vote` prior to the unknown mask, missing the pre-registered $\ge 99.5\%$ gate.
+
+* **False Alarm Details & Worst Line**:
+  - Validation scan selected $n_0 = 0$ (dispersion index 1.488 vs 1.621–1.841).
+  - Validation tail parameters: $z^*_{\text{arm}} = 2.9169$, $z^*_{\text{zz}} = 3.1737$.
+  - Pooled test false alarms: Armchair 0.92% (94 / 10,200), Zigzag 1.39% (117 / 8,400), Overall 1.13% (211 / 18,600).
+  - Worst false alarm line: `graphene-ideal/zigzag/N7 d=0.0100` with 9 / 150 (6.00%) flagged unknown.
+
+Artifacts written:
+- `notebooks/material_atlas/atlas_v3/` (`encoder.pt`, `refs.npz`, `manifest.json`, `identification.json`, `novelty.json`)
+- `notebooks/material_atlas/atlas_v3_loo/` (`encoder.pt`, `refs.npz`, `manifest.json`)
+- `notebooks/material_atlas/stage3_7_9_v3/` (`metrics.json`, `predictions_test.npz`)
 
 ---
 
