@@ -203,3 +203,65 @@ def mos2_ribbon(N, edge, eps1=1.046, eps2=2.104, t0=-0.184, t1=0.401, t2=0.507, 
 
     else:
         raise ValueError(f"edge must be armchair or zigzag, got {edge!r}")
+
+
+def triangular_ribbon(width, edge, t=1.0, onsite=0.0):
+    """Single-orbital triangular lattice ribbon with nearest-neighbour hopping t.
+
+    Bulk dispersion: E(k) = onsite - 2t [cos(kx) + 2*cos(kx/2)*cos(sqrt(3)*ky/2)].
+    Band limits for onsite=0: [-6t, +3t].
+
+    Orientations:
+    - 'zigzag' (or 'strip'): Periodic along x (period 1.0), N rows across y (spacing S = sqrt(3)/2).
+      Unit cell has N sites (1 per row). Max transmission = N.
+    - 'armchair': Periodic along y (period sqrt(3) = 2S), N columns across x (spacing 1.0).
+      Unit cell has 2N sites (Aj at (j, 0), Bj at (j + 0.5, S)). Max transmission = N.
+    """
+    N = int(width)
+    if edge in ("zigzag", "strip"):
+        H0 = np.eye(N, dtype=complex) * onsite
+        H1 = np.zeros((N, N), dtype=complex)
+        pos = np.column_stack([(np.arange(N) % 2) * 0.5, np.arange(N) * S])
+        sub = np.zeros(N, dtype=int)
+
+        for j in range(N):
+            H1[j, j] = -t  # along x to next cell
+            if j + 1 < N:
+                H0[j, j+1] = -t
+                H0[j+1, j] = -t
+                if j % 2 == 0:
+                    H1[j+1, j] = -t
+                else:
+                    H1[j, j+1] = -t
+        return RibbonHamiltonian(H0, H1, pos, sub)
+
+    elif edge == "armchair":
+        n = 2 * N
+        H0 = np.eye(n, dtype=complex) * onsite
+        H1 = np.zeros((n, n), dtype=complex)
+        pos = np.empty((n, 2))
+        pos[0::2] = np.column_stack([np.arange(N), np.zeros(N)])
+        pos[1::2] = np.column_stack([np.arange(N) + 0.5, np.full(N, S)])
+        sub = np.tile([0, 1], N)
+
+        for j in range(N):
+            Aj = 2 * j
+            Bj = 2 * j + 1
+            H0[Aj, Bj] = -t
+            H0[Bj, Aj] = -t
+            H1[Bj, Aj] = -t
+            if j + 1 < N:
+                Aj1 = 2 * (j + 1)
+                Bj1 = 2 * (j + 1) + 1
+                H0[Aj, Aj1] = -t
+                H0[Aj1, Aj] = -t
+                H0[Bj, Bj1] = -t
+                H0[Bj1, Bj] = -t
+                H0[Aj1, Bj] = -t
+                H0[Bj, Aj1] = -t
+                H1[Bj, Aj1] = -t
+        return RibbonHamiltonian(H0, H1, pos, sub)
+
+    else:
+        raise ValueError(f"edge must be armchair or zigzag, got {edge!r}")
+

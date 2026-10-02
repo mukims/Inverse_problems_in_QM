@@ -649,8 +649,28 @@ Artifacts written:
 - `notebooks/tbribbon/generate_clouds.py` (automatic Caroli routing for non-symmetric ribbons)
 - `notebooks/tbribbon/fingerprints_real.py` (clean fingerprints generator)
 - `notebooks/tbribbon/fingerprints_real.png` (3-panel clean transmission diagnostic plot)
-- `~/atlas_store/materials_v1/` (pristine spectra for 24 real-material models)
-- `tests/tbribbon/test_real_materials.py` (12 unit tests)
+### [2026-10-02] BUILD-20: Triangular Lattice Tight-Binding Ribbons (Zigzag & Armchair)
+* **Objective & Physics Realization**:
+  - Implemented 2D triangular Bravais lattice ribbon Hamiltonians in `notebooks/tbribbon/lattices.py` (`triangular_ribbon`) and registered `"triangular"` in `notebooks/tbribbon/materials.py`:
+    - **Bulk Dispersion**: $E(\mathbf{k}) = \varepsilon_0 - 2t [\cos(k_x) + 2\cos(k_x/2)\cos(\sqrt{3}k_y/2)]$, spanning $[-6.0t, +3.0t]$ for $\varepsilon_0 = 0$. Positive energy states $E \in [0, 3.0t]$ fit naturally in the Material Atlas $[0, 4.0t]$ window.
+    - **Zigzag Orientation**: Periodic along $\hat{x}$ (period $L_x = 1.0$), width $N$ rows along $\hat{y}$ (spacing $\sqrt{3}/2$). Sites per cell $= N$. Max transmission $= N$.
+    - **Armchair Orientation**: Periodic along $\hat{y}$ (period $L_y = \sqrt{3}$), width $N$ columns along $\hat{x}$ (spacing $1.0$). 2 sites per column: $(j, 0)$ and $(j + 0.5, \sqrt{3}/2)$. Sites per cell $= 2N$. Max transmission $= N$.
+* **Transport Formula & Numerical Validation**:
+  - $H_1 \ne H_1^T$ routes strictly through Caroli transport (`LeadCache`).
+  - Unit tests in `tests/tbribbon/test_triangular.py`:
+    - Hermiticity of $H_0$ verified for all orientations.
+    - Subband extrema lie strictly within bulk bounds $[-6.0t, +3.0t]$.
+    - Clean transmission $T(E) \equiv N_{\text{open}}(E)$ matches open channels to $< 4 \times 10^{-4}$ on flat plateaus.
+    - Zero transmission ($T < 10^{-6}$) confirmed above band top.
+  - Smoke cloud generation verified via `generate_clouds.py` (2 seeds, $d=0.01$).
+  - Full pytest suite passes: **139 passed** in 86.1s (130 previous + 9 new).
+
+Artifacts written:
+- `notebooks/tbribbon/lattices.py` (`triangular_ribbon`)
+- `notebooks/tbribbon/materials.py` (registered `"triangular"`)
+- `notebooks/tbribbon/fingerprints_triangular.png` (clean transport fingerprints for $N \in \{4, 6, 8, 10, 12\}$)
+- `~/atlas_store/materials_v1/triangular/` (pristine spectra)
+- `tests/tbribbon/test_triangular.py` (9 unit tests)
 
 ---
 
