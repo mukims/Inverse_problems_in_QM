@@ -615,11 +615,11 @@ Artifacts written:
 * **Pre-Registered Expectations Assessment**:
   1. **Known identification $\ge 99.5\%$**: **MET** across all three encoders (AE: 99.99%, Paraphrase: 100.0%, Physics: 100.0%).
   2. **Graded similarity (Spearman $\rho$)**: **SUBSTANTIALLY SUPERIOR** for Physics encoder. Graded correlation between embedding distance to centroids and clean physical distance reaches **0.880** for armchair N13 (vs 0.531 AE, 0.111 paraphrase) and **0.987** for zigzag N8 (vs 0.633 AE, 0.400 paraphrase).
-  3. **Placement by edge**: **MET** for Physics encoder. Armchair N13 is placed into armchair ribbons in 599 / 600 spectra (99.8%) with primary vote armchair N16, while AE misplaces 224 spectra (37.3%) into zigzag N12. Zigzag N8 is placed into zigzag ribbons in 593 / 600 spectra (98.8%) with primary vote zigzag N9 (matching top clean-spectrum neighbour).
+  3. **Placement by edge**: **MET** for Physics encoder. Armchair N13 is placed into armchair ribbons in at least 599 / 600 (99.8%) with primary vote armchair N16, while AE misplaces 224 spectra (37.3%) into zigzag N12. Zigzag N8 is placed into zigzag ribbons in at least 593 / 600 (98.8%) with primary vote zigzag N9 (matching top clean-spectrum neighbour).
   4. **Ordering ($d_{\text{known}} < d_{\text{untrained}} < d_{\text{unseen}}$) & AUROC unseen vs untrained $\ge 0.9$**:
      - Paraphrase reaches AUROC 0.5113 (MISSED $\ge 0.9$; hard class repulsion pushes all out-of-training spectra equally far to $\sim 7.6$–$7.7\times$).
      - Physics reaches AUROC 0.8365 (MISSED $\ge 0.9$ target, but preserves monotonic median progression: known 1.0 < zigzag N8 4.261 < armchair N13 6.388 < square N10 6.790).
-     - AE achieves AUROC 0.9777 (untrained widths stay closer in reconstruction error than square strip, but at the cost of degraded edge consistency and lower physical grading).
+     - AE expectation: **MISSED** (pre-registered expectation that AE would score below 0.5 on `auroc_unseen_vs_untrained`; it scored 0.9777. The expectation came from the per-ribbon unknown score $s/\tau$, where armchair N13 scored higher than the square strip. On raw nearest-reference distance, the AE already places the square strip farther away: untrained widths stay closer than the square strip in nearest-reference distance, but at the cost of degraded edge consistency and lower physical grading).
 
 Artifacts written:
 - `notebooks/material_atlas/meaning/distances.py` (clean-spectrum RMS distance, distance matrix, and kernel sigma calculation)
