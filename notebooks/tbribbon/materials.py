@@ -5,7 +5,8 @@ from .bands import band_edges
 from .lattices import honeycomb_ribbon, square_strip, hbn_ribbon, phosphorene_ribbon, mos2_ribbon, triangular_ribbon
 
 MATERIALS = {
-    "graphene-ideal": {"builder": "honeycomb", "params": {"t": 1.0}, "t_ev": 1.0, "source": "idealised nearest-neighbour"},
+    "graphene-ideal": {"builder": "honeycomb", "params": {"t": 1.0}, "t_ev": 2.7,
+                       "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"},
     "square": {"builder": "square", "params": {"t": 1.0}, "t_ev": 1.0, "source": "idealised square strip"},
     "triangular": {"builder": "triangular", "params": {"t": 1.0, "onsite": 0.0}, "t_ev": 1.0, "source": "idealised triangular lattice"},
     "hbn": {"builder": "hbn", "params": {"t": 2.30, "delta": 3.625}, "t_ev": 2.30, "source": "Galvani 2016 GW"},
