@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from tbribbon.bands import band_edges, open_channels
-from tbribbon.lattices import hbn_ribbon, mos2_ribbon, phosphorene_ribbon
+from tbribbon.lattices import hbn_ribbon, mos2_ribbon, phosphorene_ribbon, triangular_ribbon
 from tbribbon.leads import LeadCache
 from tbribbon.materials import hamiltonian_for, make_model
 from tbribbon.transport import spectrum
@@ -91,3 +91,76 @@ def test_mos2_physics_and_channel_invariant(edge):
     assert stable.sum() >= 10, f"Too few stable points: {stable.sum()}"
     diff = np.max(np.abs(T[stable] - ch[stable]))
     assert diff < 1e-3, f"MoS2 {edge} channel mismatch: {diff}"
+
+
+S3 = np.sqrt(3)
+RV = {1: np.array([1.0, 0.0]), 2: np.array([0.5, S3 / 2]), 3: np.array([-0.5, S3 / 2])}
+
+
+def _mos2_bulk():
+    z = mos2_ribbon(2, "zigzag")                       # rows 0 and 1 carry every bulk block
+    onsite = z.H0[0:3, 0:3]
+    hops = {1: z.H1[0:3, 0:3]}
+    # take R2/R3 from the reference values, not from the ribbon (the ribbon is what is under test)
+    t0, t1, t2, t11, t12, t22 = -0.184, 0.401, 0.507, 0.218, 0.338, 0.057
+    hops[2] = np.array([[t0, t1/2 + S3*t2/2, S3*t1/2 - t2/2],
+                        [-t1/2 + S3*t2/2, t11/4 + 3*t22/4, S3*t11/4 - t12 - S3*t22/4],
+                        [-S3*t1/2 - t2/2, S3*t11/4 + t12 - S3*t22/4, 3*t11/4 + t22/4]])
+    hops[3] = np.array([[t0, -t1/2 - S3*t2/2, S3*t1/2 - t2/2],
+                        [t1/2 - S3*t2/2, t11/4 + 3*t22/4, -S3*t11/4 + t12 + S3*t22/4],
+                        [-S3*t1/2 - t2/2, -S3*t11/4 - t12 + S3*t22/4, 3*t11/4 + t22/4]])
+
+    def ev(k):
+        H = onsite.astype(complex).copy()
+        for j in (1, 2, 3):
+            ph = np.exp(1j * k @ RV[j])
+            H = H + hops[j] * ph + hops[j].T / ph
+        return np.linalg.eigvalsh(H)
+    return ev
+
+
+def _share_outside(h, ev, period, nb):
+    perp = np.array([-period[1], period[0]]) / np.linalg.norm(period)
+    kdir = period / np.linalg.norm(period) ** 2
+    out = tot = 0
+    for th in np.linspace(-np.pi, np.pi, 31):
+        er = np.linalg.eigvalsh(h.H0 + h.H1 * np.exp(1j * th) + h.H1.conj().T * np.exp(-1j * th))
+        eb = np.array([ev(th * kdir + q * perp) for q in np.linspace(-8, 8, 601)]).reshape(601, nb)
+        lo, hi = eb.min(0), eb.max(0)
+        inside = np.zeros(len(er), bool)
+        for b in range(nb):
+            inside |= (er >= lo[b] - 1e-3) & (er <= hi[b] + 1e-3)
+        out += (~inside).sum()
+        tot += len(er)
+    return out / tot
+
+
+def test_mos2_bulk_matches_liu_nn_model():
+    ev = _mos2_bulk()
+    e_mid = 0.7666
+    assert np.allclose(ev(np.zeros(2)) + e_mid, [-0.058, 2.929, 2.929], atol=1e-3)
+    eK = ev(np.array([4 * np.pi / 3, 0.0])) + e_mid
+    assert eK[1] - eK[0] == pytest.approx(1.663, abs=2e-3)
+
+
+@pytest.mark.parametrize("edge,N,period", [("zigzag", 30, (1.0, 0.0)), ("armchair", 15, (0.0, S3))])
+def test_mos2_ribbon_bands_lie_in_bulk_projection(edge, N, period):
+    # only edge states may fall in bulk gaps; a misassigned bond puts more than half the states outside
+    assert _share_outside(mos2_ribbon(N, edge), _mos2_bulk(), np.array(period), 3) < 0.08
+
+
+@pytest.mark.parametrize("edge,N,period", [("zigzag", 30, (1.0, 0.0)), ("armchair", 15, (0.0, S3))])
+def test_triangular_ribbon_bands_lie_in_bulk_projection(edge, N, period):
+    def ev(k):
+        return np.array([-2 * sum(np.cos(k @ RV[j]) for j in (1, 2, 3))])
+    assert _share_outside(triangular_ribbon(N, edge), ev, np.array(period), 1) == 0.0
+
+
+def test_phosphorene_wide_armchair_gap_approaches_bulk():
+    from tbribbon.lattices import phosphorene_ribbon
+    h = phosphorene_ribbon(30, "armchair")
+    e = np.concatenate([np.linalg.eigvalsh(h.H0 + h.H1 * np.exp(1j * th) + h.H1.conj().T * np.exp(-1j * th))
+                        for th in np.linspace(-np.pi, np.pi, 201)])
+    gap_ev = (e[e > 0].min() - e[e < 0].max()) * 3.665
+    assert 1.52 <= gap_ev < 1.60
+

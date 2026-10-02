@@ -149,60 +149,59 @@ def mos2_ribbon(N, edge, eps1=1.046, eps2=2.104, t0=-0.184, t1=0.401, t2=0.507, 
         [-np.sqrt(3)*t1/2 - t2/2, -np.sqrt(3)*t11/4 - t12 + np.sqrt(3)*t22/4, 3*t11/4 + t22/4]
     ], dtype=complex)
 
-    HR6 = np.array([
-        [t0, t1/2 - np.sqrt(3)*t2/2, -np.sqrt(3)*t1/2 - t2/2],
-        [-t1/2 - np.sqrt(3)*t2/2, t11/4 + 3*t22/4, -np.sqrt(3)*t11/4 - t12 + np.sqrt(3)*t22/4],
-        [np.sqrt(3)*t1/2 - t2/2, -np.sqrt(3)*t11/4 + t12 + np.sqrt(3)*t22/4, 3*t11/4 + t22/4]
-    ], dtype=complex)
+    hops = {
+        1: HR1,
+        2: HR2,
+        3: HR3,
+    }
+    RV = {
+        1: np.array([1.0, 0.0]),
+        2: np.array([0.5, S]),
+        3: np.array([-0.5, S]),
+    }
 
+    eps = 1e-5
     if edge == "zigzag":
-        # Periodic along x (period a = 1.0), N rows across y (spacing sqrt(3)/2)
-        n = 3 * N
-        H0 = np.zeros((n, n), dtype=complex)
-        H1 = np.zeros((n, n), dtype=complex)
-        pos = np.column_stack([np.zeros(N), np.arange(N) * S])
+        n_sites = N
+        period = np.array([1.0, 0.0])
+        pos = np.column_stack([np.arange(N) * 0.5, np.arange(N) * S])
         sub = np.zeros(N, dtype=int)
-
-        for i in range(N):
-            H0[3*i:3*i+3, 3*i:3*i+3] = H0_site
-            H1[3*i:3*i+3, 3*i:3*i+3] = HR1
-            if i + 1 < N:
-                H0[3*i:3*i+3, 3*(i+1):3*(i+1)+3] = HR2
-                H0[3*(i+1):3*(i+1)+3, 3*i:3*i+3] = HR2.conj().T
-                H1[3*i:3*i+3, 3*(i+1):3*(i+1)+3] = HR3
-        return RibbonHamiltonian(H0, H1, pos, sub)
-
     elif edge == "armchair":
-        # Periodic along y (period sqrt(3)), N columns across x. Each column has 2 Mo atoms (A at y=0, B at y=sqrt(3)/2).
-        n = 6 * N
-        H0 = np.zeros((n, n), dtype=complex)
-        H1 = np.zeros((n, n), dtype=complex)
+        n_sites = 2 * N
+        period = np.array([0.0, 2 * S])
         pos_list = []
         for j in range(N):
             pos_list.append([j, 0.0])
             pos_list.append([j + 0.5, S])
         pos = np.array(pos_list)
         sub = np.tile([0, 1], N)
-
-        for j in range(N):
-            H0[6*j:6*j+3, 6*j:6*j+3] = H0_site
-            H0[6*j+3:6*j+6, 6*j+3:6*j+6] = H0_site
-            H0[6*j:6*j+3, 6*j+3:6*j+6] += HR2
-            H0[6*j+3:6*j+6, 6*j:6*j+3] += HR2.conj().T
-            H1[6*j+3:6*j+6, 6*j:6*j+3] += HR3.conj().T
-            if j + 1 < N:
-                H0[6*j:6*j+3, 6*(j+1):6*(j+1)+3] += HR1
-                H0[6*(j+1):6*(j+1)+3, 6*j:6*j+3] += HR1.conj().T
-                H0[6*j+3:6*j+6, 6*(j+1)+3:6*(j+1)+6] += HR1
-                H0[6*(j+1)+3:6*(j+1)+6, 6*j+3:6*j+6] += HR1.conj().T
-                H0[6*j+3:6*j+6, 6*(j+1):6*(j+1)+3] += HR6
-                H0[6*(j+1):6*(j+1)+3, 6*j+3:6*j+6] += HR6.conj().T
-                H0[6*(j+1):6*(j+1)+3, 6*j+3:6*j+6] += HR3
-                H0[6*j+3:6*j+6, 6*(j+1):6*(j+1)+3] += HR3.conj().T
-        return RibbonHamiltonian(H0, H1, pos, sub)
-
     else:
         raise ValueError(f"edge must be armchair or zigzag, got {edge!r}")
+
+    dim = 3 * n_sites
+    H0 = np.zeros((dim, dim), dtype=complex)
+    H1 = np.zeros((dim, dim), dtype=complex)
+
+    for i in range(n_sites):
+        H0[3*i:3*i+3, 3*i:3*i+3] = H0_site
+
+    for i in range(n_sites):
+        for j in range(n_sites):
+            d0 = pos[j] - pos[i]
+            for r_idx, R in hops.items():
+                if np.linalg.norm(d0 - RV[r_idx]) < eps:
+                    H0[3*i:3*i+3, 3*j:3*j+3] += R
+                if np.linalg.norm(d0 + RV[r_idx]) < eps:
+                    H0[3*i:3*i+3, 3*j:3*j+3] += R.T
+
+            d1 = pos[j] + period - pos[i]
+            for r_idx, R in hops.items():
+                if np.linalg.norm(d1 - RV[r_idx]) < eps:
+                    H1[3*i:3*i+3, 3*j:3*j+3] += R
+                if np.linalg.norm(d1 + RV[r_idx]) < eps:
+                    H1[3*i:3*i+3, 3*j:3*j+3] += R.T
+
+    return RibbonHamiltonian(H0, H1, pos, sub)
 
 
 def triangular_ribbon(width, edge, t=1.0, onsite=0.0):

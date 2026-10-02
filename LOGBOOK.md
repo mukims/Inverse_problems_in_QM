@@ -642,6 +642,7 @@ Artifacts written:
 * **Test Suite & Regression Verification**:
   - Added `tests/tbribbon/test_real_materials.py` (12 tests) verifying Hermiticity, bulk gap, and $T \equiv N_{\text{open}}$ channel-invariance away from subband steps for all 3 materials in both armchair and zigzag orientations.
   - Full test suite passes: **130 passed** in 84.6s (118 previous + 12 new).
+  - *(Corrected 2026-10-02: MoS₂ ribbon builders had misassigned bond blocks placing 56–61% of states outside the projected bulk bands; fixed via geometric builder in Bug #10).*
 
 Artifacts written:
 - `notebooks/tbribbon/lattices.py` (`hbn_ribbon`, `phosphorene_ribbon`, `mos2_ribbon`)
@@ -745,6 +746,15 @@ Artifacts written:
   3. Recomputed even-width leads via `leads_sancho_rubio` and cached in `~/atlas_store/leads/agnr_cell_v2/size_{m}/leads_{m}.npy`. Odd widths remain byte-identical against stored reference files.
   4. Added edge-masked guard to `CloudStore.write_cloud` isolating the trace-formula Van Hove singularity spike ($\pm 4-5$ channels $\approx 0.05\,t$) around clean-spectrum steps. Verified on historical reference data (`size_9.npy`, $c=98$), where excess is $+1.62$ near subband steps but $\le +0.0005$ in the bulk.
   5. Implemented permanent unit tests in `tests/tbribbon/test_generate.py` (checks 3a–3d: Bloch bands match to $< 10^{-14}$, clean $T$ equals open channels to $< 10^{-7}$, disorder transmission strictly bounded) and in `tests/atlas/test_store.py` (masked guard tests).
+
+### Bug #10: MoS₂ Ribbon Bonds Misassigned in Hand-Placed Blocks
+* **Symptom**: In the initial MoS₂ ribbon implementation (BUILD-19), the bulk hopping matrices were correct, but ribbon subbands severely diverged from the projected 2D bulk bands: **55.9%** of states in zigzag N30 and **61.1%** of states in armchair N15 fell outside the projected bulk bands. Despite this, $T(E) \equiv N_{\text{open}}(E)$ channel invariants passed because the Hamiltonian was Hermitian.
+* **Root Cause**: Hand-placed inter-row blocks were swapped. In zigzag ribbons, rows are sheared with row $i$ at $x = i/2$. For site $(i, c)$, neighbours in row $i+1$ lie at $\mathbf{R}_3 = (-1/2, \sqrt{3}/2)$ inside the same cell ($m=0$) and at $\mathbf{R}_3 + \mathbf{R}_1 = \mathbf{R}_2 = (1/2, \sqrt{3}/2)$ in the next cell ($m=1$). The manual code mistakenly placed $H(\mathbf{R}_2)$ inside the cell and $H(\mathbf{R}_3)$ in the inter-cell block. Armchair ribbons had analogous manual placement errors.
+* **Resolution**:
+  1. Replaced manual block placement in `mos2_ribbon` (`notebooks/tbribbon/lattices.py`) with a unified geometric builder based on explicit Mo site coordinates and pairwise vector matching against $\pm \mathbf{R}_1, \pm \mathbf{R}_2, \pm \mathbf{R}_3$ using $H(-\mathbf{R}) = H(\mathbf{R})^T$.
+  2. States falling outside the projected bulk bands dropped from $55.9\% \to 3.66\%$ (zigzag N30) and $61.1\% \to 3.23\%$ (armchair N15), well within the physical $\le 8\%$ limit corresponding to localized edge states.
+  3. Added permanent bulk-projection and bulk-gap unit tests (`test_mos2_ribbon_bands_lie_in_bulk_projection`, `test_triangular_ribbon_bands_lie_in_bulk_projection`, `test_mos2_bulk_matches_liu_nn_model`, `test_phosphorene_wide_armchair_gap_approaches_bulk`) in `tests/tbribbon/test_real_materials.py`.
+  4. Regenerated clean MoS₂ fingerprints in `~/atlas_store/materials_v1/mos2/` and updated `notebooks/tbribbon/fingerprints_real.png`.
 
 ---
 
