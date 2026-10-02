@@ -126,7 +126,7 @@ def check_model(store, model, reg):
                     combs = agnr_lib.chosen_for_config(n_imp, model.width, s)
                     cur_set = set(map(tuple, combs))
                 else:
-                    shifts = impurity_shifts(model.n_cells, h.H0.shape[0], n_imp, seed=s, v=model.impurity_v_t)
+                    shifts = impurity_shifts(model.n_cells, h.H0.shape[0], n_imp, seed=s, v=model.impurity_v_t, orbitals_per_site=model.orbitals_per_site)
                     cur_set = set(zip(*np.where(shifts > 0)))
                 if prev_set is not None and not prev_set.issubset(cur_set):
                     nesting_valid = False

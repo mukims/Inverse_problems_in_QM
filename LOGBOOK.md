@@ -29,6 +29,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-18** | 2026-10-02 | 29 graphene ribbons (armchair N13, zigzag N8 held out) + square strip N10 | Shazam meaning-embedding prototype: AE (atlas_v2_loo) vs paraphrase vs physics contrastive encoders | engine_v1 seeds 0–699 train, 700–849 validation, 850–999 test; novelty_v1 square strip (600) | InputSpec v2, label-free | **99.99% (AE)<br>100.0% (Para)<br>100.0% (Phys)** | N/A | N/A | Prototype, production Shazam unchanged. auroc_unseen_vs_untrained: AE 0.9777, paraphrase 0.5113, physics 0.8365. `notebooks/material_atlas/meaning/` |
 | **BUILD-21** | 2026-10-02 | **31-Model Sparse Ribbon Grid (Shazam v3) + Stage 3 7/9-AGNR** | **Atlas v3** (Shared eV Axis, 416-ch $[0, 8.32)\,\text{eV}$, Conv1dAE + Option B Novelty + Stage 3 XGBoost) | `engine_v1` (18,600 test spectra) + `novelty_v1` + LOO + `consolidated_data` (37,350 test spectra) | InputSpec v3 (unit="eV", $E \in [0, 8.32)\,\text{eV}$, step 0.02, cap 64.0), no transport recomputed, graphene $t = 2.7\,\text{eV}$ | **100.0% Mat<br>100.0% Edge<br>99.97% Width** | **1.894 (Estimated)** | **2.748 (Estimated)** | **Completed (Gates Checked)**: Shared eV axis. 4/5 gates pass: Material 100%, Edge 100%, Width 99.97% ($\ge 99.9\%$); False alarms pooled arm 0.92%, zz 1.39% (0.5–1.5%); Square strip 100.0% ($\ge 99\%$); LOO N13 99.67%, N8 100.0% ($\ge 95\%$); Stage 3 MAE 1.894 ($\le 1.98$), coverage 90.04% ($90 \pm 2\%$). Stage 3 width vote on all test spectra is 98.97% (Gate $\ge 99.5\%$ MISSED; 383/384 errors are correctly flagged unknown). |
 | **BUILD-22** | 2026-10-02 | **31-Model Sparse Ribbon Grid (Shazam v4) + Stage 3 7/9-AGNR** | **Atlas v4** (Shared eV Axis + Label-Free Despiking $T > 2m+2$, 416-ch, Conv1dAE + Option B Novelty + Stage 3 XGBoost) | `engine_v1` (18,600 test spectra) + `novelty_v1` + LOO + `consolidated_data` (37,350 test spectra) | InputSpec v4 (unit="eV", $E \in [0, 8.32)\,\text{eV}$, step 0.02, cap 64.0, despike=True), no transport recomputed | **100.0% Mat<br>100.0% Edge<br>99.93% Width** | **1.986 (Estimated)** | **2.893 (Estimated)** | **Accepted by the human (2026-10-02)** despite the MAE miss (1.986 against $\le 1.980$). Miss caused entirely by 14 9-AGNR spectra outside Shazam's 0.5–4% density range (without them MAE is 1.975). Despiked eV axis. Width vote gate recovered: 99.759% ($\ge 99.5\%$: PASS; 7-AGNR 0 errors, 9-AGNR 90 errors). Identification: Mat 100%, Edge 100%, Width 99.93% ($\ge 99.9\%$: PASS). False alarms pooled: arm 0.97%, zz 1.45% (0.5–1.5%: PASS). Unseen square strip: 100.0% ($\ge 99\%$: PASS). LOO: N13 95.83%, N8 100.0% ($\ge 95\%$: PASS). Conformal coverage: 90.00% ($90 \pm 2\%$: PASS). `atlas_v4` is the eV-axis Shazam for the material expansion. |
+| **SMOKE-3** | 2026-10-02 | **32 New-Material Models + 8 Timing Probes (N=50)** | **New-Material Smoke Clouds on Shared eV Axis** (hBN, Phosphorene, MoS₂, Triangular) | `~/atlas_store/materials_ev_v1` (32 models $\times$ 4 densities $\times$ 50 seeds = 6,400 spectra) + `~/atlas_store/materials_ev_probe` (8 models $\times$ 4 densities $\times$ 2 seeds = 64 spectra) | Direct generation on InputSpec v3 eV grid (`generation_grid_t`); zero-padding above band top; multi-orbital whole-atom impurities (Bug #11, MoS₂ $V = 0.2535\,\text{eV}$); Caroli formula | **100% Validated** | N/A (Smoke data generation) | N/A | **Completed (All Store Checks PASS)**: 32/32 models in `materials_ev_v1` and 8/8 models in `materials_ev_probe` passed all store invariants (`check_store.py`: CleanErr $< 2\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, nested seeds). Empirical cost table compiled: N7–N27 full run (1,000 configs $\times$ 4 densities, 16 workers, effective 6.4× speedup) projects 28.92 h compute (36.24 h batch wall time). N50 timing probe completed: hBN ~5.3–5.6 h, phosphorene ~4.9 h, MoS₂ zigzag ~5.7 h, triangular ~0.3–2.1 h, MoS₂ armchair 40.8 h (impractical). |
 
 ---
 
@@ -776,6 +777,75 @@ Artifacts written:
 - `notebooks/material_atlas/atlas_v4_loo/` (`encoder.pt`, `refs.npz`, `manifest.json`)
 - `notebooks/material_atlas/stage3_7_9_v4/` (`metrics.json`, `predictions_test.npz`)
 
+### [2026-10-02] SMOKE-3: New-Material Clouds on Shared eV Axis and Timing Cost Table
+
+* **Overview & Energy Scale / Impurity Mapping**:
+  - Generated smoke disorder clouds for 4 new materials (hBN, phosphorene, MoS₂, triangular) across armchair and zigzag edges and widths $N \in \{7, 9, 14, 27\}$ (32 models $\times$ 4 densities $\times$ 50 seeds = 6,400 spectra) directly into `~/atlas_store/materials_ev_v1`.
+  - Generated $N=50$ timing probe clouds (8 models $\times$ 4 densities $\times$ 2 seeds = 64 spectra) directly into `~/atlas_store/materials_ev_probe`.
+  - Generated directly on the shared eV grid (`generation_grid_t(spec, m) = spec.energies_t() / m.t_ev`), with exact zero-padding above clean band tops (`n_live` channels calculated via Sancho-Rubio decimation and Caroli transport; zero-filled beyond).
+  - Impurity potentials ($V$) and atomic hopping scales ($t_{\text{ev}}$):
+
+| Material | Lattice / Model | $t_{\text{ev}}$ (eV) | $V$ in units of $t$ | $V$ (eV) | Atoms / Cell ($N$ rows) | Orbitals / Atom ($k$) |
+|---|---|---|---|---|---|---|
+| **hBN** | Honeycomb binary | 2.30 | 0.50 | 1.1500 | $2N$ (arm), $2N$ (zz) | 1 |
+| **phosphorene** | Anisotropic 5-hop | 3.665 | 0.50 | 1.8325 | $4N$ (arm), $4N$ (zz) | 1 |
+| **MoS₂** | 3-band GGA ($d_{z^2}, d_{xy}, d_{x^2-y^2}$) | 1.00 | 0.2535 ($0.5 \times t_2$) | 0.2535 | $2N$ (arm), $N$ (zz) | 3 |
+| **triangular** | Idealised single-band | 1.00 | 0.50 | 0.5000 | $2N$ (arm), $N$ (zz) | 1 |
+
+* **Atom-Level Impurity Assignment (Bug #11)**:
+  - Multi-orbital ribbons ($k > 1$, e.g. MoS₂ with $k=3$) shift all $k$ orbitals of physical atoms simultaneously. Density $d$ counts physical atoms ($n_{\text{sites}} = n_{\text{cells}} \times \text{spc} // k$), and `impurity_shifts` draws atom indices without replacement, preserving nested configurations across concentrations. Single-orbital models ($k=1$) reproduce identical draws.
+
+* **Store Validation Invariants (`check_store.py`)**:
+  - `~/atlas_store/materials_ev_v1` (32 models): **ALL PASS** (`notebooks/tbribbon/materials_ev_v1_report.json`).
+    - Clean transmission equals open channel counts: $\text{CleanErr} \le 1.67 \times 10^{-4} < 10^{-3}$.
+    - Disordered medians bounded at/below pristine away from Van Hove steps: $\text{MaxExcess} = +0.0000 \le 0.05$.
+    - Zero cross-density duplicates: PASS.
+    - Strict config-seed nesting verified: PASS.
+  - `~/atlas_store/materials_ev_probe` (8 models, $N=50$): **ALL PASS** (`notebooks/tbribbon/materials_ev_probe_report.json`).
+    - CleanErr $\le 9.9 \times 10^{-5}$, MaxExcess $= +0.0000$, zero duplicates, nested seeds.
+
+* **Empirical Cost Table & Full-Run Projections (1,000 configs $\times$ 4 densities = 4,000 spectra / ribbon)**:
+  - **Single-Core Spectrum Time** ($t_{\text{spectrum\_sec}}$, worker compute median in seconds):
+
+| Material, Edge | N7 (s) | N9 (s) | N14 (s) | N27 (s) | N50 (s) |
+|---|---|---|---|---|---|
+| hBN armchair | 0.716 | 0.860 | 1.771 | 10.432 | 30.544 |
+| hBN zigzag | 0.660 | 0.878 | 1.887 | 10.274 | 32.255 |
+| phosphorene armchair | 0.571 | 0.768 | 1.629 | 9.515 | 28.537 |
+| phosphorene zigzag | 0.566 | 0.777 | 1.616 | 9.452 | 28.531 |
+| MoS₂ armchair | 1.418 | 3.165 | 11.135 | 79.139 | 235.149 |
+| MoS₂ zigzag | 0.358 | 0.575 | 1.429 | 10.703 | 32.929 |
+| triangular armchair | 0.228 | 0.308 | 0.681 | 3.892 | 11.822 |
+| triangular zigzag | 0.145 | 0.165 | 0.232 | 0.628 | 1.977 |
+
+  - **Full Run Wall Time Projections on 16 Workers** (Hours per ribbon):
+    - *Method 1 (Compute-scaled)*: Single-core compute median scaled by FULL-1 measured effective speedup $6.4\times$ ($4000 \times t_{\text{spec}} / (6.4 \times 3600)$).
+    - *Method 2 (Batch wall-measured)*: Direct empirical batch wall time per spectrum from 16-worker smoke generation logs.
+
+| Material, Edge | N7 (h) | N9 (h) | N14 (h) | N27 (h) | Subtotal N7–N27 (h) | Batch Wall N7–N27 (h) | N50 (h) | Total incl N50 (h) |
+|---|---|---|---|---|---|---|---|---|
+| hBN armchair | 0.12 | 0.15 | 0.31 | 1.81 | **2.39** | 3.67 | 5.30 | **7.69** |
+| hBN zigzag | 0.11 | 0.15 | 0.33 | 1.78 | **2.38** | 3.78 | 5.60 | **7.98** |
+| phosphorene armchair | 0.10 | 0.13 | 0.28 | 1.65 | **2.17** | 3.53 | 4.95 | **7.12** |
+| phosphorene zigzag | 0.10 | 0.13 | 0.28 | 1.64 | **2.15** | 3.52 | 4.95 | **7.11** |
+| MoS₂ armchair | 0.25 | 0.55 | 1.93 | 13.74 | **16.47** | 13.33 | 40.82 | **57.29** |
+| MoS₂ zigzag | 0.06 | 0.10 | 0.25 | 1.86 | **2.27** | 3.62 | 5.72 | **7.99** |
+| triangular armchair | 0.04 | 0.05 | 0.12 | 0.68 | **0.89** | 2.63 | 2.05 | **2.94** |
+| triangular zigzag | 0.03 | 0.03 | 0.04 | 0.11 | **0.20** | 2.17 | 0.34 | **0.55** |
+| **Total** | | | | | **28.92** | **36.24** | | **98.67** |
+
+  - **Key Decision Findings for Human (F1–F6 in `2026-10-02-full-run-decisions.md`)**:
+    - N7–N14 across all 8 models: ~4.9 h compute (~7.4 h batch wall time).
+    - Recommendation (b) (N7, N9, N14 for all + N27 for hBN, phosphorene, triangular): ~15.2 h compute (~22.9 h batch wall time).
+    - MoS₂ armchair N27 alone adds 13.7 h compute (9.9 h batch wall time).
+    - $N=50$ is impractical for MoS₂ armchair (40.8 h alone) and costs 5–6 h per ribbon elsewhere; recommendation to omit from initial full run confirmed.
+
+Artifacts written:
+- `notebooks/tbribbon/smoke3.log`
+- `notebooks/tbribbon/probe50.log`
+- `notebooks/tbribbon/materials_ev_v1_report.json`
+- `notebooks/tbribbon/materials_ev_probe_report.json`
+
 ---
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
@@ -858,6 +928,16 @@ Artifacts written:
   2. States falling outside the projected bulk bands dropped from $55.9\% \to 3.8\%$ (zigzag N30) and $61.1\% \to 6.6\%$ (armchair N15), well within the physical $\le 8\%$ limit corresponding to localized edge states.
   3. Added permanent bulk-projection and bulk-gap unit tests (`test_mos2_ribbon_bands_lie_in_bulk_projection`, `test_triangular_ribbon_bands_lie_in_bulk_projection`, `test_mos2_bulk_matches_liu_nn_model`, `test_phosphorene_wide_armchair_gap_approaches_bulk`) in `tests/tbribbon/test_real_materials.py`.
   4. Regenerated clean MoS₂ fingerprints in `~/atlas_store/materials_v1/mos2/` and updated `notebooks/tbribbon/fingerprints_real.png`.
+
+### Bug #11: Multi-Orbital Impurity Placement Assigned to Single Orbitals
+* **Symptom**: For multi-orbital ribbons (such as MoS₂ with 3 orbitals per site: $d_{z^2}, d_{xy}, d_{x^2-y^2}$), impurity shifts were assigned to random single orbital indices rather than shifting all orbitals on chosen physical atoms. Furthermore, MoS₂ on-site potential was set to default $V = 0.5$, rather than physical $V = 0.5 \times t_2 = 0.2535$ eV.
+* **Root Cause**: `impurity_shifts` assumed a 1-orbital-per-site model (`n_cells * sites_per_cell`).
+* **Resolution**:
+  1. Extended `impurity_shifts` with `orbitals_per_site`: draws $n_{\text{atoms}} = n_{\text{cells}} \times \text{spc} // \text{orbitals\_per\_site}$ without replacement, and shifts all $k$ orbitals of each chosen atom (`shifts[atoms * k + o] = v`).
+  2. Added `orbitals_per_site: int = 1` to `RibbonModel` (`atlaslib/registry.py`), and updated `n_sites` to count atoms.
+  3. Set MoS₂ $V = 0.2535$ eV ($0.5 \times t_2$, with $t_2 = 0.507$ eV) and `orbitals_per_site = 3` in `tbribbon/materials.py`.
+  4. Updated `generate_clouds.py` and `check_store.py` to preserve nesting and atom-level shift semantics across multi-orbital materials.
+  5. Permanent regression tests added in `tests/tbribbon/test_disorder_atoms.py`.
 
 ---
 
