@@ -28,7 +28,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **STAGE3-1** | 2026-10-01 | **7-AGNR & 9-AGNR** | **Stage 3 Production Pipeline** (Atlas v2 Front End + Stage 3 XGBoost + Conformal) | `size_7.npy` + `size_9.npy` (XGB train seeds 0–2099, cal seeds 2100–2549, test seeds 2550–2999; 37,350 test spectra across 83 concentrations) | Stage 1–2: `InputSpec v2` (400-ch $[0, 4.0t)$, label-free $\log(1+T)/\log(65)$); class-conditional novelty filter ($s \le \tau$); open-world `width_vote` routing (votes outside {7, 9} get no estimate, counted as `no_stage3_model`); Stage 3: predicted width pristine division + 3-decimal rounding | **99.87%** (vote) | **1.958 (Estimated)**<br>1.615 (7)<br>2.191 (9)<br>1.981 (Superseded snapped) | **2.830 (Estimated)**<br>3.071 (All) | **Completed (Stage 3 Part A Verified & All Gates Passed)**: End-to-end integration of frozen Atlas v2 front end with Stage 3 XGBoost regressors and split-conformal intervals on legacy dense data. Routing by open-world `width_vote` resolves closed-world assumption: label-free vote width accuracy 99.87% ($\ge 99.5\%$: PASS); 90% conformal coverage 90.04% (within $90 \pm 2\%$, $q = 0.0894$: PASS); End-to-end MAE 1.958 ($\le 1.980$: PASS; 7-AGNR: 1.615, 9-AGNR: 2.191). Unknown flag rate 5.56% (2,075 / 37,350); votes outside {7, 9} are only 9 spectra (0.02%, all voted 6, safely unestimated). Total evaluated spectra: 35,266 / 37,350. Snapped-routing MAE 1.981 documented as superseded. Stored in `notebooks/material_atlas/stage3_7_9/`. |
 | **BUILD-18** | 2026-10-02 | 29 graphene ribbons (armchair N13, zigzag N8 held out) + square strip N10 | Shazam meaning-embedding prototype: AE (atlas_v2_loo) vs paraphrase vs physics contrastive encoders | engine_v1 seeds 0–699 train, 700–849 validation, 850–999 test; novelty_v1 square strip (600) | InputSpec v2, label-free | **99.99% (AE)<br>100.0% (Para)<br>100.0% (Phys)** | N/A | N/A | Prototype, production Shazam unchanged. auroc_unseen_vs_untrained: AE 0.9777, paraphrase 0.5113, physics 0.8365. `notebooks/material_atlas/meaning/` |
 | **BUILD-21** | 2026-10-02 | **31-Model Sparse Ribbon Grid (Shazam v3) + Stage 3 7/9-AGNR** | **Atlas v3** (Shared eV Axis, 416-ch $[0, 8.32)\,\text{eV}$, Conv1dAE + Option B Novelty + Stage 3 XGBoost) | `engine_v1` (18,600 test spectra) + `novelty_v1` + LOO + `consolidated_data` (37,350 test spectra) | InputSpec v3 (unit="eV", $E \in [0, 8.32)\,\text{eV}$, step 0.02, cap 64.0), no transport recomputed, graphene $t = 2.7\,\text{eV}$ | **100.0% Mat<br>100.0% Edge<br>99.97% Width** | **1.894 (Estimated)** | **2.748 (Estimated)** | **Completed (Gates Checked)**: Shared eV axis. 4/5 gates pass: Material 100%, Edge 100%, Width 99.97% ($\ge 99.9\%$); False alarms pooled arm 0.92%, zz 1.39% (0.5–1.5%); Square strip 100.0% ($\ge 99\%$); LOO N13 99.67%, N8 100.0% ($\ge 95\%$); Stage 3 MAE 1.894 ($\le 1.98$), coverage 90.04% ($90 \pm 2\%$). Stage 3 width vote on all test spectra is 98.97% (Gate $\ge 99.5\%$ MISSED; 383/384 errors are correctly flagged unknown). |
-| **BUILD-22** | 2026-10-02 | **31-Model Sparse Ribbon Grid (Shazam v4) + Stage 3 7/9-AGNR** | **Atlas v4** (Shared eV Axis + Label-Free Despiking $T > 2m+2$, 416-ch, Conv1dAE + Option B Novelty + Stage 3 XGBoost) | `engine_v1` (18,600 test spectra) + `novelty_v1` + LOO + `consolidated_data` (37,350 test spectra) | InputSpec v4 (unit="eV", $E \in [0, 8.32)\,\text{eV}$, step 0.02, cap 64.0, despike=True), no transport recomputed | **100.0% Mat<br>100.0% Edge<br>99.93% Width** | **1.986 (Estimated)** | **2.893 (Estimated)** | **Completed (Gates Checked)**: Despiked eV axis. Width vote gate recovered: 99.759% ($\ge 99.5\%$: PASS; 7-AGNR 0 errors, 9-AGNR 90 errors). Identification: Mat 100%, Edge 100%, Width 99.93% ($\ge 99.9\%$: PASS). False alarms pooled: arm 0.97%, zz 1.45% (0.5–1.5%: PASS). Unseen square strip: 100.0% ($\ge 99\%$: PASS). LOO: N13 95.83%, N8 100.0% ($\ge 95\%$: PASS). Conformal coverage: 90.00% ($90 \pm 2\%$: PASS). Stage 3 MAE: 1.986 ($\le 1.980$: MISSED by 0.006 due to lower unknown flag rate 4.70% admitting more difficult spectra into estimation). |
+| **BUILD-22** | 2026-10-02 | **31-Model Sparse Ribbon Grid (Shazam v4) + Stage 3 7/9-AGNR** | **Atlas v4** (Shared eV Axis + Label-Free Despiking $T > 2m+2$, 416-ch, Conv1dAE + Option B Novelty + Stage 3 XGBoost) | `engine_v1` (18,600 test spectra) + `novelty_v1` + LOO + `consolidated_data` (37,350 test spectra) | InputSpec v4 (unit="eV", $E \in [0, 8.32)\,\text{eV}$, step 0.02, cap 64.0, despike=True), no transport recomputed | **100.0% Mat<br>100.0% Edge<br>99.93% Width** | **1.986 (Estimated)** | **2.893 (Estimated)** | **Accepted by the human (2026-10-02)** despite the MAE miss (1.986 against $\le 1.980$). Miss caused entirely by 14 9-AGNR spectra outside Shazam's 0.5–4% density range (without them MAE is 1.975). Despiked eV axis. Width vote gate recovered: 99.759% ($\ge 99.5\%$: PASS; 7-AGNR 0 errors, 9-AGNR 90 errors). Identification: Mat 100%, Edge 100%, Width 99.93% ($\ge 99.9\%$: PASS). False alarms pooled: arm 0.97%, zz 1.45% (0.5–1.5%: PASS). Unseen square strip: 100.0% ($\ge 99\%$: PASS). LOO: N13 95.83%, N8 100.0% ($\ge 95\%$: PASS). Conformal coverage: 90.00% ($90 \pm 2\%$: PASS). `atlas_v4` is the eV-axis Shazam for the material expansion. |
 
 ---
 
@@ -742,23 +742,34 @@ Artifacts written:
 | **Stage 3 MAE** | ≤ 1.98 | 1.958 | 1.894 | **1.986** (7: 1.686, 9: 2.197) | **MISSED** (1.986 > 1.980)* |
 | **Stage 3 coverage** | 88%–92% | 90.04% | 90.04% | **90.00%** ($q = 0.0896$) | **PASS** |
 
-* **Stage 3 Width-Vote Error Breakdown**:
+* **Stage 3 Width-Vote Error Breakdown & MAE Root Cause**:
   - **Total errors across all 37,350 test spectra: 90** (28 flagged unknown, 62 unflagged).
   - **7-AGNR: 0 errors (100.00% accuracy, 15,300 / 15,300 correct).** Despiking completely eliminated all 307 errors where legacy band-edge spikes caused 7-AGNR to be misidentified as armchair N15.
   - **9-AGNR: 90 errors (99.59% accuracy, 21,960 / 22,050 correct):**
-    - 69 voted 6 (outside {7, 9}, correctly routed to `no_stage3_model` and unestimated).
-    - 18 voted 7 (misrouted to width-7 model).
+    - 69 voted 6 (21 flagged unknown; 48 unflagged misidentifications that get no estimate only because N6 has no Stage 3 model).
+    - 18 voted 7 (misrouted to width-7 model; 4 flagged unknown, 14 unflagged).
     - 2 voted 16 (outside {7, 9}, correctly routed to `no_stage3_model`).
-    - Error counts per concentration level: min 0, max 21 (peaking at highest concentrations).
-  - **Pre-Registered Expectation Assessment**:
-    - *Width-vote recovery*: **MET**. Rose from 98.97% to 99.759% ($\ge 99.5\%$), completely curing 7-AGNR.
-    - *MAE $\le 1.98$*: **MISSED by 0.006** (1.986 vs 1.980). Unknown flag rate dropped from 7.74% (v3) and 5.56% (v2) to 4.70% (1,754 / 37,350), meaning 35,548 spectra received estimates (vs 35,266 in v2), admitting higher-disorder spectra that slightly raised the estimated MAE.
+    - 87 of the 90 v4 errors are 9-AGNR at $c \ge 74$ ($d > 4\%$, outside Shazam's $0.5–4\%$ training range).
+  - **MAE Miss Cause**:
+    - The XGBoost regressor is identical across runs: on the 33,146 spectra that v3 and v4 both estimate with the same vote, the predictions differ by at most 0.0.
+    - The miss is caused by **14 9-AGNR spectra read as width 7 and not flagged**. The width-7 regressor estimates them with MAE 32.1. All 14 are at $c = 78–98$, which is $d = 4.3–5.4\%$, **outside Shazam's 0.5–4% training range**. Shazam snaps their density to 0.04.
+    - **Without these 14 out-of-range spectra, the MAE is 1.975** ($\le 1.980$, meeting the gate).
+  - **Safety Comparison Across Generations**:
 
-* **Novelty & Calibration Details**:
-  - Validation scan selected $n_0 = 150$ (dispersion index 1.065 vs 1.084–1.187).
-  - Validation tail parameters: $z^*_{\text{arm}} = 3.4193$, $z^*_{\text{zz}} = 3.3813$.
-  - Pooled test false alarms: Armchair 0.97% (99 / 10,200), Zigzag 1.45% (122 / 8,400), Overall 1.19% (221 / 18,600).
+    | Metric | v2 (units of $t$) | v3 (BUILD-21) | v4 (BUILD-22) |
+    |---|---|---|---|
+    | Wrong votes inside the 0.5–4% range | 4 | 258 | **3** |
+    | Wrong votes outside the range | — | — | **87** |
+    | Wrong and unflagged | 14 | 1 | **62** |
+    | Wrong width estimated (silent misestimate) | 5 | 0 | **14** |
+
+* **Novelty & Calibration Details (Lower Novelty Sensitivity)**:
+  - Validation scan selected $n_0 = 150$ and looser thresholds: $z^*_{\text{arm}} = 3.4193$, $z^*_{\text{zz}} = 3.3813$ (against $n_0 = 0$ and $z^* \in [2.92, 3.17]$ for v3).
+  - Pooled test false alarms stay within $0.5–1.5\%$: Armchair 0.97% (99 / 10,200), Zigzag 1.45% (122 / 8,400), Overall 1.19% (221 / 18,600).
+  - Trade-off: Unknown flag rate on legacy test data falls from 7.74% (v3) to 4.70% (1,754 / 37,350), LOO N13 falls from 99.67% to **95.83%**, and out-of-range 9-AGNR ($d > 4\%$) passes unflagged.
   - Worst false alarm line: `graphene-ideal/zigzag/N4 d=0.0050` with 10 / 150 (6.67%) flagged unknown.
+
+> **Accepted by the human (2026-10-02)** despite the MAE miss (1.986 against ≤ 1.98). The miss comes entirely from 14 9-AGNR spectra outside Shazam's 0.5–4% density range; without them the MAE is 1.975. `atlas_v4` is the eV-axis Shazam for the material expansion. Production `atlas_v2` (units of t) is unchanged. Open item for the full-run decision: extend the density range beyond 4% (legacy 9-AGNR reaches 5.4%).
 
 Artifacts written:
 - `notebooks/material_atlas/atlas_v4/` (`encoder.pt`, `refs.npz`, `manifest.json`, `identification.json`, `novelty.json`)
