@@ -147,6 +147,25 @@ def _parse_widths(val):
     return sorted(set(res))
 
 
+def _parse_densities(val):
+    ds = [float(x) for x in val.split(",") if x.strip()]
+    if any(not 0 < d < 1 for d in ds):
+        raise ValueError(f"densities must lie strictly between 0 and 1, got {ds}")
+    if len({round(d, 6) for d in ds}) != len(ds):
+        raise ValueError(f"duplicate density in {ds}")
+    return sorted(ds)
+
+
+def _parse_models(val):
+    out = []
+    for mid in (p.strip() for p in val.split(",") if p.strip()):
+        parts = mid.split("/")
+        if len(parts) != 3 or not parts[2].startswith("N") or not parts[2][1:].isdigit():
+            raise ValueError(f"model id must look like material/edge/N9, got {mid!r}")
+        out.append(make_model(parts[0], parts[1], int(parts[2][1:])))
+    return out
+
+
 if __name__ == "__main__":
     import time
     ap = argparse.ArgumentParser()
@@ -154,10 +173,12 @@ if __name__ == "__main__":
     ap.add_argument("--n-jobs", type=int, default=4)
     ap.add_argument("--formula", default="legacy_trace")
     ap.add_argument("--n-seeds", type=int, default=None, help="Fixed number of seeds per model (e.g. 50 for smoke build)")
-    ap.add_argument("--grid", choices=["sparse31", "custom", "materials"], default="sparse31",
-                    help="Grid schedule: 'sparse31', 'custom', or 'materials'")
+    ap.add_argument("--grid", choices=["sparse31", "custom", "materials", "models"], default="sparse31",
+                    help="Grid schedule: 'sparse31', 'custom', 'materials', or 'models'")
     ap.add_argument("--materials", default="hbn,phosphorene,mos2,triangular")
     ap.add_argument("--widths", default="7,9,14,27")
+    ap.add_argument("--models", default="")
+    ap.add_argument("--densities", default="0.005,0.01,0.02,0.04")
     ap.add_argument("--spec-version", default="v2", choices=["v2", "v3"])
     ap.add_argument("--armchair-widths", default="5-16", help="Armchair widths for custom grid")
     ap.add_argument("--zigzag-widths", default="4-12", help="Zigzag widths for custom grid")
@@ -178,10 +199,13 @@ if __name__ == "__main__":
     elif a.grid == "materials":
         ms = [make_model(mat, edge, n) for mat in a.materials.split(",")
               for edge in ("armchair", "zigzag") for n in _parse_widths(a.widths)]
+    elif a.grid == "models":
+        ms = _parse_models(a.models)
     else:
         arm_widths = _parse_widths(a.armchair_widths)
         zig_widths = _parse_widths(a.zigzag_widths)
         ms = ([make_model("graphene-ideal", "armchair", n) for n in arm_widths]
               + [make_model("graphene-ideal", "zigzag", n) for n in zig_widths])
     seeds = range(a.n_seeds) if a.n_seeds is not None else None
-    generate(CloudStore(a.store), ms, [0.005, 0.01, 0.02, 0.04], InputSpec(version=a.spec_version), n_jobs=a.n_jobs, formula=a.formula, seeds=seeds)
+    generate(CloudStore(a.store), ms, _parse_densities(a.densities), InputSpec(version=a.spec_version), n_jobs=a.n_jobs, formula=a.formula, seeds=seeds)
+
