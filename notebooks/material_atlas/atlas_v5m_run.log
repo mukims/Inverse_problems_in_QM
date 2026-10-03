@@ -1,0 +1,343 @@
+[atlas] epoch   1 val mse 0.001973 32s
+[atlas] epoch   2 val mse 0.001959 38s
+[atlas] epoch   3 val mse 0.001292 32s
+[atlas] epoch   4 val mse 0.001208 39s
+[atlas] epoch   5 val mse 0.001622 28s
+[atlas] epoch   6 val mse 0.001097 27s
+[atlas] epoch   7 val mse 0.000958 28s
+[atlas] epoch   8 val mse 0.000924 27s
+[atlas] epoch   9 val mse 0.000891 28s
+[atlas] epoch  10 val mse 0.000848 27s
+[atlas] epoch  11 val mse 0.000848 28s
+[atlas] epoch  12 val mse 0.000790 27s
+[atlas] epoch  13 val mse 0.000783 27s
+[atlas] epoch  14 val mse 0.000763 27s
+[atlas] epoch  15 val mse 0.000749 27s
+[atlas] epoch  16 val mse 0.000738 27s
+[atlas] epoch  17 val mse 0.000712 27s
+[atlas] epoch  18 val mse 0.000705 27s
+[atlas] epoch  19 val mse 0.000735 27s
+[atlas] epoch  20 val mse 0.000679 28s
+[atlas] epoch  21 val mse 0.000694 27s
+[atlas] epoch  22 val mse 0.000650 27s
+[atlas] epoch  23 val mse 0.000649 27s
+[atlas] epoch  24 val mse 0.000636 27s
+[atlas] epoch  25 val mse 0.000638 27s
+[atlas] epoch  26 val mse 0.000622 27s
+[atlas] epoch  27 val mse 0.000618 27s
+[atlas] epoch  28 val mse 0.000612 27s
+[atlas] epoch  29 val mse 0.000602 27s
+[atlas] epoch  30 val mse 0.000619 28s
+[atlas] epoch  31 val mse 0.000592 27s
+[atlas] epoch  32 val mse 0.000613 27s
+[atlas] epoch  33 val mse 0.000586 28s
+[atlas] epoch  34 val mse 0.000586 28s
+[atlas] epoch  35 val mse 0.000581 27s
+[atlas] epoch  36 val mse 0.000577 27s
+[atlas] epoch  37 val mse 0.000590 27s
+[atlas] epoch  38 val mse 0.000596 27s
+[atlas] epoch  39 val mse 0.000566 28s
+[atlas] epoch  40 val mse 0.000564 28s
+[atlas] epoch  41 val mse 0.000562 27s
+[atlas] epoch  42 val mse 0.000573 27s
+[atlas] epoch  43 val mse 0.000560 27s
+[atlas] epoch  44 val mse 0.000558 28s
+[atlas] epoch  45 val mse 0.000560 28s
+[atlas] epoch  46 val mse 0.000558 28s
+[atlas] epoch  47 val mse 0.000553 27s
+[atlas] epoch  48 val mse 0.000570 28s
+[atlas] epoch  49 val mse 0.000549 28s
+[atlas] epoch  50 val mse 0.000552 27s
+[atlas] epoch  51 val mse 0.000548 28s
+[atlas] epoch  52 val mse 0.000546 27s
+[atlas] epoch  53 val mse 0.000545 27s
+[atlas] epoch  54 val mse 0.000544 28s
+[atlas] epoch  55 val mse 0.000544 27s
+[atlas] epoch  56 val mse 0.000549 27s
+[atlas] epoch  57 val mse 0.000539 27s
+[atlas] epoch  58 val mse 0.000566 27s
+[atlas] epoch  59 val mse 0.000538 27s
+[atlas] epoch  60 val mse 0.000543 27s
+[shazam] joint map: 61 models, n0=300, z*={'graphene-ideal/armchair': 3.2219827009617874, 'graphene-ideal/zigzag': 3.384427454623529, 'hbn/armchair': 2.664870889594193, 'hbn/zigzag': 2.6516307998574287, 'mos2/armchair': 3.2952210058243288, 'mos2/zigzag': 3.1607020975679845, 'phosphorene/armchair': 2.6474796863108803, 'phosphorene/zigzag': 2.8345075957949675, 'triangular/armchair': 2.923161318321911, 'triangular/zigzag': 3.2244281112030144}
+{
+ "graphene-ideal": {
+  "material_accuracy": 100.0,
+  "edge_accuracy": 100.0,
+  "width_accuracy": 99.957,
+  "unknown_pct": 1.258,
+  "n": 18600
+ },
+ "hbn": {
+  "material_accuracy": 100.0,
+  "edge_accuracy": 100.0,
+  "width_accuracy": 100.0,
+  "unknown_pct": 1.083,
+  "n": 4800
+ },
+ "mos2": {
+  "material_accuracy": 100.0,
+  "edge_accuracy": 100.0,
+  "width_accuracy": 100.0,
+  "unknown_pct": 1.222,
+  "n": 3600
+ },
+ "phosphorene": {
+  "material_accuracy": 100.0,
+  "edge_accuracy": 100.0,
+  "width_accuracy": 100.0,
+  "unknown_pct": 1.188,
+  "n": 4800
+ },
+ "triangular": {
+  "material_accuracy": 100.0,
+  "edge_accuracy": 100.0,
+  "width_accuracy": 100.0,
+  "unknown_pct": 1.042,
+  "n": 4800
+ }
+}
+[atlas] epoch   1 val mse 0.002246 18s
+[atlas] epoch   2 val mse 0.001649 17s
+[atlas] epoch   3 val mse 0.001495 18s
+[atlas] epoch   4 val mse 0.001308 17s
+[atlas] epoch   5 val mse 0.001177 18s
+[atlas] epoch   6 val mse 0.001406 18s
+[atlas] epoch   7 val mse 0.001055 18s
+[atlas] epoch   8 val mse 0.001001 19s
+[atlas] epoch   9 val mse 0.000993 18s
+[atlas] epoch  10 val mse 0.000901 17s
+[atlas] epoch  11 val mse 0.000883 18s
+[atlas] epoch  12 val mse 0.000848 18s
+[atlas] epoch  13 val mse 0.000849 18s
+[atlas] epoch  14 val mse 0.000819 19s
+[atlas] epoch  15 val mse 0.000818 18s
+[atlas] epoch  16 val mse 0.000783 18s
+[atlas] epoch  17 val mse 0.000776 17s
+[atlas] epoch  18 val mse 0.000767 18s
+[atlas] epoch  19 val mse 0.000737 19s
+[atlas] epoch  20 val mse 0.000898 18s
+[atlas] epoch  21 val mse 0.000727 18s
+[atlas] epoch  22 val mse 0.000706 18s
+[atlas] epoch  23 val mse 0.000689 18s
+[atlas] epoch  24 val mse 0.000688 17s
+[atlas] epoch  25 val mse 0.000683 19s
+[atlas] epoch  26 val mse 0.000663 17s
+[atlas] epoch  27 val mse 0.000672 18s
+[atlas] epoch  28 val mse 0.000651 18s
+[atlas] epoch  29 val mse 0.000648 18s
+[atlas] epoch  30 val mse 0.000670 18s
+[atlas] epoch  31 val mse 0.000632 19s
+[atlas] epoch  32 val mse 0.000636 18s
+[atlas] epoch  33 val mse 0.000627 18s
+[atlas] epoch  34 val mse 0.000617 18s
+[atlas] epoch  35 val mse 0.000619 17s
+[atlas] epoch  36 val mse 0.000640 18s
+[atlas] epoch  37 val mse 0.000614 17s
+[atlas] epoch  38 val mse 0.000603 18s
+[atlas] epoch  39 val mse 0.000601 17s
+[atlas] epoch  40 val mse 0.000599 18s
+[atlas] epoch  41 val mse 0.000597 18s
+[atlas] epoch  42 val mse 0.000594 18s
+[atlas] epoch  43 val mse 0.000592 18s
+[atlas] epoch  44 val mse 0.000593 18s
+[atlas] epoch  45 val mse 0.000589 18s
+[atlas] epoch  46 val mse 0.000595 17s
+[atlas] epoch  47 val mse 0.000625 18s
+[atlas] epoch  48 val mse 0.000586 18s
+[atlas] epoch  49 val mse 0.000587 18s
+[atlas] epoch  50 val mse 0.000582 18s
+[atlas] epoch  51 val mse 0.000581 17s
+[atlas] epoch  52 val mse 0.000586 18s
+[atlas] epoch  53 val mse 0.000578 17s
+[atlas] epoch  54 val mse 0.000582 18s
+[atlas] epoch  55 val mse 0.000576 18s
+[atlas] epoch  56 val mse 0.000577 18s
+[atlas] epoch  57 val mse 0.000571 17s
+[atlas] epoch  58 val mse 0.000587 18s
+[atlas] epoch  59 val mse 0.000570 18s
+[atlas] epoch  60 val mse 0.000573 18s
+[shazam] hidden hbn: unknown 100.0%, nearest {'phosphorene': 96.271, 'graphene-ideal': 3.729}, z50 12.648
+[atlas] epoch   1 val mse 0.002048 18s
+[atlas] epoch   2 val mse 0.001594 18s
+[atlas] epoch   3 val mse 0.001472 18s
+[atlas] epoch   4 val mse 0.001350 18s
+[atlas] epoch   5 val mse 0.001275 18s
+[atlas] epoch   6 val mse 0.001159 18s
+[atlas] epoch   7 val mse 0.001064 18s
+[atlas] epoch   8 val mse 0.000967 18s
+[atlas] epoch   9 val mse 0.000927 18s
+[atlas] epoch  10 val mse 0.000914 18s
+[atlas] epoch  11 val mse 0.000874 18s
+[atlas] epoch  12 val mse 0.000858 18s
+[atlas] epoch  13 val mse 0.000879 18s
+[atlas] epoch  14 val mse 0.000844 18s
+[atlas] epoch  15 val mse 0.001070 19s
+[atlas] epoch  16 val mse 0.000800 18s
+[atlas] epoch  17 val mse 0.000856 18s
+[atlas] epoch  18 val mse 0.000778 18s
+[atlas] epoch  19 val mse 0.000753 18s
+[atlas] epoch  20 val mse 0.000756 18s
+[atlas] epoch  21 val mse 0.000743 18s
+[atlas] epoch  22 val mse 0.000717 18s
+[atlas] epoch  23 val mse 0.000714 18s
+[atlas] epoch  24 val mse 0.000758 18s
+[atlas] epoch  25 val mse 0.000692 19s
+[atlas] epoch  26 val mse 0.000690 19s
+[atlas] epoch  27 val mse 0.000683 20s
+[atlas] epoch  28 val mse 0.000666 18s
+[atlas] epoch  29 val mse 0.000747 19s
+[atlas] epoch  30 val mse 0.000672 19s
+[atlas] epoch  31 val mse 0.000664 18s
+[atlas] epoch  32 val mse 0.000655 19s
+[atlas] epoch  33 val mse 0.000645 19s
+[atlas] epoch  34 val mse 0.000642 18s
+[atlas] epoch  35 val mse 0.000634 18s
+[atlas] epoch  36 val mse 0.000632 18s
+[atlas] epoch  37 val mse 0.000639 18s
+[atlas] epoch  38 val mse 0.000628 18s
+[atlas] epoch  39 val mse 0.000622 18s
+[atlas] epoch  40 val mse 0.000625 18s
+[atlas] epoch  41 val mse 0.000622 18s
+[atlas] epoch  42 val mse 0.000619 18s
+[atlas] epoch  43 val mse 0.000619 18s
+[atlas] epoch  44 val mse 0.000630 18s
+[atlas] epoch  45 val mse 0.000608 18s
+[atlas] epoch  46 val mse 0.000621 18s
+[atlas] epoch  47 val mse 0.000606 18s
+[atlas] epoch  48 val mse 0.000607 18s
+[atlas] epoch  49 val mse 0.000604 18s
+[atlas] epoch  50 val mse 0.000600 18s
+[atlas] epoch  51 val mse 0.000607 18s
+[atlas] epoch  52 val mse 0.000597 18s
+[atlas] epoch  53 val mse 0.000602 18s
+[atlas] epoch  54 val mse 0.000593 18s
+[atlas] epoch  55 val mse 0.000594 18s
+[atlas] epoch  56 val mse 0.000593 18s
+[atlas] epoch  57 val mse 0.000590 18s
+[atlas] epoch  58 val mse 0.000589 19s
+[atlas] epoch  59 val mse 0.000597 20s
+[atlas] epoch  60 val mse 0.000594 18s
+[shazam] hidden mos2: unknown 100.0%, nearest {'graphene-ideal': 50.0, 'triangular': 50.0}, z50 13.202
+[atlas] epoch   1 val mse 0.002065 18s
+[atlas] epoch   2 val mse 0.001558 18s
+[atlas] epoch   3 val mse 0.001364 18s
+[atlas] epoch   4 val mse 0.001224 18s
+[atlas] epoch   5 val mse 0.001171 19s
+[atlas] epoch   6 val mse 0.002981 18s
+[atlas] epoch   7 val mse 0.000987 19s
+[atlas] epoch   8 val mse 0.001501 18s
+[atlas] epoch   9 val mse 0.000904 18s
+[atlas] epoch  10 val mse 0.000848 19s
+[atlas] epoch  11 val mse 0.000833 18s
+[atlas] epoch  12 val mse 0.000810 18s
+[atlas] epoch  13 val mse 0.000813 18s
+[atlas] epoch  14 val mse 0.000769 18s
+[atlas] epoch  15 val mse 0.000751 18s
+[atlas] epoch  16 val mse 0.000765 18s
+[atlas] epoch  17 val mse 0.000727 18s
+[atlas] epoch  18 val mse 0.000718 18s
+[atlas] epoch  19 val mse 0.000700 18s
+[atlas] epoch  20 val mse 0.000686 18s
+[atlas] epoch  21 val mse 0.000688 18s
+[atlas] epoch  22 val mse 0.000671 18s
+[atlas] epoch  23 val mse 0.000652 18s
+[atlas] epoch  24 val mse 0.000801 18s
+[atlas] epoch  25 val mse 0.000629 18s
+[atlas] epoch  26 val mse 0.000645 18s
+[atlas] epoch  27 val mse 0.000617 19s
+[atlas] epoch  28 val mse 0.000618 18s
+[atlas] epoch  29 val mse 0.000635 19s
+[atlas] epoch  30 val mse 0.000611 18s
+[atlas] epoch  31 val mse 0.000626 18s
+[atlas] epoch  32 val mse 0.000590 18s
+[atlas] epoch  33 val mse 0.000581 18s
+[atlas] epoch  34 val mse 0.000577 18s
+[atlas] epoch  35 val mse 0.000573 18s
+[atlas] epoch  36 val mse 0.000623 18s
+[atlas] epoch  37 val mse 0.000566 19s
+[atlas] epoch  38 val mse 0.000567 18s
+[atlas] epoch  39 val mse 0.000561 18s
+[atlas] epoch  40 val mse 0.000556 18s
+[atlas] epoch  41 val mse 0.000566 18s
+[atlas] epoch  42 val mse 0.000552 18s
+[atlas] epoch  43 val mse 0.000549 18s
+[atlas] epoch  44 val mse 0.000549 17s
+[atlas] epoch  45 val mse 0.000545 18s
+[atlas] epoch  46 val mse 0.000541 18s
+[atlas] epoch  47 val mse 0.000539 18s
+[atlas] epoch  48 val mse 0.000542 18s
+[atlas] epoch  49 val mse 0.000544 17s
+[atlas] epoch  50 val mse 0.000537 17s
+[atlas] epoch  51 val mse 0.000533 18s
+[atlas] epoch  52 val mse 0.000542 18s
+[atlas] epoch  53 val mse 0.000562 18s
+[atlas] epoch  54 val mse 0.000536 18s
+[atlas] epoch  55 val mse 0.000526 19s
+[atlas] epoch  56 val mse 0.000527 17s
+[atlas] epoch  57 val mse 0.000524 18s
+[atlas] epoch  58 val mse 0.000538 18s
+[atlas] epoch  59 val mse 0.000527 19s
+[atlas] epoch  60 val mse 0.000527 18s
+[shazam] hidden phosphorene: unknown 96.125%, nearest {'graphene-ideal': 85.396, 'hbn': 14.604}, z50 9.118
+[atlas] epoch   1 val mse 0.002144 18s
+[atlas] epoch   2 val mse 0.001633 18s
+[atlas] epoch   3 val mse 0.001505 18s
+[atlas] epoch   4 val mse 0.001309 18s
+[atlas] epoch   5 val mse 0.001260 18s
+[atlas] epoch   6 val mse 0.001143 18s
+[atlas] epoch   7 val mse 0.001071 18s
+[atlas] epoch   8 val mse 0.001058 18s
+[atlas] epoch   9 val mse 0.001017 18s
+[atlas] epoch  10 val mse 0.001234 18s
+[atlas] epoch  11 val mse 0.000931 18s
+[atlas] epoch  12 val mse 0.000914 18s
+[atlas] epoch  13 val mse 0.000888 19s
+[atlas] epoch  14 val mse 0.000883 18s
+[atlas] epoch  15 val mse 0.000845 18s
+[atlas] epoch  16 val mse 0.000847 19s
+[atlas] epoch  17 val mse 0.000846 19s
+[atlas] epoch  18 val mse 0.000812 18s
+[atlas] epoch  19 val mse 0.000796 18s
+[atlas] epoch  20 val mse 0.000850 18s
+[atlas] epoch  21 val mse 0.000805 18s
+[atlas] epoch  22 val mse 0.000757 18s
+[atlas] epoch  23 val mse 0.000747 18s
+[atlas] epoch  24 val mse 0.000765 18s
+[atlas] epoch  25 val mse 0.000723 18s
+[atlas] epoch  26 val mse 0.000711 18s
+[atlas] epoch  27 val mse 0.000719 19s
+[atlas] epoch  28 val mse 0.000711 18s
+[atlas] epoch  29 val mse 0.000694 18s
+[atlas] epoch  30 val mse 0.000695 18s
+[atlas] epoch  31 val mse 0.000689 18s
+[atlas] epoch  32 val mse 0.000680 18s
+[atlas] epoch  33 val mse 0.000670 18s
+[atlas] epoch  34 val mse 0.000684 18s
+[atlas] epoch  35 val mse 0.000660 18s
+[atlas] epoch  36 val mse 0.000657 18s
+[atlas] epoch  37 val mse 0.000668 18s
+[atlas] epoch  38 val mse 0.000663 18s
+[atlas] epoch  39 val mse 0.000656 18s
+[atlas] epoch  40 val mse 0.000645 18s
+[atlas] epoch  41 val mse 0.000647 18s
+[atlas] epoch  42 val mse 0.000640 18s
+[atlas] epoch  43 val mse 0.000635 19s
+[atlas] epoch  44 val mse 0.000642 18s
+[atlas] epoch  45 val mse 0.000633 18s
+[atlas] epoch  46 val mse 0.000629 19s
+[atlas] epoch  47 val mse 0.000634 18s
+[atlas] epoch  48 val mse 0.000628 18s
+[atlas] epoch  49 val mse 0.000630 18s
+[atlas] epoch  50 val mse 0.000624 19s
+[atlas] epoch  51 val mse 0.000623 19s
+[atlas] epoch  52 val mse 0.000621 18s
+[atlas] epoch  53 val mse 0.000619 18s
+[atlas] epoch  54 val mse 0.000619 18s
+[atlas] epoch  55 val mse 0.000616 19s
+[atlas] epoch  56 val mse 0.000619 18s
+[atlas] epoch  57 val mse 0.000620 18s
+[atlas] epoch  58 val mse 0.000679 18s
+[atlas] epoch  59 val mse 0.000616 18s
+[atlas] epoch  60 val mse 0.000619 18s
+[shazam] hidden triangular: unknown 100.0%, nearest {'mos2': 100.0}, z50 22.104
+[shazam] done in 6209s -> notebooks/material_atlas/atlas_v5m/results.json

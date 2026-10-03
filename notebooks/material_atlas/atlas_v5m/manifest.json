@@ -1,0 +1,2241 @@
+{
+  "spec": {
+    "version": "v4",
+    "e_max_t": 8.32,
+    "step_t": 0.02,
+    "cap": 64.0,
+    "unit": "eV",
+    "despike": true
+  },
+  "models": [
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 10,
+      "t_ev": 2.7,
+      "sites_per_cell": 20,
+      "band_top_t": 2.919,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 11,
+      "t_ev": 2.7,
+      "sites_per_cell": 22,
+      "band_top_t": 2.932,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 12,
+      "t_ev": 2.7,
+      "sites_per_cell": 24,
+      "band_top_t": 2.942,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 2.7,
+      "sites_per_cell": 26,
+      "band_top_t": 2.95,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 2.7,
+      "sites_per_cell": 28,
+      "band_top_t": 2.956,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 15,
+      "t_ev": 2.7,
+      "sites_per_cell": 30,
+      "band_top_t": 2.962,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 16,
+      "t_ev": 2.7,
+      "sites_per_cell": 32,
+      "band_top_t": 2.966,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 20,
+      "t_ev": 2.7,
+      "sites_per_cell": 40,
+      "band_top_t": 2.978,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 2.7,
+      "sites_per_cell": 54,
+      "band_top_t": 2.987,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 31,
+      "t_ev": 2.7,
+      "sites_per_cell": 62,
+      "band_top_t": 2.99,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 40,
+      "t_ev": 2.7,
+      "sites_per_cell": 80,
+      "band_top_t": 2.994,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 5,
+      "t_ev": 2.7,
+      "sites_per_cell": 10,
+      "band_top_t": 2.732,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 50,
+      "t_ev": 2.7,
+      "sites_per_cell": 100,
+      "band_top_t": 2.996,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 6,
+      "t_ev": 2.7,
+      "sites_per_cell": 12,
+      "band_top_t": 2.802,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 2.7,
+      "sites_per_cell": 14,
+      "band_top_t": 2.848,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 2.7,
+      "sites_per_cell": 16,
+      "band_top_t": 2.879,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 2.7,
+      "sites_per_cell": 18,
+      "band_top_t": 2.902,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 10,
+      "t_ev": 2.7,
+      "sites_per_cell": 20,
+      "band_top_t": 2.971,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 11,
+      "t_ev": 2.7,
+      "sites_per_cell": 22,
+      "band_top_t": 2.976,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 12,
+      "t_ev": 2.7,
+      "sites_per_cell": 24,
+      "band_top_t": 2.98,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 16,
+      "t_ev": 2.7,
+      "sites_per_cell": 32,
+      "band_top_t": 2.988,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 20,
+      "t_ev": 2.7,
+      "sites_per_cell": 40,
+      "band_top_t": 2.992,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 2.7,
+      "sites_per_cell": 54,
+      "band_top_t": 2.996,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 4,
+      "t_ev": 2.7,
+      "sites_per_cell": 8,
+      "band_top_t": 2.851,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 40,
+      "t_ev": 2.7,
+      "sites_per_cell": 80,
+      "band_top_t": 2.998,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 5,
+      "t_ev": 2.7,
+      "sites_per_cell": 10,
+      "band_top_t": 2.899,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 50,
+      "t_ev": 2.7,
+      "sites_per_cell": 100,
+      "band_top_t": 2.999,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 6,
+      "t_ev": 2.7,
+      "sites_per_cell": 12,
+      "band_top_t": 2.926,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 2.7,
+      "sites_per_cell": 14,
+      "band_top_t": 2.944,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 8,
+      "t_ev": 2.7,
+      "sites_per_cell": 16,
+      "band_top_t": 2.956,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 2.7,
+      "sites_per_cell": 18,
+      "band_top_t": 2.965,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 2.3,
+      "sites_per_cell": 28,
+      "band_top_t": 3.35,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 2.3,
+      "sites_per_cell": 54,
+      "band_top_t": 3.378,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 2.3,
+      "sites_per_cell": 14,
+      "band_top_t": 3.255,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 2.3,
+      "sites_per_cell": 18,
+      "band_top_t": 3.302,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 2.3,
+      "sites_per_cell": 28,
+      "band_top_t": 3.375,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 2.3,
+      "sites_per_cell": 54,
+      "band_top_t": 3.385,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 2.3,
+      "sites_per_cell": 14,
+      "band_top_t": 3.34,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 2.3,
+      "sites_per_cell": 18,
+      "band_top_t": 3.358,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 84,
+      "band_top_t": 2.718,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 2.704,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 54,
+      "band_top_t": 2.712,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 2.721,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 21,
+      "band_top_t": 2.714,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 27,
+      "band_top_t": 2.718,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 3.665,
+      "sites_per_cell": 28,
+      "band_top_t": 1.972,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 3.665,
+      "sites_per_cell": 54,
+      "band_top_t": 1.986,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 3.665,
+      "sites_per_cell": 14,
+      "band_top_t": 1.924,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 3.665,
+      "sites_per_cell": 18,
+      "band_top_t": 1.948,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 3.665,
+      "sites_per_cell": 28,
+      "band_top_t": 1.976,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 3.665,
+      "sites_per_cell": 54,
+      "band_top_t": 1.987,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 3.665,
+      "sites_per_cell": 14,
+      "band_top_t": 1.932,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 3.665,
+      "sites_per_cell": 18,
+      "band_top_t": 1.955,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 28,
+      "band_top_t": 2.968,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 54,
+      "band_top_t": 2.991,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 14,
+      "band_top_t": 2.899,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 18,
+      "band_top_t": 2.934,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 14,
+      "band_top_t": 2.957,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 27,
+      "band_top_t": 2.987,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 7,
+      "band_top_t": 2.854,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 9,
+      "band_top_t": 2.905,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    }
+  ],
+  "threshold": 0.002675123978406191,
+  "threshold_table": {
+    "graphene-ideal/armchair/N10": {
+      "0.0050": 2.3944423478028787,
+      "0.0100": 3.089522280256407,
+      "0.0200": 3.3679396740023515,
+      "0.0400": 3.7291283998049005
+    },
+    "graphene-ideal/armchair/N11": {
+      "0.0050": 1.8448307711371885,
+      "0.0100": 2.2245309381545693,
+      "0.0200": 2.9795641095219105,
+      "0.0400": 3.4639854413651805
+    },
+    "graphene-ideal/armchair/N12": {
+      "0.0050": 2.8233701017887456,
+      "0.0100": 3.2149868951513283,
+      "0.0200": 3.381395981920538,
+      "0.0400": 3.7262795233675954
+    },
+    "graphene-ideal/armchair/N13": {
+      "0.0050": 2.1318062158283544,
+      "0.0100": 2.5695743849820114,
+      "0.0200": 3.254632308780679,
+      "0.0400": 3.6011335964953757
+    },
+    "graphene-ideal/armchair/N14": {
+      "0.0050": 2.9735690273989306,
+      "0.0100": 3.293342572749898,
+      "0.0200": 3.594446146835491,
+      "0.0400": 3.561263083925637
+    },
+    "graphene-ideal/armchair/N15": {
+      "0.0050": 2.19233700177076,
+      "0.0100": 2.6254194266735458,
+      "0.0200": 3.1905947595479662,
+      "0.0400": 3.517449356813006
+    },
+    "graphene-ideal/armchair/N16": {
+      "0.0050": 2.9122512714811055,
+      "0.0100": 3.3574825563601656,
+      "0.0200": 3.7665314553748606,
+      "0.0400": 3.5886884319313177
+    },
+    "graphene-ideal/armchair/N20": {
+      "0.0050": 2.9208408861068236,
+      "0.0100": 3.3428141181417,
+      "0.0200": 3.509530467063119,
+      "0.0400": 3.390142552076645
+    },
+    "graphene-ideal/armchair/N27": {
+      "0.0050": 2.391652440577955,
+      "0.0100": 3.098104969194077,
+      "0.0200": 3.53825663988103,
+      "0.0400": 3.547413080788451
+    },
+    "graphene-ideal/armchair/N31": {
+      "0.0050": 2.410293000963771,
+      "0.0100": 3.1862856082069873,
+      "0.0200": 3.465094871129722,
+      "0.0400": 3.278140524054377
+    },
+    "graphene-ideal/armchair/N40": {
+      "0.0050": 2.631008048833822,
+      "0.0100": 2.8916858553212594,
+      "0.0200": 2.678388987499154,
+      "0.0400": 2.808060382897216
+    },
+    "graphene-ideal/armchair/N5": {
+      "0.0050": 1.2094618442486764,
+      "0.0100": 1.6268279942778965,
+      "0.0200": 2.1880776414745258,
+      "0.0400": 2.5033644830778337
+    },
+    "graphene-ideal/armchair/N50": {
+      "0.0050": 2.491221595592344,
+      "0.0100": 2.749214307823973,
+      "0.0200": 2.5535818424789944,
+      "0.0400": 2.5896004536079946
+    },
+    "graphene-ideal/armchair/N6": {
+      "0.0050": 1.9178264305749233,
+      "0.0100": 2.446378699071651,
+      "0.0200": 2.8309220122870604,
+      "0.0400": 3.1852432466627443
+    },
+    "graphene-ideal/armchair/N7": {
+      "0.0050": 1.5348326794926461,
+      "0.0100": 1.8923553284127441,
+      "0.0200": 2.4969791546856284,
+      "0.0400": 2.8573463146607847
+    },
+    "graphene-ideal/armchair/N8": {
+      "0.0050": 2.0641801603540753,
+      "0.0100": 2.7484425431432795,
+      "0.0200": 3.1336871548429737,
+      "0.0400": 3.520681121390212
+    },
+    "graphene-ideal/armchair/N9": {
+      "0.0050": 1.6289492248799027,
+      "0.0100": 2.161708619839313,
+      "0.0200": 2.8155506119432157,
+      "0.0400": 3.0850161297222103
+    },
+    "graphene-ideal/zigzag/N10": {
+      "0.0050": 0.8392794423838875,
+      "0.0100": 1.1558055403894005,
+      "0.0200": 1.5296735689656935,
+      "0.0400": 1.8412135155062899
+    },
+    "graphene-ideal/zigzag/N11": {
+      "0.0050": 0.780991928887535,
+      "0.0100": 1.081869053281616,
+      "0.0200": 1.4611155694868003,
+      "0.0400": 1.7903545317333809
+    },
+    "graphene-ideal/zigzag/N12": {
+      "0.0050": 0.7486193758360609,
+      "0.0100": 1.010100495081599,
+      "0.0200": 1.3708623746780062,
+      "0.0400": 1.715781054227939
+    },
+    "graphene-ideal/zigzag/N16": {
+      "0.0050": 0.6113496060096634,
+      "0.0100": 0.8389301430888582,
+      "0.0200": 1.0968807691731974,
+      "0.0400": 1.5126706090557624
+    },
+    "graphene-ideal/zigzag/N20": {
+      "0.0050": 0.49463697555376,
+      "0.0100": 0.7186455682857021,
+      "0.0200": 0.957026154652201,
+      "0.0400": 1.3168527339452751
+    },
+    "graphene-ideal/zigzag/N27": {
+      "0.0050": 0.35827811519397706,
+      "0.0100": 0.5123767095162979,
+      "0.0200": 0.7506057603337452,
+      "0.0400": 1.0623541973420108
+    },
+    "graphene-ideal/zigzag/N4": {
+      "0.0050": 0.8568916986828348,
+      "0.0100": 1.3829848545997592,
+      "0.0200": 1.8529290193312205,
+      "0.0400": 2.2313772188319683
+    },
+    "graphene-ideal/zigzag/N40": {
+      "0.0050": 0.22458762534191704,
+      "0.0100": 0.34082730967209385,
+      "0.0200": 0.4806490216518926,
+      "0.0400": 0.7385807164866103
+    },
+    "graphene-ideal/zigzag/N5": {
+      "0.0050": 0.905449498657921,
+      "0.0100": 1.3395981473015008,
+      "0.0200": 1.8151838347510805,
+      "0.0400": 2.10430391989755
+    },
+    "graphene-ideal/zigzag/N50": {
+      "0.0050": 0.18120005895798452,
+      "0.0100": 0.26873679812435997,
+      "0.0200": 0.40792330077351036,
+      "0.0400": 0.5739625098911172
+    },
+    "graphene-ideal/zigzag/N6": {
+      "0.0050": 0.9137472043386723,
+      "0.0100": 1.2997871560657028,
+      "0.0200": 1.721492312248105,
+      "0.0400": 2.0694764674147685
+    },
+    "graphene-ideal/zigzag/N7": {
+      "0.0050": 0.8767180850147208,
+      "0.0100": 1.2630879410853089,
+      "0.0200": 1.663117728911297,
+      "0.0400": 2.064591842002181
+    },
+    "graphene-ideal/zigzag/N8": {
+      "0.0050": 0.9462521053733097,
+      "0.0100": 1.3526081699540005,
+      "0.0200": 1.6205885759440095,
+      "0.0400": 1.9662307909050034
+    },
+    "graphene-ideal/zigzag/N9": {
+      "0.0050": 0.8619632295829053,
+      "0.0100": 1.2222360999511872,
+      "0.0200": 1.5167260898440666,
+      "0.0400": 1.9377841092554826
+    },
+    "hbn/armchair/N14": {
+      "0.0050": 0.8714376565454051,
+      "0.0100": 1.0390736900062258,
+      "0.0200": 1.233914825008172,
+      "0.0400": 1.3753350868452996
+    },
+    "hbn/armchair/N27": {
+      "0.0050": 0.5935478145558911,
+      "0.0100": 0.7640726907781407,
+      "0.0200": 0.9354904327711433,
+      "0.0400": 1.1819636050794398
+    },
+    "hbn/armchair/N7": {
+      "0.0050": 1.1416300835860929,
+      "0.0100": 1.3709390241164623,
+      "0.0200": 1.443417729958839,
+      "0.0400": 1.3766047466861517
+    },
+    "hbn/armchair/N9": {
+      "0.0050": 1.0312907532762563,
+      "0.0100": 1.2358620402146787,
+      "0.0200": 1.4199796911189673,
+      "0.0400": 1.4160092201646308
+    },
+    "hbn/zigzag/N14": {
+      "0.0050": 0.6088569079004674,
+      "0.0100": 0.777377486679303,
+      "0.0200": 0.9600367643890347,
+      "0.0400": 1.1529726158728366
+    },
+    "hbn/zigzag/N27": {
+      "0.0050": 0.31214283090778994,
+      "0.0100": 0.42117052355438395,
+      "0.0200": 0.5942788461014409,
+      "0.0400": 0.8378177712749805
+    },
+    "hbn/zigzag/N7": {
+      "0.0050": 0.909136604811207,
+      "0.0100": 1.1314598501427524,
+      "0.0200": 1.3097664894946095,
+      "0.0400": 1.4287358899362683
+    },
+    "hbn/zigzag/N9": {
+      "0.0050": 0.8078221167847419,
+      "0.0100": 0.9764660731186942,
+      "0.0200": 1.1859867448972599,
+      "0.0400": 1.36097769851492
+    },
+    "mos2/armchair/N14": {
+      "0.0050": 0.29665145796464387,
+      "0.0100": 0.39575349813993355,
+      "0.0200": 0.5026264575189764,
+      "0.0400": 0.6543210498587907
+    },
+    "mos2/armchair/N7": {
+      "0.0050": 0.4601098937964958,
+      "0.0100": 0.5815825246205781,
+      "0.0200": 0.776147159226569,
+      "0.0400": 0.9189820350615561
+    },
+    "mos2/armchair/N9": {
+      "0.0050": 0.41209625736622324,
+      "0.0100": 0.586750436462045,
+      "0.0200": 0.7044216306221467,
+      "0.0400": 0.8462555780383264
+    },
+    "mos2/zigzag/N14": {
+      "0.0050": 0.20144054079608198,
+      "0.0100": 0.28427287136059437,
+      "0.0200": 0.40948091575708534,
+      "0.0400": 0.5358757900352543
+    },
+    "mos2/zigzag/N7": {
+      "0.0057": 0.3973750438696276,
+      "0.0100": 0.5431735764651071,
+      "0.0200": 0.6746395019889025,
+      "0.0400": 0.8353173373059283
+    },
+    "mos2/zigzag/N9": {
+      "0.0044": 0.276283207091189,
+      "0.0100": 0.42967628982123957,
+      "0.0200": 0.573352147435899,
+      "0.0400": 0.737011178385401
+    },
+    "phosphorene/armchair/N14": {
+      "0.0050": 0.979538451194927,
+      "0.0100": 1.1811503714862728,
+      "0.0200": 1.39996538607546,
+      "0.0400": 1.6390102272479998
+    },
+    "phosphorene/armchair/N27": {
+      "0.0050": 0.5858474340751498,
+      "0.0100": 0.8150174671577265,
+      "0.0200": 1.1022567940895385,
+      "0.0400": 1.389589996231265
+    },
+    "phosphorene/armchair/N7": {
+      "0.0050": 1.3079088730258701,
+      "0.0100": 1.5141554310119592,
+      "0.0200": 1.6513441719657191,
+      "0.0400": 1.70299579320351
+    },
+    "phosphorene/armchair/N9": {
+      "0.0050": 1.1729342656871664,
+      "0.0100": 1.4160630048197838,
+      "0.0200": 1.5784620853612845,
+      "0.0400": 1.6844573020144078
+    },
+    "phosphorene/zigzag/N14": {
+      "0.0050": 1.2515877064662781,
+      "0.0100": 1.4441026440876363,
+      "0.0200": 1.5006780267130706,
+      "0.0400": 1.6307758673952053
+    },
+    "phosphorene/zigzag/N27": {
+      "0.0050": 0.9039167889025941,
+      "0.0100": 1.1103743241139539,
+      "0.0200": 1.2766653013503504,
+      "0.0400": 1.479733976810399
+    },
+    "phosphorene/zigzag/N7": {
+      "0.0050": 1.3524125336673642,
+      "0.0100": 1.5893581969985695,
+      "0.0200": 1.7346865844796435,
+      "0.0400": 1.6472219024210073
+    },
+    "phosphorene/zigzag/N9": {
+      "0.0050": 1.4034109044999232,
+      "0.0100": 1.5582419065609547,
+      "0.0200": 1.6923817960069807,
+      "0.0400": 1.7157877114465563
+    },
+    "triangular/armchair/N14": {
+      "0.0050": 0.2961278725724654,
+      "0.0100": 0.37825199423664174,
+      "0.0200": 0.5165335418906142,
+      "0.0400": 0.6385930684628811
+    },
+    "triangular/armchair/N27": {
+      "0.0050": 0.15412585785553504,
+      "0.0100": 0.21366863655866805,
+      "0.0200": 0.2850578228012495,
+      "0.0400": 0.4026565842702937
+    },
+    "triangular/armchair/N7": {
+      "0.0050": 0.40035966476278506,
+      "0.0100": 0.5450699872671877,
+      "0.0200": 0.6914492022911664,
+      "0.0400": 0.8087831776514758
+    },
+    "triangular/armchair/N9": {
+      "0.0050": 0.36773590935956385,
+      "0.0100": 0.4700625421532175,
+      "0.0200": 0.6444642682359086,
+      "0.0400": 0.7841118839501993
+    },
+    "triangular/zigzag/N14": {
+      "0.0050": 0.20900872644149085,
+      "0.0100": 0.29017273873674576,
+      "0.0200": 0.3732850864181464,
+      "0.0400": 0.48970489863241945
+    },
+    "triangular/zigzag/N27": {
+      "0.0052": 0.1164454392556942,
+      "0.0100": 0.1475062820027699,
+      "0.0200": 0.1959301880774921,
+      "0.0400": 0.28087944111498836
+    },
+    "triangular/zigzag/N7": {
+      "0.0057": 0.2687231151823275,
+      "0.0100": 0.36704599887073236,
+      "0.0200": 0.5192941271144474,
+      "0.0400": 0.7213134090663207
+    },
+    "triangular/zigzag/N9": {
+      "0.0044": 0.24202487593707583,
+      "0.0100": 0.36433700338004327,
+      "0.0200": 0.4810219150840162,
+      "0.0400": 0.6542312305488369
+    }
+  },
+  "threshold_params": {
+    "graphene-ideal/armchair/N10": {
+      "0.0050": {
+        "c": 0.5176785556462842,
+        "w": 0.11032703801705414
+      },
+      "0.0100": {
+        "c": 0.7746420554472603,
+        "w": 0.10967607664251007
+      },
+      "0.0200": {
+        "c": 0.9002095586293409,
+        "w": 0.09748395792971684
+      },
+      "0.0400": {
+        "c": 0.9796515882400423,
+        "w": 0.104445919289041
+      }
+    },
+    "graphene-ideal/armchair/N11": {
+      "0.0050": {
+        "c": 0.24973125354715242,
+        "w": 0.11255687271983207
+      },
+      "0.0100": {
+        "c": 0.45164621681476963,
+        "w": 0.10797694915077266
+      },
+      "0.0200": {
+        "c": 0.7365719049613667,
+        "w": 0.11024426443339169
+      },
+      "0.0400": {
+        "c": 0.893003486255397,
+        "w": 0.10844760323899474
+      }
+    },
+    "graphene-ideal/armchair/N12": {
+      "0.0050": {
+        "c": 0.6897453867503871,
+        "w": 0.10806571249510497
+      },
+      "0.0100": {
+        "c": 0.8209231921121689,
+        "w": 0.10766665175059305
+      },
+      "0.0200": {
+        "c": 0.8744623840706094,
+        "w": 0.10671263146697328
+      },
+      "0.0400": {
+        "c": 0.9606833893829314,
+        "w": 0.11009584240394983
+      }
+    },
+    "graphene-ideal/armchair/N13": {
+      "0.0050": {
+        "c": 0.40556880973453946,
+        "w": 0.10906352762057367
+      },
+      "0.0100": {
+        "c": 0.5974866080655992,
+        "w": 0.10746602334862836
+      },
+      "0.0200": {
+        "c": 0.8218457070900259,
+        "w": 0.11118420968267317
+      },
+      "0.0400": {
+        "c": 0.9207021304056273,
+        "w": 0.111902076102829
+      }
+    },
+    "graphene-ideal/armchair/N14": {
+      "0.0050": {
+        "c": 0.7314522345648969,
+        "w": 0.11120813572800396
+      },
+      "0.0100": {
+        "c": 0.8732755382177764,
+        "w": 0.09889174459741884
+      },
+      "0.0200": {
+        "c": 0.9406715805675203,
+        "w": 0.10512729834311031
+      },
+      "0.0400": {
+        "c": 0.9355498151182234,
+        "w": 0.10383838050251822
+      }
+    },
+    "graphene-ideal/armchair/N15": {
+      "0.0050": {
+        "c": 0.42968283198077467,
+        "w": 0.11026914168894775
+      },
+      "0.0100": {
+        "c": 0.6323661058617003,
+        "w": 0.10331357735369733
+      },
+      "0.0200": {
+        "c": 0.8209386962020124,
+        "w": 0.10529809738398657
+      },
+      "0.0400": {
+        "c": 0.9401149626107486,
+        "w": 0.09857940879157281
+      }
+    },
+    "graphene-ideal/armchair/N16": {
+      "0.0050": {
+        "c": 0.7347631436490433,
+        "w": 0.10371355226282646
+      },
+      "0.0100": {
+        "c": 0.8641413940037914,
+        "w": 0.1077131977987506
+      },
+      "0.0200": {
+        "c": 0.9831665561897638,
+        "w": 0.10645245963319316
+      },
+      "0.0400": {
+        "c": 0.9330362671945762,
+        "w": 0.10699949728319276
+      }
+    },
+    "graphene-ideal/armchair/N20": {
+      "0.0050": {
+        "c": 0.7406535577045912,
+        "w": 0.1027994320745708
+      },
+      "0.0100": {
+        "c": 0.8666765078285765,
+        "w": 0.10556744909090705
+      },
+      "0.0200": {
+        "c": 0.9212723520450647,
+        "w": 0.10372802632287392
+      },
+      "0.0400": {
+        "c": 0.851413053170133,
+        "w": 0.1146681880035865
+      }
+    },
+    "graphene-ideal/armchair/N27": {
+      "0.0050": {
+        "c": 0.5326534536506347,
+        "w": 0.10531747144935162
+      },
+      "0.0100": {
+        "c": 0.7955836454567462,
+        "w": 0.10403748559982434
+      },
+      "0.0200": {
+        "c": 0.9327488320386805,
+        "w": 0.10269617496484489
+      },
+      "0.0400": {
+        "c": 0.9201302675311906,
+        "w": 0.10741471721056842
+      }
+    },
+    "graphene-ideal/armchair/N31": {
+      "0.0050": {
+        "c": 0.5402401831580923,
+        "w": 0.10537242612029282
+      },
+      "0.0100": {
+        "c": 0.8249684484308939,
+        "w": 0.10362793186318293
+      },
+      "0.0200": {
+        "c": 0.9163914198210359,
+        "w": 0.10128812677486121
+      },
+      "0.0400": {
+        "c": 0.8704385533864476,
+        "w": 0.09833628056438992
+      }
+    },
+    "graphene-ideal/armchair/N40": {
+      "0.0050": {
+        "c": 0.6439085924215926,
+        "w": 0.10039112524260657
+      },
+      "0.0100": {
+        "c": 0.7394566651841372,
+        "w": 0.10005733665435061
+      },
+      "0.0200": {
+        "c": 0.6600367036960775,
+        "w": 0.10092505646123714
+      },
+      "0.0400": {
+        "c": 0.6782475106183635,
+        "w": 0.10994673530960473
+      }
+    },
+    "graphene-ideal/armchair/N5": {
+      "0.0050": {
+        "c": -0.301463463938621,
+        "w": 0.15258895327016725
+      },
+      "0.0100": {
+        "c": 0.09519987312347498,
+        "w": 0.12148799863174718
+      },
+      "0.0200": {
+        "c": 0.4024705154311164,
+        "w": 0.11811138946216172
+      },
+      "0.0400": {
+        "c": 0.5841356420374388,
+        "w": 0.10350768742496652
+      }
+    },
+    "graphene-ideal/armchair/N50": {
+      "0.0050": {
+        "c": 0.569757142718921,
+        "w": 0.10646117000865653
+      },
+      "0.0100": {
+        "c": 0.646700326754043,
+        "w": 0.11316474099875316
+      },
+      "0.0200": {
+        "c": 0.5947031350948391,
+        "w": 0.10639221697027386
+      },
+      "0.0400": {
+        "c": 0.6212915493454798,
+        "w": 0.10248721985723443
+      }
+    },
+    "graphene-ideal/armchair/N6": {
+      "0.0050": {
+        "c": 0.2425289053972923,
+        "w": 0.1268360540356669
+      },
+      "0.0100": {
+        "c": 0.5346074742563923,
+        "w": 0.11173287017971771
+      },
+      "0.0200": {
+        "c": 0.7198626832827819,
+        "w": 0.09954732985072937
+      },
+      "0.0400": {
+        "c": 0.8283649619973159,
+        "w": 0.10247221271255955
+      }
+    },
+    "graphene-ideal/armchair/N7": {
+      "0.0050": {
+        "c": 0.011944276808165854,
+        "w": 0.12926112066880355
+      },
+      "0.0100": {
+        "c": 0.25383095976243053,
+        "w": 0.11917857250888624
+      },
+      "0.0200": {
+        "c": 0.5459286097360359,
+        "w": 0.11457325741477083
+      },
+      "0.0400": {
+        "c": 0.7101308750146127,
+        "w": 0.10545135980357588
+      }
+    },
+    "graphene-ideal/armchair/N8": {
+      "0.0050": {
+        "c": 0.37522383538836046,
+        "w": 0.10847646553489876
+      },
+      "0.0100": {
+        "c": 0.6529109857801716,
+        "w": 0.11115001250873582
+      },
+      "0.0200": {
+        "c": 0.8134133598052558,
+        "w": 0.10204802033470205
+      },
+      "0.0400": {
+        "c": 0.916200633724594,
+        "w": 0.10628667790778216
+      }
+    },
+    "graphene-ideal/armchair/N9": {
+      "0.0050": {
+        "c": 0.12635499647047505,
+        "w": 0.11222287539063981
+      },
+      "0.0100": {
+        "c": 0.38661452235812654,
+        "w": 0.1192695461180154
+      },
+      "0.0200": {
+        "c": 0.6515668455952174,
+        "w": 0.11905433136690544
+      },
+      "0.0400": {
+        "c": 0.774520741308126,
+        "w": 0.10926071836622447
+      }
+    },
+    "graphene-ideal/zigzag/N10": {
+      "0.0050": {
+        "c": -0.576841085161939,
+        "w": 0.11866985733611995
+      },
+      "0.0100": {
+        "c": -0.23930040364136618,
+        "w": 0.11348978438300514
+      },
+      "0.0200": {
+        "c": 0.035598566969741466,
+        "w": 0.115072873410906
+      },
+      "0.0400": {
+        "c": 0.2489869322368733,
+        "w": 0.1067944123901591
+      }
+    },
+    "graphene-ideal/zigzag/N11": {
+      "0.0050": {
+        "c": -0.6444417486879837,
+        "w": 0.11737621517592274
+      },
+      "0.0100": {
+        "c": -0.32959796538331554,
+        "w": 0.12063727797766595
+      },
+      "0.0200": {
+        "c": -0.00822053311555291,
+        "w": 0.11447158225506544
+      },
+      "0.0400": {
+        "c": 0.22637283955539217,
+        "w": 0.10519972074449073
+      }
+    },
+    "graphene-ideal/zigzag/N12": {
+      "0.0050": {
+        "c": -0.660882292622326,
+        "w": 0.10972541043266189
+      },
+      "0.0100": {
+        "c": -0.3462060890782307,
+        "w": 0.10526327416937163
+      },
+      "0.0200": {
+        "c": -0.06006433014487059,
+        "w": 0.11095062534323505
+      },
+      "0.0400": {
+        "c": 0.19030421655372007,
+        "w": 0.1032860624971735
+      }
+    },
+    "graphene-ideal/zigzag/N16": {
+      "0.0050": {
+        "c": -0.8629880240009402,
+        "w": 0.10959068620087101
+      },
+      "0.0100": {
+        "c": -0.5644740209292742,
+        "w": 0.1148927515954393
+      },
+      "0.0200": {
+        "c": -0.29075741943125555,
+        "w": 0.11323271421021676
+      },
+      "0.0400": {
+        "c": 0.046861896178401266,
+        "w": 0.10844221443051232
+      }
+    },
+    "graphene-ideal/zigzag/N20": {
+      "0.0050": {
+        "c": -1.0878993147720957,
+        "w": 0.11345143358229283
+      },
+      "0.0100": {
+        "c": -0.7668872469015726,
+        "w": 0.12897314509726054
+      },
+      "0.0200": {
+        "c": -0.4265152476182976,
+        "w": 0.11304443504265638
+      },
+      "0.0400": {
+        "c": -0.09804819870936052,
+        "w": 0.11029717755671962
+      }
+    },
+    "graphene-ideal/zigzag/N27": {
+      "0.0050": {
+        "c": -1.4422607497425584,
+        "w": 0.12286125769330697
+      },
+      "0.0100": {
+        "c": -1.0571575468671723,
+        "w": 0.11477934993956265
+      },
+      "0.0200": {
+        "c": -0.6684527842127118,
+        "w": 0.11274523426002708
+      },
+      "0.0400": {
+        "c": -0.3252450212936938,
+        "w": 0.1139727214822615
+      }
+    },
+    "graphene-ideal/zigzag/N4": {
+      "0.0050": {
+        "c": -0.6196070108333552,
+        "w": 0.13744223390844074
+      },
+      "0.0100": {
+        "c": -0.09146721457033288,
+        "w": 0.12283061807223938
+      },
+      "0.0200": {
+        "c": 0.2404516098047145,
+        "w": 0.11119045569707567
+      },
+      "0.0400": {
+        "c": 0.4444396282688622,
+        "w": 0.10583159435304051
+      }
+    },
+    "graphene-ideal/zigzag/N40": {
+      "0.0050": {
+        "c": -1.9174346266768754,
+        "w": 0.12526351878882222
+      },
+      "0.0100": {
+        "c": -1.5117209539068224,
+        "w": 0.12863079694289767
+      },
+      "0.0200": {
+        "c": -1.1145486060058931,
+        "w": 0.11284941136583898
+      },
+      "0.0400": {
+        "c": -0.6672903506719725,
+        "w": 0.10762986367873885
+      }
+    },
+    "graphene-ideal/zigzag/N5": {
+      "0.0050": {
+        "c": -0.512433687001962,
+        "w": 0.12206197873995951
+      },
+      "0.0100": {
+        "c": -0.09446034014231167,
+        "w": 0.11429703376479498
+      },
+      "0.0200": {
+        "c": 0.20718464452352786,
+        "w": 0.11493882189644145
+      },
+      "0.0400": {
+        "c": 0.39271292545795633,
+        "w": 0.1037906151973916
+      }
+    },
+    "graphene-ideal/zigzag/N50": {
+      "0.0050": {
+        "c": -2.132958759883688,
+        "w": 0.12551759657463868
+      },
+      "0.0100": {
+        "c": -1.7515750376041157,
+        "w": 0.12928396884421936
+      },
+      "0.0200": {
+        "c": -1.3178511825777344,
+        "w": 0.12444499924267809
+      },
+      "0.0400": {
+        "c": -0.936387265387792,
+        "w": 0.11263236453565678
+      }
+    },
+    "graphene-ideal/zigzag/N6": {
+      "0.0050": {
+        "c": -0.5046017575627819,
+        "w": 0.12244328934471675
+      },
+      "0.0100": {
+        "c": -0.12165323770702527,
+        "w": 0.11341763645790055
+      },
+      "0.0200": {
+        "c": 0.17194133451747662,
+        "w": 0.10969365085168468
+      },
+      "0.0400": {
+        "c": 0.35989303202652445,
+        "w": 0.10855680433281031
+      }
+    },
+    "graphene-ideal/zigzag/N7": {
+      "0.0050": {
+        "c": -0.5139409401439994,
+        "w": 0.11297956690762495
+      },
+      "0.0100": {
+        "c": -0.15733702387911896,
+        "w": 0.11549855885342004
+      },
+      "0.0200": {
+        "c": 0.12573685942974522,
+        "w": 0.11315270795470814
+      },
+      "0.0400": {
+        "c": 0.35504866789380646,
+        "w": 0.10928994305159799
+      }
+    },
+    "graphene-ideal/zigzag/N8": {
+      "0.0050": {
+        "c": -0.4886029574889134,
+        "w": 0.12804431887855408
+      },
+      "0.0100": {
+        "c": -0.1284592716127042,
+        "w": 0.1271984652381568
+      },
+      "0.0200": {
+        "c": 0.10454283586929748,
+        "w": 0.11176087268706067
+      },
+      "0.0400": {
+        "c": 0.30715299852556543,
+        "w": 0.10901855996552244
+      }
+    },
+    "graphene-ideal/zigzag/N9": {
+      "0.0050": {
+        "c": -0.5399586625518065,
+        "w": 0.11565205680281446
+      },
+      "0.0100": {
+        "c": -0.20263328106400674,
+        "w": 0.11916796455962922
+      },
+      "0.0200": {
+        "c": 0.03773374000084327,
+        "w": 0.1119304191690795
+      },
+      "0.0400": {
+        "c": 0.30290358104327786,
+        "w": 0.10596815334217578
+      }
+    },
+    "hbn/armchair/N14": {
+      "0.0050": {
+        "c": -0.42178011089786627,
+        "w": 0.10663524436437281
+      },
+      "0.0100": {
+        "c": -0.2519545022636097,
+        "w": 0.10892990612436843
+      },
+      "0.0200": {
+        "c": -0.05930264558270705,
+        "w": 0.10112855607444558
+      },
+      "0.0400": {
+        "c": 0.06939042820317816,
+        "w": 0.09355311498309389
+      }
+    },
+    "hbn/armchair/N27": {
+      "0.0050": {
+        "c": -0.7896772903494786,
+        "w": 0.10058265371074006
+      },
+      "0.0100": {
+        "c": -0.526140527510355,
+        "w": 0.09645802322732784
+      },
+      "0.0200": {
+        "c": -0.32376161170606765,
+        "w": 0.09646893308347476
+      },
+      "0.0400": {
+        "c": -0.08978215716377513,
+        "w": 0.09642466571722691
+      }
+    },
+    "hbn/armchair/N7": {
+      "0.0050": {
+        "c": -0.21885433621485534,
+        "w": 0.1318305800649128
+      },
+      "0.0100": {
+        "c": 0.022739501217897848,
+        "w": 0.109857638520515
+      },
+      "0.0200": {
+        "c": 0.09538828946783898,
+        "w": 0.1019281784502889
+      },
+      "0.0400": {
+        "c": 0.062451483320189835,
+        "w": 0.09650323277694538
+      }
+    },
+    "hbn/armchair/N9": {
+      "0.0050": {
+        "c": -0.25646862859676345,
+        "w": 0.10780252279123607
+      },
+      "0.0100": {
+        "c": -0.057576116754179896,
+        "w": 0.10107238315461461
+      },
+      "0.0200": {
+        "c": 0.08825432560255533,
+        "w": 0.09846189731143011
+      },
+      "0.0400": {
+        "c": 0.09227485948282999,
+        "w": 0.09590244997652267
+      }
+    },
+    "hbn/zigzag/N14": {
+      "0.0050": {
+        "c": -0.815357703969021,
+        "w": 0.12037335767458611
+      },
+      "0.0100": {
+        "c": -0.5706662227967991,
+        "w": 0.12024185345349568
+      },
+      "0.0200": {
+        "c": -0.3378718853435689,
+        "w": 0.11203980069343854
+      },
+      "0.0400": {
+        "c": -0.1404862530143388,
+        "w": 0.10666256543230286
+      }
+    },
+    "hbn/zigzag/N27": {
+      "0.0050": {
+        "c": -1.5035580432114062,
+        "w": 0.127945277552823
+      },
+      "0.0100": {
+        "c": -1.1713291421200662,
+        "w": 0.11563135369402133
+      },
+      "0.0200": {
+        "c": -0.8258249691915093,
+        "w": 0.11518132061151258
+      },
+      "0.0400": {
+        "c": -0.48220501452809017,
+        "w": 0.11511797030147475
+      }
+    },
+    "hbn/zigzag/N7": {
+      "0.0050": {
+        "c": -0.46008588119778643,
+        "w": 0.13758550603732145
+      },
+      "0.0100": {
+        "c": -0.2013191573256903,
+        "w": 0.12250116383481509
+      },
+      "0.0200": {
+        "c": -0.027742216970078733,
+        "w": 0.11222945744034951
+      },
+      "0.0400": {
+        "c": 0.06880536466938375,
+        "w": 0.1086066339303653
+      }
+    },
+    "hbn/zigzag/N9": {
+      "0.0050": {
+        "c": -0.5382594999797778,
+        "w": 0.1225080440327339
+      },
+      "0.0100": {
+        "c": -0.33717764656706956,
+        "w": 0.1181772266202818
+      },
+      "0.0200": {
+        "c": -0.14475287097624284,
+        "w": 0.11891851429582546
+      },
+      "0.0400": {
+        "c": -0.0018370867057936522,
+        "w": 0.11692443161972228
+      }
+    },
+    "mos2/armchair/N14": {
+      "0.0050": {
+        "c": -1.6697235972203346,
+        "w": 0.13793497458624707
+      },
+      "0.0100": {
+        "c": -1.342756292030312,
+        "w": 0.12618047478526023
+      },
+      "0.0200": {
+        "c": -1.0681618537763033,
+        "w": 0.11539554984300837
+      },
+      "0.0400": {
+        "c": -0.811391483092067,
+        "w": 0.11751391981130076
+      }
+    },
+    "mos2/armchair/N7": {
+      "0.0050": {
+        "c": -1.225168541813907,
+        "w": 0.13622109793156775
+      },
+      "0.0100": {
+        "c": -0.9399040087278098,
+        "w": 0.12075111433625571
+      },
+      "0.0200": {
+        "c": -0.6468731864108042,
+        "w": 0.11940323490168461
+      },
+      "0.0400": {
+        "c": -0.46034592126949103,
+        "w": 0.1140613074001478
+      }
+    },
+    "mos2/armchair/N9": {
+      "0.0050": {
+        "c": -1.330500107681556,
+        "w": 0.13474112490784174
+      },
+      "0.0100": {
+        "c": -0.9798232055311882,
+        "w": 0.13555009037456114
+      },
+      "0.0200": {
+        "c": -0.7297658661046196,
+        "w": 0.11513269382247292
+      },
+      "0.0400": {
+        "c": -0.5530840524127959,
+        "w": 0.1171849136767998
+      }
+    },
+    "mos2/zigzag/N14": {
+      "0.0050": {
+        "c": -2.09742085366537,
+        "w": 0.15666134116454455
+      },
+      "0.0100": {
+        "c": -1.690844548558375,
+        "w": 0.13700242785730135
+      },
+      "0.0200": {
+        "c": -1.3197756753872747,
+        "w": 0.13506831130113758
+      },
+      "0.0400": {
+        "c": -1.052899174919013,
+        "w": 0.13574398405792487
+      }
+    },
+    "mos2/zigzag/N7": {
+      "0.0057": {
+        "c": -1.413844517641542,
+        "w": 0.15533566692878262
+      },
+      "0.0100": {
+        "c": -1.1156934784344992,
+        "w": 0.15989078208050636
+      },
+      "0.0200": {
+        "c": -0.8498827972975243,
+        "w": 0.14436855524748404
+      },
+      "0.0400": {
+        "c": -0.6093630889250173,
+        "w": 0.13586206292684974
+      }
+    },
+    "mos2/zigzag/N9": {
+      "0.0044": {
+        "c": -1.7677071926219456,
+        "w": 0.1523010872435163
+      },
+      "0.0100": {
+        "c": -1.289305034514657,
+        "w": 0.1406592119788738
+      },
+      "0.0200": {
+        "c": -1.0066401808165168,
+        "w": 0.1424952380286273
+      },
+      "0.0400": {
+        "c": -0.7349161893427177,
+        "w": 0.1359710458576016
+      }
+    },
+    "phosphorene/armchair/N14": {
+      "0.0050": {
+        "c": -0.29153010040249583,
+        "w": 0.10230723029781429
+      },
+      "0.0100": {
+        "c": -0.087429174342076,
+        "w": 0.09590933986195653
+      },
+      "0.0200": {
+        "c": 0.08991188138101738,
+        "w": 0.09312087717895445
+      },
+      "0.0400": {
+        "c": 0.23590667590650116,
+        "w": 0.09752137668982715
+      }
+    },
+    "phosphorene/armchair/N27": {
+      "0.0050": {
+        "c": -0.8075168358239819,
+        "w": 0.10304931234207626
+      },
+      "0.0100": {
+        "c": -0.4673464667779241,
+        "w": 0.09926449455351787
+      },
+      "0.0200": {
+        "c": -0.16348535588278001,
+        "w": 0.0985258041093238
+      },
+      "0.0400": {
+        "c": 0.08380232628815784,
+        "w": 0.09261880718895406
+      }
+    },
+    "phosphorene/armchair/N7": {
+      "0.0050": {
+        "c": -0.03154220097547619,
+        "w": 0.11330465883990143
+      },
+      "0.0100": {
+        "c": 0.14476023371235425,
+        "w": 0.10202064247043299
+      },
+      "0.0200": {
+        "c": 0.2454888827193958,
+        "w": 0.09673378215007461
+      },
+      "0.0400": {
+        "c": 0.27761862901565115,
+        "w": 0.09623125863900815
+      }
+    },
+    "phosphorene/armchair/N9": {
+      "0.0050": {
+        "c": -0.12432188273822634,
+        "w": 0.10720777682431061
+      },
+      "0.0100": {
+        "c": 0.08697374595983225,
+        "w": 0.09854910109418476
+      },
+      "0.0200": {
+        "c": 0.20054320338869014,
+        "w": 0.09666091386911561
+      },
+      "0.0400": {
+        "c": 0.26997321435033467,
+        "w": 0.09498475962660152
+      }
+    },
+    "phosphorene/zigzag/N14": {
+      "0.0050": {
+        "c": -0.06067934804124114,
+        "w": 0.10057911256757232
+      },
+      "0.0100": {
+        "c": 0.09884715981852393,
+        "w": 0.0947751777725126
+      },
+      "0.0200": {
+        "c": 0.13742032101105287,
+        "w": 0.0947242840960699
+      },
+      "0.0400": {
+        "c": 0.2305311790806605,
+        "w": 0.09120621695992244
+      }
+    },
+    "phosphorene/zigzag/N27": {
+      "0.0050": {
+        "c": -0.3975467652205651,
+        "w": 0.10461386491245975
+      },
+      "0.0100": {
+        "c": -0.1804751881371446,
+        "w": 0.10060737743904408
+      },
+      "0.0200": {
+        "c": -0.0421723488552458,
+        "w": 0.10104887154497831
+      },
+      "0.0400": {
+        "c": 0.1118433817602654,
+        "w": 0.09878927291521501
+      }
+    },
+    "phosphorene/zigzag/N7": {
+      "0.0050": {
+        "c": 0.011952771213876185,
+        "w": 0.10228841466044962
+      },
+      "0.0100": {
+        "c": 0.17629599233676796,
+        "w": 0.10126425243886925
+      },
+      "0.0200": {
+        "c": 0.27308222823812023,
+        "w": 0.09798686950199857
+      },
+      "0.0400": {
+        "c": 0.2301773158162449,
+        "w": 0.09487110141616102
+      }
+    },
+    "phosphorene/zigzag/N9": {
+      "0.0050": {
+        "c": 0.038428019347415646,
+        "w": 0.10600698864331379
+      },
+      "0.0100": {
+        "c": 0.15600679440884968,
+        "w": 0.10144668822994052
+      },
+      "0.0200": {
+        "c": 0.24714858117259958,
+        "w": 0.09842566755825657
+      },
+      "0.0400": {
+        "c": 0.2655899111662332,
+        "w": 0.0967654386868948
+      }
+    },
+    "triangular/armchair/N14": {
+      "0.0050": {
+        "c": -1.545897978528504,
+        "w": 0.11252682513850872
+      },
+      "0.0100": {
+        "c": -1.2897017372388524,
+        "w": 0.10861770822997616
+      },
+      "0.0200": {
+        "c": -0.9877312454533966,
+        "w": 0.11190494058914655
+      },
+      "0.0400": {
+        "c": -0.7786472508372219,
+        "w": 0.11294600668700931
+      }
+    },
+    "triangular/armchair/N27": {
+      "0.0050": {
+        "c": -2.2007101180034434,
+        "w": 0.1131392798577517
+      },
+      "0.0100": {
+        "c": -1.8684945340480859,
+        "w": 0.11123766611896117
+      },
+      "0.0200": {
+        "c": -1.5836969202452638,
+        "w": 0.11242406839304189
+      },
+      "0.0400": {
+        "c": -1.2282415256810275,
+        "w": 0.10898142882210105
+      }
+    },
+    "triangular/armchair/N7": {
+      "0.0050": {
+        "c": -1.2613857771735684,
+        "w": 0.11836288371559678
+      },
+      "0.0100": {
+        "c": -0.9460673666155477,
+        "w": 0.11604774903447672
+      },
+      "0.0200": {
+        "c": -0.6882009831858054,
+        "w": 0.10920895485219541
+      },
+      "0.0400": {
+        "c": -0.5287156291482784,
+        "w": 0.1082701856128574
+      }
+    },
+    "triangular/armchair/N9": {
+      "0.0050": {
+        "c": -1.3310825618530167,
+        "w": 0.11312831889641924
+      },
+      "0.0100": {
+        "c": -1.0716868402778776,
+        "w": 0.10837490000038488
+      },
+      "0.0200": {
+        "c": -0.7863406778424703,
+        "w": 0.11870873374872007
+      },
+      "0.0400": {
+        "c": -0.5702186897489679,
+        "w": 0.11187036719654649
+      }
+    },
+    "triangular/zigzag/N14": {
+      "0.0050": {
+        "c": -2.009349480596909,
+        "w": 0.13768959663698754
+      },
+      "0.0100": {
+        "c": -1.6803083414865747,
+        "w": 0.13739784038990316
+      },
+      "0.0200": {
+        "c": -1.3829151798063428,
+        "w": 0.12327839901417906
+      },
+      "0.0400": {
+        "c": -1.0974935785084532,
+        "w": 0.11894861609272071
+      }
+    },
+    "triangular/zigzag/N27": {
+      "0.0052": {
+        "c": -2.600927588154259,
+        "w": 0.13974420404698185
+      },
+      "0.0100": {
+        "c": -2.3218513718017473,
+        "w": 0.1265237876212537
+      },
+      "0.0200": {
+        "c": -2.0403296412537344,
+        "w": 0.12725753548358376
+      },
+      "0.0400": {
+        "c": -1.6571810837887608,
+        "w": 0.12013024745524535
+      }
+    },
+    "triangular/zigzag/N7": {
+      "0.0057": {
+        "c": -1.7955952403405562,
+        "w": 0.14933547365885513
+      },
+      "0.0100": {
+        "c": -1.4166801491910967,
+        "w": 0.12852265072743574
+      },
+      "0.0200": {
+        "c": -1.064610123177356,
+        "w": 0.12694508037711463
+      },
+      "0.0400": {
+        "c": -0.7291975629414982,
+        "w": 0.12483330362844224
+      }
+    },
+    "triangular/zigzag/N9": {
+      "0.0044": {
+        "c": -1.914510761737468,
+        "w": 0.1537624594683861
+      },
+      "0.0100": {
+        "c": -1.4535602982212774,
+        "w": 0.1376629519125723
+      },
+      "0.0200": {
+        "c": -1.112901499921748,
+        "w": 0.11817880206066636
+      },
+      "0.0400": {
+        "c": -0.8155697951713925,
+        "w": 0.12134721420163629
+      }
+    }
+  },
+  "z_star": {
+    "graphene-ideal/armchair": 3.2219827009617874,
+    "graphene-ideal/zigzag": 3.384427454623529,
+    "hbn/armchair": 2.664870889594193,
+    "hbn/zigzag": 2.6516307998574287,
+    "mos2/armchair": 3.2952210058243288,
+    "mos2/zigzag": 3.1607020975679845,
+    "phosphorene/armchair": 2.6474796863108803,
+    "phosphorene/zigzag": 2.8345075957949675,
+    "triangular/armchair": 2.923161318321911,
+    "triangular/zigzag": 3.2244281112030144
+  },
+  "w_edge": {
+    "graphene-ideal/armchair": 0.10720710724688058,
+    "graphene-ideal/zigzag": 0.11343453502009668,
+    "hbn/armchair": 0.10082751843267733,
+    "hbn/zigzag": 0.11755082912000203,
+    "mos2/armchair": 0.12007717461897016,
+    "mos2/zigzag": 0.14157722500375056,
+    "phosphorene/armchair": 0.09802359039957548,
+    "phosphorene/zigzag": 0.09968419274139367,
+    "triangular/armchair": 0.11216450449109422,
+    "triangular/zigzag": 0.12710130793034918
+  },
+  "n0": 300,
+  "novelty": "class_conditional_v2",
+  "k": 15,
+  "created": "2026-10-03"
+}
