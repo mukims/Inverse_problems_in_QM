@@ -402,6 +402,17 @@ class Atlas:
                      threshold_params={k: v for k, v in self.threshold_params.items() if k not in drop},
                      z_star=self.z_star, w_edge=self.w_edge, n0=self.n0)
 
+    def with_reference_cap(self, n, seed=0):
+        """A copy keeping at most n references per model (random draw); same encoder, thresholds and models."""
+        rng = np.random.default_rng(seed)
+        keep = np.sort(np.concatenate([rng.permutation(np.flatnonzero(self.ref_model == i))[:n]
+                                       for i in range(len(self.models))]))
+        return Atlas(self.spec, self.encoder, self.mu, self.sd, self.refs[keep], self.ref_model[keep],
+                     self.ref_density[keep], list(self.models), self.threshold, self.k,
+                     threshold_table=dict(self.threshold_table), novelty=self.novelty,
+                     threshold_params=dict(self.threshold_params), z_star=self.z_star, w_edge=self.w_edge, n0=self.n0)
+
+
     # ---------- persistence ----------
     def save(self, path):
         path = Path(path)

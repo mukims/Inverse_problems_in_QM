@@ -87,3 +87,17 @@ def test_without_models_rejects_unknown_ids(tmp_path):
     with pytest.raises(KeyError):
         atlas.without_models(["nope/armchair/N1"])
 
+
+def test_with_reference_cap_keeps_at_most_n_per_model(tmp_path):
+    store, models = toy_store(tmp_path)
+    reg = Registry(models)
+    atlas = Atlas.build(store, reg, reg.ids(), InputSpec(), **FAST)
+    n_before = len(atlas.refs)
+    small = atlas.with_reference_cap(10, seed=1)
+    counts = np.bincount(small.ref_model, minlength=len(small.models))
+    assert counts.max() <= 10 and counts.min() > 0
+    assert len(atlas.refs) == n_before and [m.model_id for m in small.models] == [m.model_id for m in atlas.models]
+    probe = toy_spectrum(1.0, 9, 0.01, 123)[None]
+    assert small.locate(probe, E, 3.0)[0].material == "alpha"
+
+
