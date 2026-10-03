@@ -72,15 +72,26 @@ def class_batch(rng, X_by_class, k):
 
 
 def train_structure_encoder(X_train, X_val, mode, D=None, sigma=None, steps=2500, k=16, tau=0.1, lr=1e-3,
-                            seed=0, threads=16, log_every=250, latent=32):
-    if mode not in ("paraphrase", "physics"):
-        raise ValueError(f"mode must be 'paraphrase' or 'physics', got {mode!r}")
-    if mode == "physics" and (D is None or sigma is None):
-        raise ValueError("physics mode needs the clean-distance matrix D and sigma")
+                            seed=0, threads=16, log_every=250, latent=32, alpha=None, lam=1.0):
+    modes = ("paraphrase", "physics", "multiscale", "stress")
+    if mode not in modes:
+        raise ValueError(f"mode must be one of {modes}, got {mode!r}")
+    if mode in ("physics", "multiscale") and (D is None or sigma is None):
+        raise ValueError(f"{mode} mode needs the clean-distance matrix D and sigma")
+    if mode == "stress" and (D is None or alpha is None):
+        raise ValueError("stress mode needs the clean-distance matrix D and alpha")
     torch.set_num_threads(threads)
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
-    Dt = torch.as_tensor(D, dtype=torch.float32) if mode == "physics" else None
+    Dt = torch.as_tensor(D, dtype=torch.float32) if mode != "paraphrase" else None
+
+    def loss_fn(z, y):
+        if mode == "paraphrase":
+            return contrastive_loss(z, y, tau)
+        if mode == "stress":
+            return contrastive_loss(z, y, tau) + lam * stress_loss(z, y, Dt, alpha)
+        return contrastive_loss(z, y, tau, Dt, sigma)
+
     model = StructureEncoder(latent, X_train[0].shape[1])
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, steps)
@@ -89,7 +100,7 @@ def train_structure_encoder(X_train, X_val, mode, D=None, sigma=None, steps=2500
     for step in range(1, steps + 1):
         model.train()
         xb, yb = class_batch(rng, X_train, k)
-        loss = contrastive_loss(model(xb), yb, tau, Dt, sigma)
+        loss = loss_fn(model(xb), yb)
         opt.zero_grad()
         loss.backward()
         opt.step()
@@ -97,7 +108,7 @@ def train_structure_encoder(X_train, X_val, mode, D=None, sigma=None, steps=2500
         if step == 1 or step % log_every == 0 or step == steps:
             model.eval()
             with torch.no_grad():
-                val = float(contrastive_loss(model(xv), yv, tau, Dt, sigma))
+                val = float(loss_fn(model(xv), yv))
             history.append({"step": step, "train_loss": loss.item(), "val_loss": val})
             print(f"[meaning] {mode} step {step:5d} train {loss.item():.4f} val {val:.4f}", flush=True)
     model.eval()

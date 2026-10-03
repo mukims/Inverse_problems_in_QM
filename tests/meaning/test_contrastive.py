@@ -144,3 +144,24 @@ def test_stress_gradient_is_finite_for_identical_embeddings():
 def test_stress_needs_two_ribbons():
     with pytest.raises(ValueError, match="two ribbons"):
         stress_loss(_unit(3, 2), torch.tensor([0, 0, 0]), torch.zeros(1, 1), alpha=1.0)
+
+
+def test_new_modes_train_and_reduce_loss():
+    tr, va = _toy_classes(1), _toy_classes(2)
+    D = np.array([[0.0, 0.3, 0.6], [0.3, 0.0, 0.3], [0.6, 0.3, 0.0]])
+    kw = dict(steps=60, k=8, latent=8, threads=1, log_every=30, seed=3)
+    _, h_ms = train_structure_encoder(tr, va, "multiscale", D=D, sigma=[0.1, 0.4, 1.6], **kw)
+    _, h_st = train_structure_encoder(tr, va, "stress", D=D, alpha=1.5 / 0.6, **kw)
+    assert h_ms[-1]["val_loss"] < h_ms[0]["val_loss"]
+    assert h_st[-1]["val_loss"] < h_st[0]["val_loss"]
+
+
+def test_new_modes_require_their_inputs():
+    tr, va = _toy_classes(1), _toy_classes(2)
+    D = np.zeros((3, 3))
+    with pytest.raises(ValueError, match="multiscale"):
+        train_structure_encoder(tr, va, "multiscale", D=D, steps=1, k=8, latent=8, threads=1)
+    with pytest.raises(ValueError, match="stress"):
+        train_structure_encoder(tr, va, "stress", D=D, steps=1, k=8, latent=8, threads=1)
+    with pytest.raises(ValueError, match="mode"):
+        train_structure_encoder(tr, va, "magic", steps=1, k=8, latent=8, threads=1)
