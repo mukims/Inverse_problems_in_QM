@@ -6,6 +6,28 @@ An idealised single-orbital square-lattice strip. It plays two roles:
 
 Shared conventions (device, leads, store, Shazam input) are in the [materials README](../README.md).
 
+## Figures
+
+**Structure**
+
+![Structure](figures/structure.png)
+
+Square strip N = 10, drawn with transport running left to right (12 of the 100 cells). Red rings mark one example impurity draw at 4% (seed 0).
+
+**Bands and clean transmission**
+
+![Bands and clean transmission](figures/bands_transmission.png)
+
+Left: bands of the N = 10 strip (E ≥ 0). Right: clean transmission; each transverse mode p opens a channel at |E − ε_p| < 2t, up to the band top at 3.92.
+
+**Transmission with impurities**
+
+![Transmission with impurities](figures/disorder.png)
+
+N = 10 at 0.5–4% impurities (`novelty_v1`, 150 configurations per density): the median and 10–90% band, against the clean spectrum. The legacy trace formula's spikes are clipped by the axis.
+
+The figures are made by `docs/materials/make_figures.py` from the code and the stores.
+
 ## Physical model
 
 | Item | Value |

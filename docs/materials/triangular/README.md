@@ -2,6 +2,28 @@
 
 An idealised single-orbital triangular lattice. It is a toy lattice for testing whether Shazam separates lattice geometry, not a real material. It shares its lattice with MoS₂'s Mo sublattice. Shared conventions (device, leads, store, Shazam input) are in the [materials README](../README.md).
 
+## Figures
+
+**Structure**
+
+![Structure](figures/structure.png)
+
+Ribbon structure at N = 7 (armchair above, zigzag below), drawn with transport running left to right. The device is 100 such cells between leads of the same clean ribbon. Red rings mark one example impurity draw at 4% (seed 0).
+
+**Bands and clean transmission**
+
+![Bands and clean transmission](figures/bands_transmission.png)
+
+Left: bands of N = 9 (E ≥ 0). Right: clean transmission for N = 7, 9, 14 and 27. E = 0 lies inside the band (which spans −6t to +3t), so every ribbon conducts from 0. The band ends near 3.
+
+**Transmission with impurities**
+
+![Transmission with impurities](figures/disorder.png)
+
+N = 9 at 0.5–4% impurities: the median and 10–90% band, against the clean spectrum. Smoke store (50 configurations) until FULL-4 finishes. For zigzag N9, 0.5% rounds to 4 impurities of 900, i.e. 0.44%.
+
+The figures are made by `docs/materials/make_figures.py` from the code and the stores.
+
 ## Physical model
 
 | Item | Value |

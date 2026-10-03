@@ -2,6 +2,28 @@
 
 Idealised nearest-neighbour graphene nanoribbons, both armchair (AGNR) and zigzag (ZGNR). These are Shazam's original reference library, and the legacy 7/9-AGNR concentration dataset that Stage 3 uses. Shared conventions (device, leads, store, Shazam input) are in the [materials README](../README.md).
 
+## Figures
+
+**Structure**
+
+![Structure](figures/structure.png)
+
+Ribbon structure at N = 7 (armchair above, zigzag below), drawn with transport running left to right. The device is 100 such cells between leads of the same clean ribbon. Red rings mark one example impurity draw at 4% (seed 0).
+
+**Bands and clean transmission**
+
+![Bands and clean transmission](figures/bands_transmission.png)
+
+Left: bands of N = 9, for E ≥ 0. Right: clean transmission for N = 7, 9, 14 and 27; each step is a subband opening or closing, and T counts the open channels. Armchair N9 has a dispersionless band at E = t (2.7 eV). Zigzag conducts from 0 eV through its edge band. There is no zigzag N14 in `engine_v1`.
+
+**Transmission with impurities**
+
+![Transmission with impurities](figures/disorder.png)
+
+Armchair and zigzag N = 9 at 0.5–4% impurities (`engine_v1`, 1,000 configurations per density): the median and 10–90% band, against the clean spectrum. Armchair comes from the legacy trace formula, whose spikes at subband edges (the vertical streaks) are clipped by the axis. Zigzag uses Caroli and has none.
+
+The figures are made by `docs/materials/make_figures.py` from the code and the stores.
+
 ## Physical model
 
 | Item | Value |

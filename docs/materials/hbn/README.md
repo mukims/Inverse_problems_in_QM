@@ -2,6 +2,28 @@
 
 Single-layer hBN nanoribbons: the graphene honeycomb lattice with boron and nitrogen on the two sublattices. Shared conventions (device, leads, store, Shazam input) are in the [materials README](../README.md).
 
+## Figures
+
+**Structure**
+
+![Structure](figures/structure.png)
+
+Ribbon structure at N = 7 (armchair above, zigzag below), drawn with transport running left to right. The device is 100 such cells between leads of the same clean ribbon. Red rings mark one example impurity draw at 4% (seed 0). Boron (orange) carries +Δ and nitrogen (blue) −Δ.
+
+**Bands and clean transmission**
+
+![Bands and clean transmission](figures/bands_transmission.png)
+
+Left: bands of N = 9 (E ≥ 0, so the conduction band only). Right: clean transmission for N = 7, 9, 14 and 27. Nothing conducts below the gap edge at Δ = 3.63 eV. Armchair has a flat band at √(Δ² + t²) = 4.29 eV, and zigzag an edge band at +Δ.
+
+**Transmission with impurities**
+
+![Transmission with impurities](figures/disorder.png)
+
+N = 9 at 0.5–4% impurities: the median and 10–90% band, against the clean spectrum. Panels read from the full run (1,000 configurations) where that ribbon is finished, otherwise from the smoke store (50). Re-run `make_figures.py` after FULL-4 for 1,000 everywhere.
+
+The figures are made by `docs/materials/make_figures.py` from the code and the stores.
+
 ## Physical model
 
 | Item | Value |

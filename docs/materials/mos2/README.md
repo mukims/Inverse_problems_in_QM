@@ -2,6 +2,28 @@
 
 Monolayer MoS₂ nanoribbons in the three-band tight-binding model of Liu et al. This is the only multi-orbital material in the dataset. Shared conventions (device, leads, store, Shazam input) are in the [materials README](../README.md).
 
+## Figures
+
+**Structure**
+
+![Structure](figures/structure.png)
+
+Ribbon structure at N = 7 (armchair above, zigzag below), drawn with transport running left to right. The device is 100 such cells between leads of the same clean ribbon. Red rings mark one example impurity draw at 4% (seed 0). Only Mo atoms are drawn: sulfur is integrated out of the 3-band model, and each Mo carries three d-orbitals. The zigzag cells are sheared, so the finite segment drawn looks like a parallelogram; the ribbon itself is a straight strip.
+
+**Bands and clean transmission**
+
+![Bands and clean transmission](figures/bands_transmission.png)
+
+Left: bands of N = 9 (E ≥ 0; mid-gap at E = 0). Right: clean transmission for N = 7, 9, 14 and 27. The many flat d-subbands make clean T jump at many energies inside 0.6–2.7 eV. Armchair conduction starts at 0.63 eV (edge states). Zigzag is metallic, with edge bands below about 0.55 eV.
+
+**Transmission with impurities**
+
+![Transmission with impurities](figures/disorder.png)
+
+N = 9 at 0.5–4% impurities on whole Mo atoms (V = 0.2535 eV): the median and 10–90% band, against the clean spectrum. Smoke store (50 configurations) until FULL-4 finishes.
+
+The figures are made by `docs/materials/make_figures.py` from the code and the stores.
+
 ## Physical model
 
 | Item | Value |

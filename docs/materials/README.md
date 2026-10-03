@@ -11,6 +11,12 @@ This folder documents every material in the dataset: its physical model, how its
 | Triangular lattice (toy) | `triangular` | triangular, 1 orbital | 1.0 (arbitrary) | [triangular/](triangular/README.md) |
 | Square strip (toy) | `square` | square, 1 orbital | 1.0 (arbitrary) | [square/](square/README.md) |
 
+Each README has three figures: the ribbon structure, the bands beside the clean transmission, and transmission with impurities. They are regenerated from the code and the stores with:
+
+```bash
+PYTHONPATH=notebooks/material_atlas:notebooks ~/miniconda3/envs/ml/bin/python docs/materials/make_figures.py
+```
+
 Sources of truth:
 - **Code:** `notebooks/tbribbon/` (lattices, transport, leads, disorder, generator) and `notebooks/agnr/physics/agnr_lib.py` (graphene armchair).
 - **Results:** `LOGBOOK.md` (builds, bugs).

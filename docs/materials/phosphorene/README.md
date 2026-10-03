@@ -2,6 +2,28 @@
 
 Monolayer black phosphorus nanoribbons in the five-hopping tight-binding model. Shared conventions (device, leads, store, Shazam input) are in the [materials README](../README.md).
 
+## Figures
+
+**Structure**
+
+![Structure](figures/structure.png)
+
+Ribbon structure at N = 7 (armchair above, zigzag below), drawn with transport running left to right. The device is 100 such cells between leads of the same clean ribbon. Red rings mark one example impurity draw at 4% (seed 0). The puckered lattice is drawn on its honeycomb projection, with the strong t2 bonds in orange. The weaker t3–t5 hoppings are not drawn.
+
+**Bands and clean transmission**
+
+![Bands and clean transmission](figures/bands_transmission.png)
+
+Left: bands of N = 9 (E ≥ 0; mid-gap at E = 0). Right: clean transmission for N = 7, 9, 14 and 27. Armchair opens at 0.8–1.0 eV, half its gap. Zigzag has the in-gap edge band between 0 and about 0.45 eV, then the gap, then the bulk conduction band.
+
+**Transmission with impurities**
+
+![Transmission with impurities](figures/disorder.png)
+
+N = 9 at 0.5–4% impurities: the median and 10–90% band, against the clean spectrum. The full run (1,000 configurations) is used where finished, otherwise the smoke store (50).
+
+The figures are made by `docs/materials/make_figures.py` from the code and the stores.
+
 ## Physical model
 
 | Item | Value |
