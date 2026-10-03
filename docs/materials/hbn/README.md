@@ -20,7 +20,7 @@ Left: bands of N = 9 (E ≥ 0, so the conduction band only). Right: clean transm
 
 ![Transmission with impurities](figures/disorder.png)
 
-N = 9 at 0.5–4% impurities: the median and 10–90% band, against the clean spectrum. Panels read from the full run (1,000 configurations) where that ribbon is finished, otherwise from the smoke store (50). Re-run `make_figures.py` after FULL-4 for 1,000 everywhere.
+N = 9 at 0.5–4% impurities: the median and 10–90% band, against the clean spectrum. 1,000 configurations per density, from the full run (`materials_ev_full`).
 
 The figures are made by `docs/materials/make_figures.py` from the code and the stores.
 

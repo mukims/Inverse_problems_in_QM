@@ -20,7 +20,7 @@ Left: bands of N = 9 (E ≥ 0). Right: clean transmission for N = 7, 9, 14 and 2
 
 ![Transmission with impurities](figures/disorder.png)
 
-N = 9 at 0.5–4% impurities: the median and 10–90% band, against the clean spectrum. Smoke store (50 configurations) until FULL-4 finishes. For zigzag N9, 0.5% rounds to 4 impurities of 900, i.e. 0.44%.
+N = 9 at 0.5–4% impurities: the median and 10–90% band, against the clean spectrum. 1,000 configurations per density (`materials_ev_full`). For zigzag N9, 0.5% rounds to 4 impurities of 900, i.e. 0.44%.
 
 The figures are made by `docs/materials/make_figures.py` from the code and the stores.
 

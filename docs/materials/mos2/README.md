@@ -20,7 +20,7 @@ Left: bands of N = 9 (E ≥ 0; mid-gap at E = 0). Right: clean transmission for 
 
 ![Transmission with impurities](figures/disorder.png)
 
-N = 9 at 0.5–4% impurities on whole Mo atoms (V = 0.2535 eV): the median and 10–90% band, against the clean spectrum. Smoke store (50 configurations) until FULL-4 finishes.
+N = 9 at 0.5–4% impurities on whole Mo atoms (V = 0.2535 eV): the median and 10–90% band, against the clean spectrum. 1,000 configurations per density (`materials_ev_full`).
 
 The figures are made by `docs/materials/make_figures.py` from the code and the stores.
 

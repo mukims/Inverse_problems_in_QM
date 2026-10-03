@@ -20,7 +20,7 @@ Left: bands of N = 9 (E ≥ 0; mid-gap at E = 0). Right: clean transmission for 
 
 ![Transmission with impurities](figures/disorder.png)
 
-N = 9 at 0.5–4% impurities: the median and 10–90% band, against the clean spectrum. The full run (1,000 configurations) is used where finished, otherwise the smoke store (50).
+N = 9 at 0.5–4% impurities: the median and 10–90% band, against the clean spectrum. 1,000 configurations per density (`materials_ev_full`).
 
 The figures are made by `docs/materials/make_figures.py` from the code and the stores.
 
