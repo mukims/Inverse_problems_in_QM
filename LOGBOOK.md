@@ -30,6 +30,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-21** | 2026-10-02 | **31-Model Sparse Ribbon Grid (Shazam v3) + Stage 3 7/9-AGNR** | **Atlas v3** (Shared eV Axis, 416-ch $[0, 8.32)\,\text{eV}$, Conv1dAE + Option B Novelty + Stage 3 XGBoost) | `engine_v1` (18,600 test spectra) + `novelty_v1` + LOO + `consolidated_data` (37,350 test spectra) | InputSpec v3 (unit="eV", $E \in [0, 8.32)\,\text{eV}$, step 0.02, cap 64.0), no transport recomputed, graphene $t = 2.7\,\text{eV}$ | **100.0% Mat<br>100.0% Edge<br>99.97% Width** | **1.894 (Estimated)** | **2.748 (Estimated)** | **Completed (Gates Checked)**: Shared eV axis. 4/5 gates pass: Material 100%, Edge 100%, Width 99.97% ($\ge 99.9\%$); False alarms pooled arm 0.92%, zz 1.39% (0.5–1.5%); Square strip 100.0% ($\ge 99\%$); LOO N13 99.67%, N8 100.0% ($\ge 95\%$); Stage 3 MAE 1.894 ($\le 1.98$), coverage 90.04% ($90 \pm 2\%$). Stage 3 width vote on all test spectra is 98.97% (Gate $\ge 99.5\%$ MISSED; 383/384 errors are correctly flagged unknown). |
 | **BUILD-22** | 2026-10-02 | **31-Model Sparse Ribbon Grid (Shazam v4) + Stage 3 7/9-AGNR** | **Atlas v4** (Shared eV Axis + Label-Free Despiking $T > 2m+2$, 416-ch, Conv1dAE + Option B Novelty + Stage 3 XGBoost) | `engine_v1` (18,600 test spectra) + `novelty_v1` + LOO + `consolidated_data` (37,350 test spectra) | InputSpec v4 (unit="eV", $E \in [0, 8.32)\,\text{eV}$, step 0.02, cap 64.0, despike=True), no transport recomputed | **100.0% Mat<br>100.0% Edge<br>99.93% Width** | **1.986 (Estimated)** | **2.893 (Estimated)** | **Accepted by the human (2026-10-02)** despite the MAE miss (1.986 against $\le 1.980$). Miss caused entirely by 14 9-AGNR spectra outside Shazam's 0.5–4% density range (without them MAE is 1.975). Despiked eV axis. Width vote gate recovered: 99.759% ($\ge 99.5\%$: PASS; 7-AGNR 0 errors, 9-AGNR 90 errors). Identification: Mat 100%, Edge 100%, Width 99.93% ($\ge 99.9\%$: PASS). False alarms pooled: arm 0.97%, zz 1.45% (0.5–1.5%: PASS). Unseen square strip: 100.0% ($\ge 99\%$: PASS). LOO: N13 95.83%, N8 100.0% ($\ge 95\%$: PASS). Conformal coverage: 90.00% ($90 \pm 2\%$: PASS). `atlas_v4` is the eV-axis Shazam for the material expansion. |
 | **SMOKE-3** | 2026-10-02 | **32 New-Material Models + 8 Timing Probes (N=50)** | **New-Material Smoke Clouds on Shared eV Axis** (hBN, Phosphorene, MoS₂, Triangular) | `~/atlas_store/materials_ev_v1` (32 models $\times$ 4 densities $\times$ 50 seeds = 6,400 spectra) + `~/atlas_store/materials_ev_probe` (8 models $\times$ 4 densities $\times$ 2 seeds = 64 spectra) | Direct generation on InputSpec v3 eV grid (`generation_grid_t`); zero-padding above band top; multi-orbital whole-atom impurities (Bug #11, MoS₂ $V = 0.2535\,\text{eV}$); Caroli formula | **100% Validated** | N/A (Smoke data generation) | N/A | **Completed (All Store Checks PASS)**: 32/32 models in `materials_ev_v1` and 8/8 models in `materials_ev_probe` passed all store invariants (`check_store.py`: CleanErr $< 2\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, nested seeds). Empirical cost table compiled: N7–N27 full run (1,000 configs $\times$ 4 densities, 16 workers, effective 6.4× speedup) projects 28.92 h compute (36.24 h batch wall time). N50 timing probe completed: hBN ~5.3–5.6 h, phosphorene ~4.9 h, MoS₂ zigzag ~5.7 h, triangular ~0.3–2.1 h, MoS₂ armchair 40.8 h (impractical). |
+| **FULL-4** | 2026-10-03 | **30 New-Material Models (FULL-4 Production Run)** | **New-Material Disorder Clouds on Shared eV Axis** (hBN, Phosphorene, MoS₂, Triangular across N7, N9, N14 + N27 for hBN, Phosphorene, Triangular) | `~/atlas_store/materials_ev_full/` (30 models $\times$ 4 densities $\times$ 1,000 seeds = **120,000 spectra**; seeds 0–999) | Direct generation on InputSpec v3 eV grid (`generation_grid_t`); zero-padding above band top; multi-orbital whole-atom impurities (Bug #11, MoS₂ $V = 0.2535\,\text{eV}$); Caroli formula | **100% Validated** | N/A (Production data generation) | N/A | **Completed (All Store Checks PASS)**: 30/30 models in `materials_ev_full` passed all store invariants (`check_store.py`: CleanErr $< 1.7 \times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, all clouds hold exactly seeds 0–999). Total batch wall time **9.34 h** (33,639 s, 100.45 worker-compute hours, concurrency $10.75\times$ on 16 workers). Prepares data for BUILD-23 (`2026-10-02-shazam-new-materials.md`). |
 
 ---
 
@@ -846,6 +847,44 @@ Artifacts written:
 - `notebooks/tbribbon/probe50.log`
 - `notebooks/tbribbon/materials_ev_v1_report.json`
 - `notebooks/tbribbon/materials_ev_probe_report.json`
+
+### [2026-10-03] FULL-4: New-Material Production Clouds on Shared eV Axis and Validation
+
+* **Overview & Grid Selection (Decision F1(b) Option b Accepted)**:
+  - Generated full production disorder clouds for 4 new materials (hBN, phosphorene, MoS₂, triangular) across armchair and zigzag edges directly into `~/atlas_store/materials_ev_full`.
+  - Grid: Widths 7, 9, 14 for all four materials (24 models), plus width 27 for hBN, phosphorene, and triangular (6 models). Total = 30 models $\times$ 4 densities ($d \in \{0.005, 0.01, 0.02, 0.04\}$) $\times$ 1,000 configurations = **120,000 spectra**.
+  - Generated directly on the shared InputSpec v3 eV grid (`generation_grid_t`), with zero-padding above clean band tops, and multi-orbital whole-atom impurity assignments (Bug #11; MoS₂ $V = 0.2535\text{ eV}$).
+
+* **Measured Execution Timings on 16 Workers (`notebooks/tbribbon/full4.log`)**:
+  - **Total batch wall time**: **9.34 h** (33,638.9 s).
+  - **Total worker compute time**: **100.45 h** (sum of medians).
+  - **Effective concurrency**: **$10.75\times$** on 16 workers.
+  - The actual full-run time (9.34 h) came in well below the conservative smoke-scaled bounds (13.3 h compute-scaled / 24.5 h batch-wall) because the 1,000 configurations amortised lead setup costs, while wider ribbons achieved up to $11.8\times$ concurrency.
+
+* **Wall Hours per Ribbon**:
+
+| Material, Edge | N7 (wall / compute) | N9 (wall / compute) | N14 (wall / compute) | N27 (wall / compute) | Ribbon Total (wall / compute) | Speedup |
+|---|---|---|---|---|---|---|
+| **hBN armchair** | 0.113 h / 1.036 h | 0.150 h / 1.509 h | 0.309 h / 3.647 h | 1.046 h / 11.780 h | **1.618 h / 17.972 h** | 11.1× |
+| **hBN zigzag** | 0.127 h / 1.316 h | 0.145 h / 1.407 h | 0.270 h / 2.862 h | 1.055 h / 11.949 h | **1.597 h / 17.534 h** | 11.0× |
+| **phosphorene armchair** | 0.109 h / 0.974 h | 0.135 h / 1.296 h | 0.253 h / 2.665 h | 0.999 h / 11.273 h | **1.496 h / 16.208 h** | 10.8× |
+| **phosphorene zigzag** | 0.110 h / 0.982 h | 0.136 h / 1.296 h | 0.252 h / 2.656 h | 0.998 h / 11.306 h | **1.496 h / 16.240 h** | 10.9× |
+| **MoS₂ armchair** | 0.224 h / 2.342 h | 0.390 h / 4.261 h | 1.187 h / 13.282 h | — (omitted) | **1.801 h / 19.885 h** | 11.0× |
+| **MoS₂ zigzag** | 0.076 h / 0.628 h | 0.105 h / 0.970 h | 0.224 h / 2.335 h | — (omitted) | **0.405 h / 3.933 h** | 9.7× |
+| **triangular armchair** | 0.057 h / 0.395 h | 0.068 h / 0.525 h | 0.115 h / 1.078 h | 0.427 h / 4.690 h | **0.667 h / 6.688 h** | 10.0× |
+| **triangular zigzag** | 0.044 h / 0.247 h | 0.047 h / 0.288 h | 0.057 h / 0.397 h | 0.113 h / 1.054 h | **0.261 h / 1.986 h** | 7.6× |
+| **Total** | | | | | **9.34 h / 100.45 h** | **10.75×** |
+
+* **Store Validation Invariants (`check_store.py`)**:
+  - `~/atlas_store/materials_ev_full` (30 models): **ALL PASS** (`notebooks/tbribbon/materials_ev_full_report.json`).
+    - Clean transmission equals open channel counts: $\text{CleanErr} \le 1.67 \times 10^{-4} < 10^{-3}$.
+    - Disordered medians bounded at/below pristine: $\text{MaxExcess} = +0.0000 \le 0.05$.
+    - Zero cross-density duplicates: PASS.
+    - Strict seed split: all 120 clouds hold configurations $0 \text{--} 999$ exactly (`bad clouds: []`).
+
+Artifacts written:
+- `notebooks/tbribbon/full4.log`
+- `notebooks/tbribbon/materials_ev_full_report.json`
 
 ---
 
