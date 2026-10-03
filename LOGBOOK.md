@@ -789,7 +789,7 @@ Artifacts written:
 | Material | Lattice / Model | $t_{\text{ev}}$ (eV) | $V$ in units of $t$ | $V$ (eV) | Atoms / Cell ($N$ rows) | Orbitals / Atom ($k$) |
 |---|---|---|---|---|---|---|
 | **hBN** | Honeycomb binary | 2.30 | 0.50 | 1.1500 | $2N$ (arm), $2N$ (zz) | 1 |
-| **phosphorene** | Anisotropic 5-hop | 3.665 | 0.50 | 1.8325 | $4N$ (arm), $4N$ (zz) | 1 |
+| **phosphorene** | Anisotropic 5-hop | 3.665 | 0.50 | 1.8325 | $2N$ (arm), $2N$ (zz) | 1 |
 | **MoS₂** | 3-band GGA ($d_{z^2}, d_{xy}, d_{x^2-y^2}$) | 1.00 | 0.2535 ($0.5 \times t_2$) | 0.2535 | $2N$ (arm), $N$ (zz) | 3 |
 | **triangular** | Idealised single-band | 1.00 | 0.50 | 0.5000 | $2N$ (arm), $N$ (zz) | 1 |
 

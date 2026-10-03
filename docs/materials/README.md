@@ -137,7 +137,7 @@ There are two generations of stored grid:
 | `materials_v1` | Clean fingerprints only (no clouds) of hBN, phosphorene, MoS₂ (N7/9/14/27) and triangular (N4–12), on the units-of-t grid | Superseded by the eV stores |
 | `materials_ev_v1` | SMOKE-3: hBN, phosphorene, MoS₂, triangular × armchair/zigzag × N7/9/14/27 × 4 densities × 50 seeds, on the eV grid | Smoke; all 32 pass |
 | `materials_ev_probe` | N50 timing probe: the 4 materials × 2 edges × 4 densities × 2 seeds | Cost estimate only |
-| `materials_ev_full` | **FULL-4 (running since 2026-10-03 04:18):** the 4 materials × 2 edges × N7/9/14, then hBN, phosphorene and triangular × N27, all × 4 densities × 1,000 seeds | Production for new materials |
+| `materials_ev_full` | **FULL-4 (2026-10-03):** 30 models (the 4 materials × 2 edges × N7/9/14, plus hBN, phosphorene and triangular × N27), 4 densities × 1,000 seeds (120,000 spectra) on the eV grid | Production for new materials (ALL PASS) |
 | `leads/agnr_cell_v2/` | Recomputed armchair leads for even widths and widths > 31 (Bug #9) | Used by agnr_lib |
 
 ## Decisions on record
