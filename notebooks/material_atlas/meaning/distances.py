@@ -33,3 +33,18 @@ def kernel_sigma(D):
         raise ValueError("need at least two ribbons")
     off = D[~np.eye(n, dtype=bool)].reshape(n, n - 1)
     return float(np.median(off.min(axis=1)))
+
+
+def shape_profile(T, e, n=200, cap=64.0):
+    """Clean spectrum on a band-top-normalised axis u = E / E_top (label-free: E_top = last energy with T > 0.5).
+
+    Removes the energy scale (hopping), so the distance between profiles compares band shape only.
+    """
+    T, e = np.asarray(T, float), np.asarray(e, float)
+    open_ = np.flatnonzero(T > 0.5)
+    if open_.size == 0:
+        raise ValueError("spectrum has no open channel (T <= 0.5 everywhere)")
+    top = e[open_[-1]]
+    u = np.arange(n) / n
+    prof = np.interp(u * top, e, T)
+    return np.log1p(np.clip(prof, 0.0, cap)) / np.log1p(cap)
