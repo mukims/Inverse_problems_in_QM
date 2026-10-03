@@ -31,6 +31,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-22** | 2026-10-02 | **31-Model Sparse Ribbon Grid (Shazam v4) + Stage 3 7/9-AGNR** | **Atlas v4** (Shared eV Axis + Label-Free Despiking $T > 2m+2$, 416-ch, Conv1dAE + Option B Novelty + Stage 3 XGBoost) | `engine_v1` (18,600 test spectra) + `novelty_v1` + LOO + `consolidated_data` (37,350 test spectra) | InputSpec v4 (unit="eV", $E \in [0, 8.32)\,\text{eV}$, step 0.02, cap 64.0, despike=True), no transport recomputed | **100.0% Mat<br>100.0% Edge<br>99.93% Width** | **1.986 (Estimated)** | **2.893 (Estimated)** | **Accepted by the human (2026-10-02)** despite the MAE miss (1.986 against $\le 1.980$). Miss caused entirely by 14 9-AGNR spectra outside Shazam's 0.5–4% density range (without them MAE is 1.975). Despiked eV axis. Width vote gate recovered: 99.759% ($\ge 99.5\%$: PASS; 7-AGNR 0 errors, 9-AGNR 90 errors). Identification: Mat 100%, Edge 100%, Width 99.93% ($\ge 99.9\%$: PASS). False alarms pooled: arm 0.97%, zz 1.45% (0.5–1.5%: PASS). Unseen square strip: 100.0% ($\ge 99\%$: PASS). LOO: N13 95.83%, N8 100.0% ($\ge 95\%$: PASS). Conformal coverage: 90.00% ($90 \pm 2\%$: PASS). `atlas_v4` is the eV-axis Shazam for the material expansion. |
 | **SMOKE-3** | 2026-10-02 | **32 New-Material Models + 8 Timing Probes (N=50)** | **New-Material Smoke Clouds on Shared eV Axis** (hBN, Phosphorene, MoS₂, Triangular) | `~/atlas_store/materials_ev_v1` (32 models $\times$ 4 densities $\times$ 50 seeds = 6,400 spectra) + `~/atlas_store/materials_ev_probe` (8 models $\times$ 4 densities $\times$ 2 seeds = 64 spectra) | Direct generation on InputSpec v3 eV grid (`generation_grid_t`); zero-padding above band top; multi-orbital whole-atom impurities (Bug #11, MoS₂ $V = 0.2535\,\text{eV}$); Caroli formula | **100% Validated** | N/A (Smoke data generation) | N/A | **Completed (All Store Checks PASS)**: 32/32 models in `materials_ev_v1` and 8/8 models in `materials_ev_probe` passed all store invariants (`check_store.py`: CleanErr $< 2\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, nested seeds). Empirical cost table compiled: N7–N27 full run (1,000 configs $\times$ 4 densities, 16 workers, effective 6.4× speedup) projects 28.92 h compute (36.24 h batch wall time). N50 timing probe completed: hBN ~5.3–5.6 h, phosphorene ~4.9 h, MoS₂ zigzag ~5.7 h, triangular ~0.3–2.1 h, MoS₂ armchair 40.8 h (impractical). |
 | **FULL-4** | 2026-10-03 | **30 New-Material Models (FULL-4 Production Run)** | **New-Material Disorder Clouds on Shared eV Axis** (hBN, Phosphorene, MoS₂, Triangular across N7, N9, N14 + N27 for hBN, Phosphorene, Triangular) | `~/atlas_store/materials_ev_full/` (30 models $\times$ 4 densities $\times$ 1,000 seeds = **120,000 spectra**; seeds 0–999) | Direct generation on InputSpec v3 eV grid (`generation_grid_t`); zero-padding above band top; multi-orbital whole-atom impurities (Bug #11, MoS₂ $V = 0.2535\,\text{eV}$); Caroli formula | **100% Validated** | N/A (Production data generation) | N/A | **Completed (All Store Checks PASS)**: 30/30 models in `materials_ev_full` passed all store invariants (`check_store.py`: CleanErr $< 1.7 \times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, all clouds hold exactly seeds 0–999). Total batch wall time **9.34 h** (33,639 s, 100.45 worker-compute hours, concurrency $10.75\times$ on 16 workers). Prepares data for BUILD-23 (`2026-10-02-shazam-new-materials.md`). |
+| **BUILD-23** | 2026-10-03 | **61 Ribbon Models (Graphene + 4 New Materials) + Square Strip** | **Atlas v4m (Frozen Atlas v4 Encoder + MultiStore + Per-Material Novelty Calibration)** | `engine_v1` (18,600 graphene test) + `materials_ev_full` (18,000 new material test) + `novelty_v1` (600 square test) | InputSpec v4 (unit="eV", despike=True, shared 416-ch grid); frozen `atlas_v4` weights; per-material/edge novelty tails; seeds 0–699 train/refs, 700–849 val/cal, 850–999 test | **100.0% Mat<br>99.98% Edge<br>99.88% Width** | N/A (Stage 1–2 identification & novelty) | N/A | **Completed (All Gates G1–G4 Passed)**: G1 Graphene unchanged (width 99.925% vs 99.93%; false alarms arm 1.06%, zz 1.43%); G2 New materials identified (all materials 100.0%, edge $\ge 99.896\%$, width $\ge 99.479\%$, false alarms 0.58–1.46%); G3 Unseen square strip 100.0% unknown; G4 Leave-one-material-out 99.83–100.0% unknown across all 4 materials. Results in `notebooks/material_atlas/atlas_v4m/results.json`. |
 
 ---
 
@@ -885,6 +886,65 @@ Artifacts written:
 Artifacts written:
 - `notebooks/tbribbon/full4.log`
 - `notebooks/tbribbon/materials_ev_full_report.json`
+
+### [2026-10-03] BUILD-23: Shazam on New Materials (Frozen Encoder `atlas_v4m`)
+
+* **Setup & Architecture**:
+  - Combined `~/atlas_store/engine_v1` (31 graphene models) and `~/atlas_store/materials_ev_full` (30 new material models) via `MultiStore`. Total: 61 models across 5 materials.
+  - Frozen `atlas_v4` Conv1dAE encoder (trained on graphene only, `InputSpec v4` despiked 416-ch eV grid).
+  - New material references embedded and appended via `add_models(max_seed=699, refs_per_model=2000)`.
+  - Novelty calibration: per-material/edge grouping (`group_by="material_edge"`), validated on seeds 700–849. Chosen scale shrinkage parameter $n_0 = 300$.
+  - Evaluation executed on held-out test seeds 850–999 (18,600 graphene + 18,000 new material = 36,600 total test spectra) plus 600 square strip test spectra from `~/atlas_store/novelty_v1`.
+
+* **Novelty Parameters**:
+  - Chosen scale shrinkage: $n_0 = 300$.
+  - Calibrated tail thresholds $z^*$ (99th percentile):
+    - `graphene-ideal/armchair`: 3.406, `graphene-ideal/zigzag`: 3.388
+    - `hbn/armchair`: 2.637, `hbn/zigzag`: 2.693
+    - `mos2/armchair`: 3.277, `mos2/zigzag`: 3.411
+    - `phosphorene/armchair`: 2.820, `phosphorene/zigzag`: 3.200
+    - `triangular/armchair`: 2.901, `triangular/zigzag`: 3.233
+
+* **Pre-Registered Gates (G1–G4)**:
+
+| Gate | Requirement | Reference (`atlas_v4`) | BUILD-23 (`atlas_v4m`) | Status |
+|---|---|---|---|---|
+| **G1 Graphene unchanged** | Width $\ge 99.9\%$; false alarms armchair & zigzag each $0.5 \text{--} 1.5\%$ | Width: 99.93%; FA: arm 0.97%, zz 1.45% | Width: **99.925%**; FA: arm **1.059%**, zz **1.429%** | **PASS** |
+| **G2 New materials identified** | Per material: material $\ge 99.9\%$, edge $\ge 99.5\%$, width $\ge 99\%$; every group FA $0.5 \text{--} 1.5\%$ | — | Mat: $100.0\%$, Edge: $\ge 99.896\%$, Width: $\ge 99.479\%$, FA: $0.583 \text{--} 1.458\%$ | **PASS** |
+| **G3 Unseen square strip** | `square.unknown_pct` $\ge 99\%$ | 100% | **100.0%** | **PASS** |
+| **G4 Hidden material flagged** | `lomo[M].unknown_pct` $\ge 95\%$ for every new material $M$ | Untrained widths: 95.8% | hBN **100.0%**, MoS₂ **100.0%**, phosphorene **99.833%**, triangular **100.0%** | **PASS** |
+
+* **Detailed Identification Breakdown by Material (Held-Out Test Seeds 850–999)**:
+
+| Material | Samples ($n$) | Material Acc (%) | Edge Acc (%) | Width Acc (%) | Pooled Unknown (%) | Armchair FA (%) | Zigzag FA (%) |
+|---|---|---|---|---|---|---|---|
+| **graphene-ideal** | 18,600 | 99.995% | 99.995% | 99.925% | 1.226% | 1.059% | 1.429% |
+| **hBN** | 4,800 | 100.000% | 99.896% | 99.479% | 1.354% | 1.250% | 1.458% |
+| **MoS₂** | 3,600 | 100.000% | 100.000% | 100.000% | 1.250% | 1.111% | 1.389% |
+| **phosphorene** | 4,800 | 100.000% | 100.000% | 100.000% | 0.896% | 0.583% | 1.208% |
+| **triangular** | 4,800 | 100.000% | 100.000% | 100.000% | 1.021% | 1.083% | 0.958% |
+
+* **Leave-One-Material-Out (LOMO) Closest Lattice Benchmark**:
+
+| Hidden Material | Samples ($n$) | Unknown (%) | Nearest Material Share (%) | Median $z$ ($z_{50}$) | Median $s/\tau$ | Clean Agree (eV) | Clean Agree (Shape) |
+|---|---|---|---|---|---|---|---|
+| **hBN** | 4,800 | 100.0% | phosphorene: 97.354%, graphene-ideal: 2.646% | 16.167 | 4.984 | 100.0% | 87.5% |
+| **MoS₂** | 3,600 | 100.0% | triangular: 75.889%, graphene-ideal: 24.111% | 19.982 | 8.235 | 66.7% | 0.0% |
+| **phosphorene** | 4,800 | 99.833% | graphene-ideal: 84.875%, hBN: 15.125% | 10.292 | 2.403 | 87.5% | 87.5% |
+| **triangular** | 4,800 | 100.0% | MoS₂: 100.0% | 23.273 | 19.299 | 100.0% | 0.0% |
+
+* **Pre-Registered Expectations (E1–E4)**:
+  - **E1** (Hidden hBN $\to$ nearest graphene-ideal): **MISSED**. Nearest material is phosphorene (97.354%), with graphene-ideal at 2.646%. (Both are honeycomb lattices, but phosphorene's subband structure is closer in this embedding space).
+  - **E2** (Hidden MoS₂ $\to$ triangular, and hidden triangular $\to$ MoS₂): **MET**. MoS₂ votes triangular majority (75.889%), and triangular votes MoS₂ 100.0%.
+  - **E3** (Hidden phosphorene $\to$ graphene-ideal or hBN): **MET**. Graphene-ideal: 84.875%, hBN: 15.125% (sum = 100.0%).
+  - **E4** (Per-ribbon nearest material agrees with clean-spectrum nearest material on $\ge 75\%$ of ribbons): **MET on 3 of 4 materials** (hBN 100.0%, phosphorene 87.5%, triangular 100.0%; MoS₂ at 66.7% with 4/6 ribbons agreeing).
+
+Artifacts written:
+- `notebooks/material_atlas/atlas_v4m/results.json`
+- `notebooks/material_atlas/atlas_v4m/manifest.json`
+- `notebooks/material_atlas/atlas_v4m/encoder.pt`
+- `notebooks/material_atlas/atlas_v4m/refs.npz`
+- `notebooks/material_atlas/atlas_v4m_run.log`
 
 ---
 

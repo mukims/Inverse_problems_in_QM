@@ -1,0 +1,1551 @@
+{
+  "identification": {
+    "per_model": {
+      "graphene-ideal/armchair/N10": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.333,
+        "median_z": 0.142,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N11": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 99.667,
+        "unknown_pct": 1.5,
+        "median_z": -0.128,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N12": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.167,
+        "median_z": 0.055,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N13": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.333,
+        "median_z": -0.058,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N14": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.667,
+        "median_z": -0.085,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N15": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.5,
+        "median_z": -0.112,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N16": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.333,
+        "median_z": -0.147,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N20": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.167,
+        "median_z": -0.021,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N27": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.667,
+        "median_z": -0.006,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N31": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.167,
+        "median_z": -0.052,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N40": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.5,
+        "median_z": -0.01,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N5": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.5,
+        "median_z": 0.062,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N50": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.167,
+        "median_z": 0.013,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N6": {
+        "material_accuracy": 99.833,
+        "edge_accuracy": 99.833,
+        "width_accuracy": 99.833,
+        "unknown_pct": 2.0,
+        "median_z": 0.176,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N7": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 2.5,
+        "median_z": 0.013,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N8": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 98.167,
+        "unknown_pct": 2.333,
+        "median_z": -0.048,
+        "n": 600
+      },
+      "graphene-ideal/armchair/N9": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 2.167,
+        "median_z": 0.066,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N10": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.5,
+        "median_z": -0.11,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N11": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.0,
+        "median_z": 0.09,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N12": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.667,
+        "median_z": 0.052,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N16": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.167,
+        "median_z": -0.002,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N20": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.667,
+        "median_z": -0.001,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N27": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.333,
+        "median_z": -0.066,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N4": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 2.0,
+        "median_z": -0.052,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N40": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.667,
+        "median_z": 0.035,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N5": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 2.667,
+        "median_z": 0.058,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N50": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.833,
+        "median_z": 0.024,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N6": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.833,
+        "median_z": -0.035,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N7": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.833,
+        "median_z": 0.043,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N8": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.333,
+        "median_z": -0.075,
+        "n": 600
+      },
+      "graphene-ideal/zigzag/N9": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 2.5,
+        "median_z": 0.077,
+        "n": 600
+      },
+      "hbn/armchair/N14": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.333,
+        "median_z": -0.076,
+        "n": 600
+      },
+      "hbn/armchair/N27": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 99.667,
+        "width_accuracy": 99.833,
+        "unknown_pct": 1.667,
+        "median_z": 0.01,
+        "n": 600
+      },
+      "hbn/armchair/N7": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 99.667,
+        "unknown_pct": 1.167,
+        "median_z": -0.018,
+        "n": 600
+      },
+      "hbn/armchair/N9": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 99.833,
+        "unknown_pct": 1.833,
+        "median_z": -0.07,
+        "n": 600
+      },
+      "hbn/zigzag/N14": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 98.0,
+        "unknown_pct": 0.333,
+        "median_z": -0.126,
+        "n": 600
+      },
+      "hbn/zigzag/N27": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 99.667,
+        "width_accuracy": 99.667,
+        "unknown_pct": 2.667,
+        "median_z": 0.039,
+        "n": 600
+      },
+      "hbn/zigzag/N7": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 99.833,
+        "unknown_pct": 1.333,
+        "median_z": 0.027,
+        "n": 600
+      },
+      "hbn/zigzag/N9": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 99.833,
+        "width_accuracy": 99.0,
+        "unknown_pct": 1.5,
+        "median_z": 0.012,
+        "n": 600
+      },
+      "mos2/armchair/N14": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.0,
+        "median_z": 0.01,
+        "n": 600
+      },
+      "mos2/armchair/N7": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.167,
+        "median_z": -0.004,
+        "n": 600
+      },
+      "mos2/armchair/N9": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.167,
+        "median_z": 0.128,
+        "n": 600
+      },
+      "mos2/zigzag/N14": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.833,
+        "median_z": 0.089,
+        "n": 600
+      },
+      "mos2/zigzag/N7": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.167,
+        "median_z": 0.036,
+        "n": 600
+      },
+      "mos2/zigzag/N9": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.167,
+        "median_z": 0.013,
+        "n": 600
+      },
+      "phosphorene/armchair/N14": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.5,
+        "median_z": -0.069,
+        "n": 600
+      },
+      "phosphorene/armchair/N27": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.0,
+        "median_z": -0.101,
+        "n": 600
+      },
+      "phosphorene/armchair/N7": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.833,
+        "median_z": 0.031,
+        "n": 600
+      },
+      "phosphorene/armchair/N9": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.0,
+        "median_z": -0.128,
+        "n": 600
+      },
+      "phosphorene/zigzag/N14": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.833,
+        "median_z": -0.023,
+        "n": 600
+      },
+      "phosphorene/zigzag/N27": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.167,
+        "median_z": -0.22,
+        "n": 600
+      },
+      "phosphorene/zigzag/N7": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.833,
+        "median_z": -0.046,
+        "n": 600
+      },
+      "phosphorene/zigzag/N9": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 2.0,
+        "median_z": 0.139,
+        "n": 600
+      },
+      "triangular/armchair/N14": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.5,
+        "median_z": 0.025,
+        "n": 600
+      },
+      "triangular/armchair/N27": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.833,
+        "median_z": 0.106,
+        "n": 600
+      },
+      "triangular/armchair/N7": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.167,
+        "median_z": 0.02,
+        "n": 600
+      },
+      "triangular/armchair/N9": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.833,
+        "median_z": 0.02,
+        "n": 600
+      },
+      "triangular/zigzag/N14": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.5,
+        "median_z": 0.059,
+        "n": 600
+      },
+      "triangular/zigzag/N27": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.167,
+        "median_z": 0.041,
+        "n": 600
+      },
+      "triangular/zigzag/N7": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.333,
+        "median_z": 0.034,
+        "n": 600
+      },
+      "triangular/zigzag/N9": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.833,
+        "median_z": 0.06,
+        "n": 600
+      }
+    },
+    "per_material": {
+      "graphene-ideal": {
+        "material_accuracy": 99.995,
+        "edge_accuracy": 99.995,
+        "width_accuracy": 99.925,
+        "unknown_pct": 1.226,
+        "n": 18600
+      },
+      "hbn": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 99.896,
+        "width_accuracy": 99.479,
+        "unknown_pct": 1.354,
+        "n": 4800
+      },
+      "mos2": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.25,
+        "n": 3600
+      },
+      "phosphorene": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 0.896,
+        "n": 4800
+      },
+      "triangular": {
+        "material_accuracy": 100.0,
+        "edge_accuracy": 100.0,
+        "width_accuracy": 100.0,
+        "unknown_pct": 1.021,
+        "n": 4800
+      }
+    },
+    "unknown_pct_by_group": {
+      "graphene-ideal/armchair": 1.059,
+      "graphene-ideal/zigzag": 1.429,
+      "hbn/armchair": 1.25,
+      "hbn/zigzag": 1.458,
+      "mos2/armchair": 1.111,
+      "mos2/zigzag": 1.389,
+      "phosphorene/armchair": 0.583,
+      "phosphorene/zigzag": 1.208,
+      "triangular/armchair": 1.083,
+      "triangular/zigzag": 0.958
+    }
+  },
+  "square": {
+    "n": 600,
+    "unknown_pct": 100.0,
+    "nearest_material": {
+      "triangular": 100.0
+    },
+    "nearest_material_edge": {
+      "triangular/armchair": 73.667,
+      "triangular/zigzag": 26.333
+    },
+    "nearest_model_top3": [
+      [
+        "triangular/armchair/N9",
+        46.833
+      ],
+      [
+        "triangular/armchair/N14",
+        25.667
+      ],
+      [
+        "triangular/zigzag/N7",
+        22.333
+      ]
+    ],
+    "z_quantiles": [
+      22.233,
+      23.921,
+      25.752
+    ],
+    "ratio_quantiles": [
+      9.133,
+      12.266,
+      15.146
+    ],
+    "per_model_nearest_material": {
+      "square/strip/N10": "triangular"
+    }
+  },
+  "lomo": {
+    "hbn": {
+      "n": 4800,
+      "unknown_pct": 100.0,
+      "nearest_material": {
+        "phosphorene": 97.354,
+        "graphene-ideal": 2.646
+      },
+      "nearest_material_edge": {
+        "phosphorene/zigzag": 97.354,
+        "graphene-ideal/armchair": 2.312,
+        "graphene-ideal/zigzag": 0.333
+      },
+      "nearest_model_top3": [
+        [
+          "phosphorene/zigzag/N7",
+          87.312
+        ],
+        [
+          "phosphorene/zigzag/N9",
+          10.042
+        ],
+        [
+          "graphene-ideal/armchair/N9",
+          1.604
+        ]
+      ],
+      "z_quantiles": [
+        11.227,
+        16.167,
+        18.993
+      ],
+      "ratio_quantiles": [
+        2.327,
+        4.984,
+        7.111
+      ],
+      "per_model_nearest_material": {
+        "hbn/armchair/N14": "phosphorene",
+        "hbn/armchair/N27": "phosphorene",
+        "hbn/armchair/N7": "phosphorene",
+        "hbn/armchair/N9": "phosphorene",
+        "hbn/zigzag/N14": "phosphorene",
+        "hbn/zigzag/N27": "phosphorene",
+        "hbn/zigzag/N7": "phosphorene",
+        "hbn/zigzag/N9": "phosphorene"
+      }
+    },
+    "mos2": {
+      "n": 3600,
+      "unknown_pct": 100.0,
+      "nearest_material": {
+        "triangular": 75.889,
+        "graphene-ideal": 24.111
+      },
+      "nearest_material_edge": {
+        "triangular/armchair": 75.889,
+        "graphene-ideal/armchair": 24.111
+      },
+      "nearest_model_top3": [
+        [
+          "triangular/armchair/N7",
+          60.194
+        ],
+        [
+          "graphene-ideal/armchair/N10",
+          23.389
+        ],
+        [
+          "triangular/armchair/N9",
+          15.694
+        ]
+      ],
+      "z_quantiles": [
+        6.863,
+        19.982,
+        27.705
+      ],
+      "ratio_quantiles": [
+        1.484,
+        8.235,
+        18.223
+      ],
+      "per_model_nearest_material": {
+        "mos2/armchair/N14": "triangular",
+        "mos2/armchair/N7": "graphene-ideal",
+        "mos2/armchair/N9": "graphene-ideal",
+        "mos2/zigzag/N14": "triangular",
+        "mos2/zigzag/N7": "triangular",
+        "mos2/zigzag/N9": "triangular"
+      }
+    },
+    "phosphorene": {
+      "n": 4800,
+      "unknown_pct": 99.833,
+      "nearest_material": {
+        "graphene-ideal": 84.875,
+        "hbn": 15.125
+      },
+      "nearest_material_edge": {
+        "graphene-ideal/zigzag": 57.958,
+        "graphene-ideal/armchair": 26.917,
+        "hbn/armchair": 15.125
+      },
+      "nearest_model_top3": [
+        [
+          "graphene-ideal/armchair/N7",
+          26.604
+        ],
+        [
+          "graphene-ideal/zigzag/N5",
+          20.562
+        ],
+        [
+          "hbn/armchair/N7",
+          14.771
+        ]
+      ],
+      "z_quantiles": [
+        5.899,
+        10.292,
+        13.703
+      ],
+      "ratio_quantiles": [
+        1.341,
+        2.403,
+        3.72
+      ],
+      "per_model_nearest_material": {
+        "phosphorene/armchair/N14": "graphene-ideal",
+        "phosphorene/armchair/N27": "graphene-ideal",
+        "phosphorene/armchair/N7": "graphene-ideal",
+        "phosphorene/armchair/N9": "graphene-ideal",
+        "phosphorene/zigzag/N14": "graphene-ideal",
+        "phosphorene/zigzag/N27": "graphene-ideal",
+        "phosphorene/zigzag/N7": "hbn",
+        "phosphorene/zigzag/N9": "graphene-ideal"
+      }
+    },
+    "triangular": {
+      "n": 4800,
+      "unknown_pct": 100.0,
+      "nearest_material": {
+        "mos2": 100.0
+      },
+      "nearest_material_edge": {
+        "mos2/zigzag": 100.0
+      },
+      "nearest_model_top3": [
+        [
+          "mos2/zigzag/N14",
+          72.229
+        ],
+        [
+          "mos2/zigzag/N9",
+          22.125
+        ],
+        [
+          "mos2/zigzag/N7",
+          5.646
+        ]
+      ],
+      "z_quantiles": [
+        17.779,
+        23.273,
+        29.831
+      ],
+      "ratio_quantiles": [
+        7.048,
+        19.299,
+        54.867
+      ],
+      "per_model_nearest_material": {
+        "triangular/armchair/N14": "mos2",
+        "triangular/armchair/N27": "mos2",
+        "triangular/armchair/N7": "mos2",
+        "triangular/armchair/N9": "mos2",
+        "triangular/zigzag/N14": "mos2",
+        "triangular/zigzag/N27": "mos2",
+        "triangular/zigzag/N7": "mos2",
+        "triangular/zigzag/N9": "mos2"
+      }
+    }
+  },
+  "clean_ground_truth": {
+    "graphene-ideal/armchair/N10": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.086
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N9",
+        "material": "phosphorene",
+        "distance": 0.078
+      }
+    },
+    "graphene-ideal/armchair/N11": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0905
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N9",
+        "material": "phosphorene",
+        "distance": 0.0835
+      }
+    },
+    "graphene-ideal/armchair/N12": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0854
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0773
+      }
+    },
+    "graphene-ideal/armchair/N13": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0896
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.076
+      }
+    },
+    "graphene-ideal/armchair/N14": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0947
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0784
+      }
+    },
+    "graphene-ideal/armchair/N15": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0979
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0775
+      }
+    },
+    "graphene-ideal/armchair/N16": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.1069
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0836
+      }
+    },
+    "graphene-ideal/armchair/N20": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.1202
+      },
+      "nearest_shape": {
+        "model": "triangular/zigzag/N7",
+        "material": "triangular",
+        "distance": 0.0981
+      }
+    },
+    "graphene-ideal/armchair/N27": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.13
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.093
+      }
+    },
+    "graphene-ideal/armchair/N31": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.1451
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.1023
+      }
+    },
+    "graphene-ideal/armchair/N40": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.1814
+      },
+      "nearest_shape": {
+        "model": "triangular/zigzag/N14",
+        "material": "triangular",
+        "distance": 0.1315
+      }
+    },
+    "graphene-ideal/armchair/N5": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N7",
+        "material": "phosphorene",
+        "distance": 0.0859
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N7",
+        "material": "phosphorene",
+        "distance": 0.0892
+      }
+    },
+    "graphene-ideal/armchair/N50": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.2209
+      },
+      "nearest_shape": {
+        "model": "triangular/zigzag/N14",
+        "material": "triangular",
+        "distance": 0.1392
+      }
+    },
+    "graphene-ideal/armchair/N6": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N7",
+        "material": "phosphorene",
+        "distance": 0.0684
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N7",
+        "material": "phosphorene",
+        "distance": 0.0683
+      }
+    },
+    "graphene-ideal/armchair/N7": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N7",
+        "material": "phosphorene",
+        "distance": 0.0691
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N7",
+        "material": "phosphorene",
+        "distance": 0.0644
+      }
+    },
+    "graphene-ideal/armchair/N8": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N9",
+        "material": "phosphorene",
+        "distance": 0.0818
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N9",
+        "material": "phosphorene",
+        "distance": 0.0798
+      }
+    },
+    "graphene-ideal/armchair/N9": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N9",
+        "material": "phosphorene",
+        "distance": 0.0731
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N9",
+        "material": "phosphorene",
+        "distance": 0.0662
+      }
+    },
+    "graphene-ideal/zigzag/N10": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.1139
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0816
+      }
+    },
+    "graphene-ideal/zigzag/N11": {
+      "nearest_eV": {
+        "model": "phosphorene/zigzag/N27",
+        "material": "phosphorene",
+        "distance": 0.117
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0922
+      }
+    },
+    "graphene-ideal/zigzag/N12": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.1146
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.0926
+      }
+    },
+    "graphene-ideal/zigzag/N16": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.128
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.0845
+      }
+    },
+    "graphene-ideal/zigzag/N20": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.1549
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.1033
+      }
+    },
+    "graphene-ideal/zigzag/N27": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.205
+      },
+      "nearest_shape": {
+        "model": "triangular/zigzag/N14",
+        "material": "triangular",
+        "distance": 0.1453
+      }
+    },
+    "graphene-ideal/zigzag/N4": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N7",
+        "material": "phosphorene",
+        "distance": 0.0844
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N7",
+        "material": "phosphorene",
+        "distance": 0.0804
+      }
+    },
+    "graphene-ideal/zigzag/N40": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.2823
+      },
+      "nearest_shape": {
+        "model": "triangular/zigzag/N27",
+        "material": "triangular",
+        "distance": 0.149
+      }
+    },
+    "graphene-ideal/zigzag/N5": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N9",
+        "material": "phosphorene",
+        "distance": 0.0851
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N9",
+        "material": "phosphorene",
+        "distance": 0.0793
+      }
+    },
+    "graphene-ideal/zigzag/N50": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N27",
+        "material": "phosphorene",
+        "distance": 0.3281
+      },
+      "nearest_shape": {
+        "model": "triangular/zigzag/N27",
+        "material": "triangular",
+        "distance": 0.1566
+      }
+    },
+    "graphene-ideal/zigzag/N6": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N9",
+        "material": "phosphorene",
+        "distance": 0.0966
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N9",
+        "material": "phosphorene",
+        "distance": 0.0786
+      }
+    },
+    "graphene-ideal/zigzag/N7": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0939
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0797
+      }
+    },
+    "graphene-ideal/zigzag/N8": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0956
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0744
+      }
+    },
+    "graphene-ideal/zigzag/N9": {
+      "nearest_eV": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.1033
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N14",
+        "material": "phosphorene",
+        "distance": 0.0755
+      }
+    },
+    "hbn/armchair/N14": {
+      "nearest_eV": {
+        "model": "phosphorene/zigzag/N7",
+        "material": "phosphorene",
+        "distance": 0.1508
+      },
+      "nearest_shape": {
+        "model": "phosphorene/zigzag/N7",
+        "material": "phosphorene",
+        "distance": 0.1297
+      }
+    },
+    "hbn/armchair/N27": {
+      "nearest_eV": {
+        "model": "phosphorene/zigzag/N9",
+        "material": "phosphorene",
+        "distance": 0.2129
+      },
+      "nearest_shape": {
+        "model": "phosphorene/zigzag/N9",
+        "material": "phosphorene",
+        "distance": 0.1856
+      }
+    },
+    "hbn/armchair/N7": {
+      "nearest_eV": {
+        "model": "phosphorene/zigzag/N7",
+        "material": "phosphorene",
+        "distance": 0.1167
+      },
+      "nearest_shape": {
+        "model": "phosphorene/zigzag/N7",
+        "material": "phosphorene",
+        "distance": 0.1113
+      }
+    },
+    "hbn/armchair/N9": {
+      "nearest_eV": {
+        "model": "phosphorene/zigzag/N7",
+        "material": "phosphorene",
+        "distance": 0.1213
+      },
+      "nearest_shape": {
+        "model": "phosphorene/zigzag/N7",
+        "material": "phosphorene",
+        "distance": 0.1099
+      }
+    },
+    "hbn/zigzag/N14": {
+      "nearest_eV": {
+        "model": "phosphorene/zigzag/N9",
+        "material": "phosphorene",
+        "distance": 0.2035
+      },
+      "nearest_shape": {
+        "model": "phosphorene/zigzag/N9",
+        "material": "phosphorene",
+        "distance": 0.1769
+      }
+    },
+    "hbn/zigzag/N27": {
+      "nearest_eV": {
+        "model": "phosphorene/zigzag/N14",
+        "material": "phosphorene",
+        "distance": 0.2697
+      },
+      "nearest_shape": {
+        "model": "mos2/armchair/N14",
+        "material": "mos2",
+        "distance": 0.2254
+      }
+    },
+    "hbn/zigzag/N7": {
+      "nearest_eV": {
+        "model": "phosphorene/zigzag/N7",
+        "material": "phosphorene",
+        "distance": 0.1419
+      },
+      "nearest_shape": {
+        "model": "phosphorene/zigzag/N7",
+        "material": "phosphorene",
+        "distance": 0.1218
+      }
+    },
+    "hbn/zigzag/N9": {
+      "nearest_eV": {
+        "model": "phosphorene/zigzag/N7",
+        "material": "phosphorene",
+        "distance": 0.163
+      },
+      "nearest_shape": {
+        "model": "phosphorene/zigzag/N7",
+        "material": "phosphorene",
+        "distance": 0.1402
+      }
+    },
+    "mos2/armchair/N14": {
+      "nearest_eV": {
+        "model": "triangular/armchair/N7",
+        "material": "triangular",
+        "distance": 0.1375
+      },
+      "nearest_shape": {
+        "model": "phosphorene/zigzag/N27",
+        "material": "phosphorene",
+        "distance": 0.1623
+      }
+    },
+    "mos2/armchair/N7": {
+      "nearest_eV": {
+        "model": "triangular/armchair/N7",
+        "material": "triangular",
+        "distance": 0.126
+      },
+      "nearest_shape": {
+        "model": "phosphorene/armchair/N7",
+        "material": "phosphorene",
+        "distance": 0.122
+      }
+    },
+    "mos2/armchair/N9": {
+      "nearest_eV": {
+        "model": "triangular/armchair/N7",
+        "material": "triangular",
+        "distance": 0.1231
+      },
+      "nearest_shape": {
+        "model": "phosphorene/zigzag/N14",
+        "material": "phosphorene",
+        "distance": 0.1227
+      }
+    },
+    "mos2/zigzag/N14": {
+      "nearest_eV": {
+        "model": "triangular/armchair/N7",
+        "material": "triangular",
+        "distance": 0.1032
+      },
+      "nearest_shape": {
+        "model": "phosphorene/zigzag/N27",
+        "material": "phosphorene",
+        "distance": 0.1565
+      }
+    },
+    "mos2/zigzag/N7": {
+      "nearest_eV": {
+        "model": "triangular/armchair/N7",
+        "material": "triangular",
+        "distance": 0.0872
+      },
+      "nearest_shape": {
+        "model": "phosphorene/zigzag/N14",
+        "material": "phosphorene",
+        "distance": 0.1333
+      }
+    },
+    "mos2/zigzag/N9": {
+      "nearest_eV": {
+        "model": "triangular/armchair/N7",
+        "material": "triangular",
+        "distance": 0.0884
+      },
+      "nearest_shape": {
+        "model": "phosphorene/zigzag/N14",
+        "material": "phosphorene",
+        "distance": 0.1428
+      }
+    },
+    "phosphorene/armchair/N14": {
+      "nearest_eV": {
+        "model": "graphene-ideal/armchair/N12",
+        "material": "graphene-ideal",
+        "distance": 0.0854
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/zigzag/N8",
+        "material": "graphene-ideal",
+        "distance": 0.0744
+      }
+    },
+    "phosphorene/armchair/N27": {
+      "nearest_eV": {
+        "model": "graphene-ideal/zigzag/N12",
+        "material": "graphene-ideal",
+        "distance": 0.1146
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/zigzag/N16",
+        "material": "graphene-ideal",
+        "distance": 0.0845
+      }
+    },
+    "phosphorene/armchair/N7": {
+      "nearest_eV": {
+        "model": "graphene-ideal/armchair/N6",
+        "material": "graphene-ideal",
+        "distance": 0.0684
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/armchair/N7",
+        "material": "graphene-ideal",
+        "distance": 0.0644
+      }
+    },
+    "phosphorene/armchair/N9": {
+      "nearest_eV": {
+        "model": "graphene-ideal/armchair/N7",
+        "material": "graphene-ideal",
+        "distance": 0.0707
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/armchair/N9",
+        "material": "graphene-ideal",
+        "distance": 0.0662
+      }
+    },
+    "phosphorene/zigzag/N14": {
+      "nearest_eV": {
+        "model": "graphene-ideal/zigzag/N6",
+        "material": "graphene-ideal",
+        "distance": 0.098
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/zigzag/N7",
+        "material": "graphene-ideal",
+        "distance": 0.1046
+      }
+    },
+    "phosphorene/zigzag/N27": {
+      "nearest_eV": {
+        "model": "graphene-ideal/zigzag/N11",
+        "material": "graphene-ideal",
+        "distance": 0.117
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/zigzag/N12",
+        "material": "graphene-ideal",
+        "distance": 0.1084
+      }
+    },
+    "phosphorene/zigzag/N7": {
+      "nearest_eV": {
+        "model": "graphene-ideal/armchair/N5",
+        "material": "graphene-ideal",
+        "distance": 0.0975
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/armchair/N5",
+        "material": "graphene-ideal",
+        "distance": 0.1038
+      }
+    },
+    "phosphorene/zigzag/N9": {
+      "nearest_eV": {
+        "model": "graphene-ideal/zigzag/N4",
+        "material": "graphene-ideal",
+        "distance": 0.0978
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/zigzag/N4",
+        "material": "graphene-ideal",
+        "distance": 0.1044
+      }
+    },
+    "triangular/armchair/N14": {
+      "nearest_eV": {
+        "model": "mos2/zigzag/N14",
+        "material": "mos2",
+        "distance": 0.1249
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/armchair/N31",
+        "material": "graphene-ideal",
+        "distance": 0.1232
+      }
+    },
+    "triangular/armchair/N27": {
+      "nearest_eV": {
+        "model": "mos2/zigzag/N14",
+        "material": "mos2",
+        "distance": 0.1921
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/armchair/N50",
+        "material": "graphene-ideal",
+        "distance": 0.1403
+      }
+    },
+    "triangular/armchair/N7": {
+      "nearest_eV": {
+        "model": "mos2/zigzag/N7",
+        "material": "mos2",
+        "distance": 0.0872
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/armchair/N14",
+        "material": "graphene-ideal",
+        "distance": 0.1063
+      }
+    },
+    "triangular/armchair/N9": {
+      "nearest_eV": {
+        "model": "mos2/zigzag/N9",
+        "material": "mos2",
+        "distance": 0.1024
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/armchair/N20",
+        "material": "graphene-ideal",
+        "distance": 0.1132
+      }
+    },
+    "triangular/zigzag/N14": {
+      "nearest_eV": {
+        "model": "mos2/zigzag/N14",
+        "material": "mos2",
+        "distance": 0.145
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/armchair/N40",
+        "material": "graphene-ideal",
+        "distance": 0.1315
+      }
+    },
+    "triangular/zigzag/N27": {
+      "nearest_eV": {
+        "model": "mos2/zigzag/N14",
+        "material": "mos2",
+        "distance": 0.2133
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/zigzag/N40",
+        "material": "graphene-ideal",
+        "distance": 0.149
+      }
+    },
+    "triangular/zigzag/N7": {
+      "nearest_eV": {
+        "model": "mos2/zigzag/N9",
+        "material": "mos2",
+        "distance": 0.103
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/armchair/N20",
+        "material": "graphene-ideal",
+        "distance": 0.0981
+      }
+    },
+    "triangular/zigzag/N9": {
+      "nearest_eV": {
+        "model": "mos2/zigzag/N14",
+        "material": "mos2",
+        "distance": 0.1162
+      },
+      "nearest_shape": {
+        "model": "graphene-ideal/armchair/N20",
+        "material": "graphene-ideal",
+        "distance": 0.107
+      }
+    }
+  },
+  "agreement": {
+    "hbn": {
+      "eV": 100.0,
+      "shape": 87.5
+    },
+    "mos2": {
+      "eV": 66.7,
+      "shape": 0.0
+    },
+    "phosphorene": {
+      "eV": 87.5,
+      "shape": 87.5
+    },
+    "triangular": {
+      "eV": 100.0,
+      "shape": 0.0
+    }
+  },
+  "settings": {
+    "mode": "frozen",
+    "base_atlas": "notebooks/material_atlas/atlas_v4",
+    "spec": {
+      "version": "v4",
+      "e_max_t": 8.32,
+      "step_t": 0.02,
+      "cap": 64.0,
+      "unit": "eV",
+      "despike": true
+    },
+    "materials_store": "~/atlas_store/materials_ev_full",
+    "seed_split": [
+      699,
+      700,
+      849,
+      850
+    ],
+    "group_by": "material_edge",
+    "n0": 300,
+    "z_star": {
+      "graphene-ideal/armchair": 3.406043840585231,
+      "graphene-ideal/zigzag": 3.388350479200681,
+      "hbn/armchair": 2.637442998037879,
+      "hbn/zigzag": 2.69274878911115,
+      "mos2/armchair": 3.2766517197743688,
+      "mos2/zigzag": 3.4107945793955534,
+      "phosphorene/armchair": 2.8197496814268965,
+      "phosphorene/zigzag": 3.1999805923199935,
+      "triangular/armchair": 2.9012632543462087,
+      "triangular/zigzag": 3.2333643699879673
+    },
+    "runtime_s": 130
+  }
+}

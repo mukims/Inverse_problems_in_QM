@@ -1,0 +1,43 @@
+[shazam] frozen map: 61 models, n0=300, z*={'graphene-ideal/armchair': 3.406043840585231, 'graphene-ideal/zigzag': 3.388350479200681, 'hbn/armchair': 2.637442998037879, 'hbn/zigzag': 2.69274878911115, 'mos2/armchair': 3.2766517197743688, 'mos2/zigzag': 3.4107945793955534, 'phosphorene/armchair': 2.8197496814268965, 'phosphorene/zigzag': 3.1999805923199935, 'triangular/armchair': 2.9012632543462087, 'triangular/zigzag': 3.2333643699879673}
+{
+ "graphene-ideal": {
+  "material_accuracy": 99.995,
+  "edge_accuracy": 99.995,
+  "width_accuracy": 99.925,
+  "unknown_pct": 1.226,
+  "n": 18600
+ },
+ "hbn": {
+  "material_accuracy": 100.0,
+  "edge_accuracy": 99.896,
+  "width_accuracy": 99.479,
+  "unknown_pct": 1.354,
+  "n": 4800
+ },
+ "mos2": {
+  "material_accuracy": 100.0,
+  "edge_accuracy": 100.0,
+  "width_accuracy": 100.0,
+  "unknown_pct": 1.25,
+  "n": 3600
+ },
+ "phosphorene": {
+  "material_accuracy": 100.0,
+  "edge_accuracy": 100.0,
+  "width_accuracy": 100.0,
+  "unknown_pct": 0.896,
+  "n": 4800
+ },
+ "triangular": {
+  "material_accuracy": 100.0,
+  "edge_accuracy": 100.0,
+  "width_accuracy": 100.0,
+  "unknown_pct": 1.021,
+  "n": 4800
+ }
+}
+[shazam] hidden hbn: unknown 100.0%, nearest {'phosphorene': 97.354, 'graphene-ideal': 2.646}, z50 16.167
+[shazam] hidden mos2: unknown 100.0%, nearest {'triangular': 75.889, 'graphene-ideal': 24.111}, z50 19.982
+[shazam] hidden phosphorene: unknown 99.833%, nearest {'graphene-ideal': 84.875, 'hbn': 15.125}, z50 10.292
+[shazam] hidden triangular: unknown 100.0%, nearest {'mos2': 100.0}, z50 23.273
+[shazam] done in 130s -> notebooks/material_atlas/atlas_v4m/results.json
