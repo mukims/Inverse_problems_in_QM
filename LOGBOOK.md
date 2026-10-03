@@ -33,6 +33,8 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **FULL-4** | 2026-10-03 | **30 New-Material Models (FULL-4 Production Run)** | **New-Material Disorder Clouds on Shared eV Axis** (hBN, Phosphorene, MoS₂, Triangular across N7, N9, N14 + N27 for hBN, Phosphorene, Triangular) | `~/atlas_store/materials_ev_full/` (30 models $\times$ 4 densities $\times$ 1,000 seeds = **120,000 spectra**; seeds 0–999) | Direct generation on InputSpec v3 eV grid (`generation_grid_t`); zero-padding above band top; multi-orbital whole-atom impurities (Bug #11, MoS₂ $V = 0.2535\,\text{eV}$); Caroli formula | **100% Validated** | N/A (Production data generation) | N/A | **Completed (All Store Checks PASS)**: 30/30 models in `materials_ev_full` passed all store invariants (`check_store.py`: CleanErr $< 1.7 \times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, all clouds hold exactly seeds 0–999). Total batch wall time **9.34 h** (33,639 s, 100.45 worker-compute hours, concurrency $10.75\times$ on 16 workers). Prepares data for BUILD-23 (`2026-10-02-shazam-new-materials.md`). |
 | **BUILD-23** | 2026-10-03 | **61 Ribbon Models (Graphene + 4 New Materials) + Square Strip** | **Atlas v4m (Frozen Atlas v4 Encoder + MultiStore + Per-Material Novelty Calibration)** | `engine_v1` (18,600 graphene test) + `materials_ev_full` (18,000 new material test) + `novelty_v1` (600 square test) | InputSpec v4 (unit="eV", despike=True, shared 416-ch grid); frozen `atlas_v4` weights; per-material/edge novelty tails; seeds 0–699 train/refs, 700–849 val/cal, 850–999 test | **100.0% Mat<br>99.98% Edge<br>99.88% Width** | N/A (Stage 1–2 identification & novelty) | N/A | **Completed (All Gates G1–G4 Passed)**: G1 Graphene unchanged (width 99.925% vs 99.93%; false alarms arm 1.06%, zz 1.43%); G2 New materials identified (all materials 100.0%, edge $\ge 99.896\%$, width $\ge 99.479\%$, false alarms 0.58–1.46%); G3 Unseen square strip 100.0% unknown; G4 Leave-one-material-out 99.83–100.0% unknown across all 4 materials. Results in `notebooks/material_atlas/atlas_v4m/results.json`. |
 | **BUILD-24** | 2026-10-03 | **61 Ribbon Models (Graphene + 4 New Materials) + Square Strip** | **Atlas v5m (Retrained Joint Encoder + Retrained Leave-One-Material-Out Maps)** | `engine_v1` (18,600 test) + `materials_ev_full` (18,000 test) + `novelty_v1` (600 square test) | InputSpec v4 (unit="eV", despike=True, 416-ch grid); 60-epoch joint autoencoder retrained on all materials; per-material/edge novelty tails; seeds 0–699 train, 700–849 val, 850–999 test | **100.0% Mat<br>100.0% Edge<br>99.97% Width** | N/A (Stage 1–2 identification & novelty) | N/A | **Completed (G1 MISSED on zigzag 1.631%, G2–G4 Passed)**: Perfect 100% material, edge, and width accuracy across all 4 new materials (graphene width 99.957%); unseen square strip 100.0% unknown; LOMO 96.125–100.0% unknown. **Decided by the human (2026-10-03): `atlas_v4m` (frozen) is the production map for new materials.** `atlas_v5m` and its `loo_*` maps are kept as the retrained comparison and as MEANING-2's AE baselines. Results in `notebooks/material_atlas/atlas_v5m/results.json`. |
+| **BUILD-25** | 2026-10-03 | **61 Ribbon Models + Square Strip (4 Hidden Material Groups)** | **MEANING-2 (Graded Similarity Across Materials: AE vs Physics vs Multiscale vs Stress)** | `engine_v1` (18,600 test) + `materials_ev_full` (18,000 test) + `novelty_v1` (600 square test) | InputSpec v4 (416-ch eV grid); 2,500 contrastive training steps per encoder per hidden material; seeds 0–699 train/refs, 700–849 val, 850–999 test | **99.98–100.0%** (Known Ident across all encoders) | N/A | N/A | **Completed (E1 & E5 MET, E2–E4 MISSED)**: Evaluated 4 encoders (AE baseline `atlas_v5m/loo_*`, physics, multiscale soft-targets, stress loss) across 4 leave-one-material-out splits. Contrastive encoders achieve 100% min AUROC vs known and 99.98–100% known identification. Multiscale reaches 0.962 (hBN) and 0.938 (phosphorene) hidden-ribbon Spearman correlation against clean-spectrum ground truth, but drops on MoS₂ (0.740) and triangular (0.394). Human's decision preserves `atlas_v4m` production encoder. Runtime: 2,843 s. Results in `notebooks/material_atlas/meaning/results/v2/`. |
+
 
 ---
 
@@ -1021,7 +1023,77 @@ Artifacts written:
 - `notebooks/material_atlas/atlas_v5m/loo_triangular/`
 - `notebooks/material_atlas/atlas_v5m_run.log`
 
+### [2026-10-03] BUILD-25: Shazam Meaning-Embedding v2 (Cross-Material Graded Similarity)
+
+* **Overview & Setup**:
+  - Implemented MEANING-2 per plan `2026-10-02-meaning-embedding-v2.md`.
+  - Objective: Test whether structured contrastive losses (physics soft-targets $\sigma_0$, multiscale $\sigma \in \{1\sigma_0, 4\sigma_0, 16\sigma_0\}$, and metric stress loss with scaling $\alpha$) place unseen materials in graded physical similarity to known materials, benchmarked against retrained leave-one-material-out autoencoders (`atlas_v5m/loo_<material>`).
+  - Evaluated on all 4 new material families (hBN, MoS₂, phosphorene, triangular) held out one at a time, along with unseen Square Strip N10.
+  - Encoders trained for 2,500 steps ($k=16$ ribbons per batch, 16 samples per ribbon, temperature $\tau = 0.1$, cosine annealing scheduler, learning rate $1\times 10^{-3}$, 16 threads).
+  - References: 2,000 per ribbon from training seeds (0–699); evaluated on held-out test seeds (850–999).
+  - Total batch execution time: **2,843 s** (~47.4 min).
+
+* **Parameters per Hidden Material**:
+  - `hbn`: $\sigma_0 = 0.0417$, $\alpha = 2.2303$
+  - `mos2`: $\sigma_0 = 0.0410$, $\alpha = 2.2883$
+  - `phosphorene`: $\sigma_0 = 0.0391$, $\alpha = 2.2303$
+  - `triangular`: $\sigma_0 = 0.0417$, $\alpha = 2.2303$
+
+* **Summary Benchmark Tables**:
+
+#### 1. Hidden Material: hBN ($\sigma_0 = 0.0417$, $\alpha = 2.2303$)
+| Encoder / Model | Known Ident (%) | Median Spearman (Hidden Ribbons) | Material Agree (%) | Min AUROC vs Known | Square Spearman | Square AUROC vs Known |
+|---|---|---|---|---|---|---|
+| **AE (`atlas_v5m loo`)** | 99.99% | 0.809 | 100.0% | 0.9699 | 0.916 | 1.0000 |
+| **physics** | 100.0% | **0.986** | 100.0% | 1.0000 | 0.644 | 1.0000 |
+| **multiscale** | 100.0% | 0.962 | 100.0% | 1.0000 | 0.720 | 1.0000 |
+| **stress** | 100.0% | 0.550 | 100.0% | 1.0000 | 0.244 | 1.0000 |
+
+#### 2. Hidden Material: MoS₂ ($\sigma_0 = 0.0410$, $\alpha = 2.2883$)
+| Encoder / Model | Known Ident (%) | Median Spearman (Hidden Ribbons) | Material Agree (%) | Min AUROC vs Known | Square Spearman | Square AUROC vs Known |
+|---|---|---|---|---|---|---|
+| **AE (`atlas_v5m loo`)** | 99.98% | 0.811 | 50.0% | 1.0000 | 0.911 | 1.0000 |
+| **physics** | 100.0% | **0.876** | 83.3% | 1.0000 | 0.809 | 1.0000 |
+| **multiscale** | 99.98% | 0.740 | **100.0%** | 1.0000 | 0.803 | 1.0000 |
+| **stress** | 100.0% | 0.579 | **100.0%** | 1.0000 | 0.466 | 1.0000 |
+
+#### 3. Hidden Material: Phosphorene ($\sigma_0 = 0.0391$, $\alpha = 2.2303$)
+| Encoder / Model | Known Ident (%) | Median Spearman (Hidden Ribbons) | Material Agree (%) | Min AUROC vs Known | Square Spearman | Square AUROC vs Known |
+|---|---|---|---|---|---|---|
+| **AE (`atlas_v5m loo`)** | 99.98% | 0.880 | 75.0% | 0.9939 | 0.856 | 0.9999 |
+| **physics** | 100.0% | **0.956** | **100.0%** | 1.0000 | 0.976 | 1.0000 |
+| **multiscale** | 99.99% | 0.938 | 87.5% | 1.0000 | 0.901 | 1.0000 |
+| **stress** | 100.0% | 0.593 | 87.5% | 1.0000 | 0.463 | 1.0000 |
+
+#### 4. Hidden Material: Triangular ($\sigma_0 = 0.0417$, $\alpha = 2.2303$)
+| Encoder / Model | Known Ident (%) | Median Spearman (Hidden Ribbons) | Material Agree (%) | Min AUROC vs Known | Square Spearman | Square AUROC vs Known |
+|---|---|---|---|---|---|---|
+| **AE (`atlas_v5m loo`)** | 99.98% | **0.639** | **100.0%** | 0.9999 | 0.725 | 1.0000 |
+| **physics** | 100.0% | 0.265 | 25.0% | 1.0000 | -0.127 | 1.0000 |
+| **multiscale** | 99.99% | 0.394 | 62.5% | 1.0000 | 0.047 | 1.0000 |
+| **stress** | 100.0% | 0.003 | 25.0% | 1.0000 | -0.061 | 1.0000 |
+
+* **Pre-Registered Expectations (E1–E5)**:
+  - **E1 (Known identification $\ge 99.5\%$ for every encoder and hidden material)**: **MET**. All 16 evaluations exceed 99.98% (physics and stress achieve 100.00% across all materials).
+  - **E2 (Graded similarity: median Spearman $\ge 0.8$ for multiscale or stress, and above physics)**: **MISSED**. Multiscale achieves strong correlation on hBN (0.962) and phosphorene (0.938), but drops to 0.740 on MoS₂ and 0.394 on triangular. Furthermore, physics beats multiscale on 3 of 4 materials (hBN: 0.986 vs 0.962; MoS₂: 0.876 vs 0.740; phosphorene: 0.956 vs 0.938).
+  - **E3 (Unseen lattice: square strip Spearman $\ge 0.6$ for multiscale or stress)**: **MISSED**. Multiscale surpasses 0.6 on three materials (phosphorene 0.901, MoS₂ 0.803, hBN 0.720), but collapses on triangular (0.047); stress underperforms across all systems (max 0.466).
+  - **E4 (Closest material agreement $\ge 75\%$ for best encoder on every hidden material, and at least as high as AE)**: **MISSED**. While multiscale and physics reach 87.5–100% agreement on hBN, MoS₂, and phosphorene (improving over AE's 50.0% on MoS₂ and 75.0% on phosphorene), triangular agreement drops to 62.5% (multiscale) and 25.0% (physics), falling below AE's 100.0%.
+  - **E5 (Separation: $\min \text{AUROC} \ge 0.95$ for best encoder)**: **MET**. All contrastive encoders achieve $\min \text{AUROC} = 1.0000$ across all 4 hidden materials, maintaining clean separation from known classes.
+
+* **Decision**:
+  - Confirms the human's decision in BUILD-24: **retain `atlas_v4m` (frozen autoencoder)** as Shazam's production encoder for new materials, downstream concentration estimation (CONC-1), and atlas page export (PAGE-1).
+
+Artifacts written:
+- `notebooks/material_atlas/meaning/results/v2/summary.json`
+- `notebooks/material_atlas/meaning/results/v2/hbn.json`
+- `notebooks/material_atlas/meaning/results/v2/mos2.json`
+- `notebooks/material_atlas/meaning/results/v2/phosphorene.json`
+- `notebooks/material_atlas/meaning/results/v2/triangular.json`
+- `notebooks/material_atlas/meaning/results/v2/encoder_*.pt`
+- `notebooks/material_atlas/meaning/meaning_v2_run.log`
+
 ---
+
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
 

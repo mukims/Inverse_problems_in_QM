@@ -1,0 +1,840 @@
+{
+  "hidden": "mos2",
+  "results": [
+    {
+      "model": "AE (atlas_v5m loo)",
+      "known_identification_pct": 99.98,
+      "groups": {
+        "mos2/armchair/N14": {
+          "relative_median_distance": 5.771,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "graphene-ideal/armchair/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "graphene-ideal": 100.0
+          },
+          "spearman_vs_clean": 0.733,
+          "clean_nearest_material": "triangular",
+          "material_agrees": false
+        },
+        "mos2/armchair/N7": {
+          "relative_median_distance": 4.623,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "graphene-ideal/armchair/N7",
+              457
+            ],
+            [
+              "graphene-ideal/armchair/N6",
+              143
+            ]
+          ],
+          "nearest_material": {
+            "graphene-ideal": 100.0
+          },
+          "spearman_vs_clean": 0.791,
+          "clean_nearest_material": "triangular",
+          "material_agrees": false
+        },
+        "mos2/armchair/N9": {
+          "relative_median_distance": 5.193,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "graphene-ideal/armchair/N7",
+              597
+            ],
+            [
+              "graphene-ideal/armchair/N6",
+              3
+            ]
+          ],
+          "nearest_material": {
+            "graphene-ideal": 100.0
+          },
+          "spearman_vs_clean": 0.779,
+          "clean_nearest_material": "triangular",
+          "material_agrees": false
+        },
+        "mos2/zigzag/N14": {
+          "relative_median_distance": 4.58,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              441
+            ],
+            [
+              "triangular/zigzag/N7",
+              159
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.831,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/zigzag/N7": {
+          "relative_median_distance": 4.084,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              527
+            ],
+            [
+              "triangular/zigzag/N7",
+              59
+            ],
+            [
+              "triangular/armchair/N9",
+              14
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.902,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/zigzag/N9": {
+          "relative_median_distance": 4.18,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              599
+            ],
+            [
+              "triangular/armchair/N9",
+              1
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.867,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "square/strip/N10": {
+          "relative_median_distance": 4.462,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/zigzag/N7",
+              477
+            ],
+            [
+              "triangular/armchair/N9",
+              119
+            ],
+            [
+              "triangular/zigzag/N9",
+              1
+            ],
+            [
+              "triangular/armchair/N27",
+              1
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 99.67,
+            "graphene-ideal": 0.33
+          },
+          "spearman_vs_clean": 0.911,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        }
+      }
+    },
+    {
+      "model": "physics",
+      "history": [
+        {
+          "step": 1,
+          "train_loss": 6.307531356811523,
+          "val_loss": 6.341870307922363
+        },
+        {
+          "step": 250,
+          "train_loss": 5.155554294586182,
+          "val_loss": 5.155284404754639
+        },
+        {
+          "step": 500,
+          "train_loss": 5.137418270111084,
+          "val_loss": 5.138003349304199
+        },
+        {
+          "step": 750,
+          "train_loss": 5.134753227233887,
+          "val_loss": 5.134646415710449
+        },
+        {
+          "step": 1000,
+          "train_loss": 5.132428169250488,
+          "val_loss": 5.130659580230713
+        },
+        {
+          "step": 1250,
+          "train_loss": 5.129777431488037,
+          "val_loss": 5.129824638366699
+        },
+        {
+          "step": 1500,
+          "train_loss": 5.128239154815674,
+          "val_loss": 5.128742694854736
+        },
+        {
+          "step": 1750,
+          "train_loss": 5.12769889831543,
+          "val_loss": 5.127449035644531
+        },
+        {
+          "step": 2000,
+          "train_loss": 5.127096652984619,
+          "val_loss": 5.127128601074219
+        },
+        {
+          "step": 2250,
+          "train_loss": 5.126096248626709,
+          "val_loss": 5.1268696784973145
+        },
+        {
+          "step": 2500,
+          "train_loss": 5.126956462860107,
+          "val_loss": 5.126832008361816
+        }
+      ],
+      "known_identification_pct": 100.0,
+      "groups": {
+        "mos2/armchair/N14": {
+          "relative_median_distance": 8.942,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.849,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/armchair/N7": {
+          "relative_median_distance": 8.703,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              246
+            ],
+            [
+              "graphene-ideal/armchair/N6",
+              228
+            ],
+            [
+              "graphene-ideal/armchair/N7",
+              126
+            ]
+          ],
+          "nearest_material": {
+            "graphene-ideal": 59.0,
+            "triangular": 41.0
+          },
+          "spearman_vs_clean": 0.867,
+          "clean_nearest_material": "triangular",
+          "material_agrees": false
+        },
+        "mos2/armchair/N9": {
+          "relative_median_distance": 8.94,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              598
+            ],
+            [
+              "graphene-ideal/armchair/N7",
+              1
+            ],
+            [
+              "graphene-ideal/armchair/N6",
+              1
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 99.67,
+            "graphene-ideal": 0.33
+          },
+          "spearman_vs_clean": 0.847,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/zigzag/N14": {
+          "relative_median_distance": 7.625,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              596
+            ],
+            [
+              "triangular/zigzag/N7",
+              4
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.889,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/zigzag/N7": {
+          "relative_median_distance": 6.638,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.931,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/zigzag/N9": {
+          "relative_median_distance": 7.455,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.885,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "square/strip/N10": {
+          "relative_median_distance": 9.141,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/zigzag/N14",
+              188
+            ],
+            [
+              "triangular/armchair/N14",
+              170
+            ],
+            [
+              "triangular/armchair/N9",
+              134
+            ],
+            [
+              "triangular/zigzag/N9",
+              29
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 93.83,
+            "graphene-ideal": 6.17
+          },
+          "spearman_vs_clean": 0.809,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        }
+      }
+    },
+    {
+      "model": "multiscale",
+      "history": [
+        {
+          "step": 1,
+          "train_loss": 6.775790214538574,
+          "val_loss": 6.7662858963012695
+        },
+        {
+          "step": 250,
+          "train_loss": 6.704655170440674,
+          "val_loss": 6.7045578956604
+        },
+        {
+          "step": 500,
+          "train_loss": 6.700458526611328,
+          "val_loss": 6.700617790222168
+        },
+        {
+          "step": 750,
+          "train_loss": 6.698757171630859,
+          "val_loss": 6.698628902435303
+        },
+        {
+          "step": 1000,
+          "train_loss": 6.698312759399414,
+          "val_loss": 6.698115348815918
+        },
+        {
+          "step": 1250,
+          "train_loss": 6.697971343994141,
+          "val_loss": 6.697848320007324
+        },
+        {
+          "step": 1500,
+          "train_loss": 6.69778299331665,
+          "val_loss": 6.697740077972412
+        },
+        {
+          "step": 1750,
+          "train_loss": 6.697737693786621,
+          "val_loss": 6.6977033615112305
+        },
+        {
+          "step": 2000,
+          "train_loss": 6.697715759277344,
+          "val_loss": 6.6976318359375
+        },
+        {
+          "step": 2250,
+          "train_loss": 6.6976141929626465,
+          "val_loss": 6.697610378265381
+        },
+        {
+          "step": 2500,
+          "train_loss": 6.697659492492676,
+          "val_loss": 6.697605609893799
+        }
+      ],
+      "known_identification_pct": 99.98,
+      "groups": {
+        "mos2/armchair/N14": {
+          "relative_median_distance": 7.734,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              598
+            ],
+            [
+              "triangular/armchair/N9",
+              2
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.672,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/armchair/N7": {
+          "relative_median_distance": 6.884,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.747,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/armchair/N9": {
+          "relative_median_distance": 7.335,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.705,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/zigzag/N14": {
+          "relative_median_distance": 5.662,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.768,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/zigzag/N7": {
+          "relative_median_distance": 5.907,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/zigzag/N7",
+              517
+            ],
+            [
+              "triangular/armchair/N9",
+              49
+            ],
+            [
+              "triangular/armchair/N7",
+              34
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.819,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/zigzag/N9": {
+          "relative_median_distance": 6.129,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/zigzag/N7",
+              594
+            ],
+            [
+              "triangular/armchair/N7",
+              6
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.734,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "square/strip/N10": {
+          "relative_median_distance": 6.51,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/zigzag/N14",
+              425
+            ],
+            [
+              "triangular/armchair/N27",
+              121
+            ],
+            [
+              "triangular/armchair/N9",
+              27
+            ],
+            [
+              "triangular/zigzag/N9",
+              21
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 99.83,
+            "graphene-ideal": 0.17
+          },
+          "spearman_vs_clean": 0.803,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        }
+      }
+    },
+    {
+      "model": "stress",
+      "history": [
+        {
+          "step": 1,
+          "train_loss": 6.324368476867676,
+          "val_loss": 6.422813892364502
+        },
+        {
+          "step": 250,
+          "train_loss": 3.3240818977355957,
+          "val_loss": 3.3172543048858643
+        },
+        {
+          "step": 500,
+          "train_loss": 3.2666690349578857,
+          "val_loss": 3.264263153076172
+        },
+        {
+          "step": 750,
+          "train_loss": 3.249013900756836,
+          "val_loss": 3.247629165649414
+        },
+        {
+          "step": 1000,
+          "train_loss": 3.2411341667175293,
+          "val_loss": 3.235589027404785
+        },
+        {
+          "step": 1250,
+          "train_loss": 3.230731248855591,
+          "val_loss": 3.2289555072784424
+        },
+        {
+          "step": 1500,
+          "train_loss": 3.2257895469665527,
+          "val_loss": 3.225525140762329
+        },
+        {
+          "step": 1750,
+          "train_loss": 3.224505662918091,
+          "val_loss": 3.2234578132629395
+        },
+        {
+          "step": 2000,
+          "train_loss": 3.2241320610046387,
+          "val_loss": 3.221837043762207
+        },
+        {
+          "step": 2250,
+          "train_loss": 3.2212765216827393,
+          "val_loss": 3.221275806427002
+        },
+        {
+          "step": 2500,
+          "train_loss": 3.221850872039795,
+          "val_loss": 3.2211356163024902
+        }
+      ],
+      "known_identification_pct": 100.0,
+      "groups": {
+        "mos2/armchair/N14": {
+          "relative_median_distance": 9.275,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              599
+            ],
+            [
+              "graphene-ideal/armchair/N6",
+              1
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 99.83,
+            "graphene-ideal": 0.17
+          },
+          "spearman_vs_clean": 0.504,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/armchair/N7": {
+          "relative_median_distance": 8.469,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.629,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/armchair/N9": {
+          "relative_median_distance": 9.203,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.57,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/zigzag/N14": {
+          "relative_median_distance": 8.514,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              599
+            ],
+            [
+              "graphene-ideal/armchair/N5",
+              1
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 99.83,
+            "graphene-ideal": 0.17
+          },
+          "spearman_vs_clean": 0.528,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/zigzag/N7": {
+          "relative_median_distance": 7.283,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.62,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "mos2/zigzag/N9": {
+          "relative_median_distance": 7.82,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/armchair/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 100.0
+          },
+          "spearman_vs_clean": 0.587,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        },
+        "square/strip/N10": {
+          "relative_median_distance": 9.414,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "graphene-ideal/armchair/N31",
+              154
+            ],
+            [
+              "triangular/zigzag/N14",
+              94
+            ],
+            [
+              "graphene-ideal/armchair/N50",
+              67
+            ],
+            [
+              "triangular/armchair/N7",
+              44
+            ]
+          ],
+          "nearest_material": {
+            "graphene-ideal": 50.0,
+            "triangular": 36.17,
+            "phosphorene": 13.83
+          },
+          "spearman_vs_clean": 0.466,
+          "clean_nearest_material": "triangular",
+          "material_agrees": false
+        }
+      }
+    }
+  ],
+  "sigma0": 0.0409729911774524,
+  "alpha": 2.288269970392125,
+  "scales": [
+    1.0,
+    4.0,
+    16.0
+  ],
+  "lam": 1.0,
+  "steps": 2500,
+  "refs_per_ribbon": 2000,
+  "train_ribbons": [
+    "graphene-ideal/armchair/N10",
+    "graphene-ideal/armchair/N11",
+    "graphene-ideal/armchair/N12",
+    "graphene-ideal/armchair/N13",
+    "graphene-ideal/armchair/N14",
+    "graphene-ideal/armchair/N15",
+    "graphene-ideal/armchair/N16",
+    "graphene-ideal/armchair/N20",
+    "graphene-ideal/armchair/N27",
+    "graphene-ideal/armchair/N31",
+    "graphene-ideal/armchair/N40",
+    "graphene-ideal/armchair/N5",
+    "graphene-ideal/armchair/N50",
+    "graphene-ideal/armchair/N6",
+    "graphene-ideal/armchair/N7",
+    "graphene-ideal/armchair/N8",
+    "graphene-ideal/armchair/N9",
+    "graphene-ideal/zigzag/N10",
+    "graphene-ideal/zigzag/N11",
+    "graphene-ideal/zigzag/N12",
+    "graphene-ideal/zigzag/N16",
+    "graphene-ideal/zigzag/N20",
+    "graphene-ideal/zigzag/N27",
+    "graphene-ideal/zigzag/N4",
+    "graphene-ideal/zigzag/N40",
+    "graphene-ideal/zigzag/N5",
+    "graphene-ideal/zigzag/N50",
+    "graphene-ideal/zigzag/N6",
+    "graphene-ideal/zigzag/N7",
+    "graphene-ideal/zigzag/N8",
+    "graphene-ideal/zigzag/N9",
+    "hbn/armchair/N14",
+    "hbn/armchair/N27",
+    "hbn/armchair/N7",
+    "hbn/armchair/N9",
+    "hbn/zigzag/N14",
+    "hbn/zigzag/N27",
+    "hbn/zigzag/N7",
+    "hbn/zigzag/N9",
+    "phosphorene/armchair/N14",
+    "phosphorene/armchair/N27",
+    "phosphorene/armchair/N7",
+    "phosphorene/armchair/N9",
+    "phosphorene/zigzag/N14",
+    "phosphorene/zigzag/N27",
+    "phosphorene/zigzag/N7",
+    "phosphorene/zigzag/N9",
+    "triangular/armchair/N14",
+    "triangular/armchair/N27",
+    "triangular/armchair/N7",
+    "triangular/armchair/N9",
+    "triangular/zigzag/N14",
+    "triangular/zigzag/N27",
+    "triangular/zigzag/N7",
+    "triangular/zigzag/N9"
+  ]
+}

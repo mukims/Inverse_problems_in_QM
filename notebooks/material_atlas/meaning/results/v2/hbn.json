@@ -1,0 +1,952 @@
+{
+  "hidden": "hbn",
+  "results": [
+    {
+      "model": "AE (atlas_v5m loo)",
+      "known_identification_pct": 99.99,
+      "groups": {
+        "hbn/armchair/N14": {
+          "relative_median_distance": 5.167,
+          "auroc_vs_known": 0.9997,
+          "placement": [
+            [
+              "phosphorene/zigzag/N9",
+              464
+            ],
+            [
+              "phosphorene/zigzag/N7",
+              136
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.851,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/armchair/N27": {
+          "relative_median_distance": 6.833,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N9",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.756,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/armchair/N7": {
+          "relative_median_distance": 3.839,
+          "auroc_vs_known": 0.9699,
+          "placement": [
+            [
+              "phosphorene/zigzag/N9",
+              501
+            ],
+            [
+              "phosphorene/zigzag/N7",
+              99
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.912,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/armchair/N9": {
+          "relative_median_distance": 4.144,
+          "auroc_vs_known": 0.9817,
+          "placement": [
+            [
+              "phosphorene/zigzag/N9",
+              589
+            ],
+            [
+              "phosphorene/zigzag/N7",
+              11
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.899,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N14": {
+          "relative_median_distance": 7.657,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N9",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.694,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N27": {
+          "relative_median_distance": 9.309,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N9",
+              437
+            ],
+            [
+              "graphene-ideal/armchair/N31",
+              162
+            ],
+            [
+              "graphene-ideal/armchair/N40",
+              1
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 72.83,
+            "graphene-ideal": 27.17
+          },
+          "spearman_vs_clean": 0.567,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N7": {
+          "relative_median_distance": 5.458,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N9",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.843,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N9": {
+          "relative_median_distance": 6.499,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N9",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.775,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "square/strip/N10": {
+          "relative_median_distance": 4.904,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/zigzag/N9",
+              484
+            ],
+            [
+              "triangular/zigzag/N7",
+              86
+            ],
+            [
+              "triangular/armchair/N9",
+              15
+            ],
+            [
+              "triangular/armchair/N14",
+              7
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 99.83,
+            "mos2": 0.17
+          },
+          "spearman_vs_clean": 0.916,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        }
+      }
+    },
+    {
+      "model": "physics",
+      "history": [
+        {
+          "step": 1,
+          "train_loss": 6.24658727645874,
+          "val_loss": 6.249711513519287
+        },
+        {
+          "step": 250,
+          "train_loss": 5.236812591552734,
+          "val_loss": 5.234838962554932
+        },
+        {
+          "step": 500,
+          "train_loss": 5.221311092376709,
+          "val_loss": 5.220973968505859
+        },
+        {
+          "step": 750,
+          "train_loss": 5.216974258422852,
+          "val_loss": 5.216582298278809
+        },
+        {
+          "step": 1000,
+          "train_loss": 5.214341640472412,
+          "val_loss": 5.214259147644043
+        },
+        {
+          "step": 1250,
+          "train_loss": 5.213188171386719,
+          "val_loss": 5.2134480476379395
+        },
+        {
+          "step": 1500,
+          "train_loss": 5.2120361328125,
+          "val_loss": 5.212538242340088
+        },
+        {
+          "step": 1750,
+          "train_loss": 5.211333751678467,
+          "val_loss": 5.211991786956787
+        },
+        {
+          "step": 2000,
+          "train_loss": 5.211544036865234,
+          "val_loss": 5.211665153503418
+        },
+        {
+          "step": 2250,
+          "train_loss": 5.211332321166992,
+          "val_loss": 5.211617946624756
+        },
+        {
+          "step": 2500,
+          "train_loss": 5.211134433746338,
+          "val_loss": 5.211506366729736
+        }
+      ],
+      "known_identification_pct": 100.0,
+      "groups": {
+        "hbn/armchair/N14": {
+          "relative_median_distance": 4.452,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.989,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/armchair/N27": {
+          "relative_median_distance": 5.465,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              598
+            ],
+            [
+              "phosphorene/zigzag/N14",
+              2
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.962,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/armchair/N7": {
+          "relative_median_distance": 3.91,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.984,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/armchair/N9": {
+          "relative_median_distance": 4.035,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.99,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N14": {
+          "relative_median_distance": 5.769,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              550
+            ],
+            [
+              "phosphorene/zigzag/N14",
+              50
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.981,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N27": {
+          "relative_median_distance": 8.507,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N14",
+              404
+            ],
+            [
+              "phosphorene/zigzag/N7",
+              196
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.891,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N7": {
+          "relative_median_distance": 4.625,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.99,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N9": {
+          "relative_median_distance": 4.681,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.989,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "square/strip/N10": {
+          "relative_median_distance": 10.903,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/zigzag/N9",
+              245
+            ],
+            [
+              "triangular/armchair/N9",
+              154
+            ],
+            [
+              "triangular/armchair/N14",
+              144
+            ],
+            [
+              "triangular/armchair/N27",
+              21
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 98.33,
+            "graphene-ideal": 1.67
+          },
+          "spearman_vs_clean": 0.644,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        }
+      }
+    },
+    {
+      "model": "multiscale",
+      "history": [
+        {
+          "step": 1,
+          "train_loss": 6.729434013366699,
+          "val_loss": 6.7254638671875
+        },
+        {
+          "step": 250,
+          "train_loss": 6.663735866546631,
+          "val_loss": 6.663780212402344
+        },
+        {
+          "step": 500,
+          "train_loss": 6.659784317016602,
+          "val_loss": 6.659765720367432
+        },
+        {
+          "step": 750,
+          "train_loss": 6.658323287963867,
+          "val_loss": 6.65839958190918
+        },
+        {
+          "step": 1000,
+          "train_loss": 6.657944202423096,
+          "val_loss": 6.657872676849365
+        },
+        {
+          "step": 1250,
+          "train_loss": 6.657745361328125,
+          "val_loss": 6.657721042633057
+        },
+        {
+          "step": 1500,
+          "train_loss": 6.6576151847839355,
+          "val_loss": 6.6576433181762695
+        },
+        {
+          "step": 1750,
+          "train_loss": 6.657534599304199,
+          "val_loss": 6.657532215118408
+        },
+        {
+          "step": 2000,
+          "train_loss": 6.657529354095459,
+          "val_loss": 6.657504081726074
+        },
+        {
+          "step": 2250,
+          "train_loss": 6.657475471496582,
+          "val_loss": 6.65748405456543
+        },
+        {
+          "step": 2500,
+          "train_loss": 6.657495498657227,
+          "val_loss": 6.65747594833374
+        }
+      ],
+      "known_identification_pct": 100.0,
+      "groups": {
+        "hbn/armchair/N14": {
+          "relative_median_distance": 5.208,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.965,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/armchair/N27": {
+          "relative_median_distance": 5.536,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              343
+            ],
+            [
+              "phosphorene/zigzag/N9",
+              257
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.945,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/armchair/N7": {
+          "relative_median_distance": 5.038,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.976,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/armchair/N9": {
+          "relative_median_distance": 4.891,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              598
+            ],
+            [
+              "phosphorene/zigzag/N9",
+              2
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.98,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N14": {
+          "relative_median_distance": 5.788,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N9",
+              411
+            ],
+            [
+              "phosphorene/zigzag/N7",
+              189
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.95,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N27": {
+          "relative_median_distance": 7.017,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N14",
+              292
+            ],
+            [
+              "phosphorene/zigzag/N9",
+              187
+            ],
+            [
+              "phosphorene/zigzag/N7",
+              121
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.916,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N7": {
+          "relative_median_distance": 5.254,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.962,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N9": {
+          "relative_median_distance": 5.355,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              506
+            ],
+            [
+              "phosphorene/zigzag/N9",
+              94
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.963,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "square/strip/N10": {
+          "relative_median_distance": 7.693,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "triangular/zigzag/N14",
+              406
+            ],
+            [
+              "triangular/armchair/N27",
+              150
+            ],
+            [
+              "triangular/zigzag/N9",
+              24
+            ],
+            [
+              "triangular/armchair/N14",
+              9
+            ]
+          ],
+          "nearest_material": {
+            "triangular": 99.0,
+            "graphene-ideal": 1.0
+          },
+          "spearman_vs_clean": 0.72,
+          "clean_nearest_material": "triangular",
+          "material_agrees": true
+        }
+      }
+    },
+    {
+      "model": "stress",
+      "history": [
+        {
+          "step": 1,
+          "train_loss": 6.2446064949035645,
+          "val_loss": 6.305043697357178
+        },
+        {
+          "step": 250,
+          "train_loss": 3.3084309101104736,
+          "val_loss": 3.31083607673645
+        },
+        {
+          "step": 500,
+          "train_loss": 3.2825067043304443,
+          "val_loss": 3.28010892868042
+        },
+        {
+          "step": 750,
+          "train_loss": 3.261990785598755,
+          "val_loss": 3.2606115341186523
+        },
+        {
+          "step": 1000,
+          "train_loss": 3.253363847732544,
+          "val_loss": 3.2529048919677734
+        },
+        {
+          "step": 1250,
+          "train_loss": 3.2475035190582275,
+          "val_loss": 3.2464771270751953
+        },
+        {
+          "step": 1500,
+          "train_loss": 3.243436813354492,
+          "val_loss": 3.243067502975464
+        },
+        {
+          "step": 1750,
+          "train_loss": 3.2402544021606445,
+          "val_loss": 3.240818738937378
+        },
+        {
+          "step": 2000,
+          "train_loss": 3.2410335540771484,
+          "val_loss": 3.2398362159729004
+        },
+        {
+          "step": 2250,
+          "train_loss": 3.2399816513061523,
+          "val_loss": 3.2390999794006348
+        },
+        {
+          "step": 2500,
+          "train_loss": 3.2395920753479004,
+          "val_loss": 3.2389495372772217
+        }
+      ],
+      "known_identification_pct": 100.0,
+      "groups": {
+        "hbn/armchair/N14": {
+          "relative_median_distance": 5.08,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.551,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/armchair/N27": {
+          "relative_median_distance": 5.446,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.541,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/armchair/N7": {
+          "relative_median_distance": 4.696,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.556,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/armchair/N9": {
+          "relative_median_distance": 4.93,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.598,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N14": {
+          "relative_median_distance": 5.831,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.512,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N27": {
+          "relative_median_distance": 7.142,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.607,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N7": {
+          "relative_median_distance": 5.395,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.549,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "hbn/zigzag/N9": {
+          "relative_median_distance": 5.379,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "phosphorene/zigzag/N7",
+              600
+            ]
+          ],
+          "nearest_material": {
+            "phosphorene": 100.0
+          },
+          "spearman_vs_clean": 0.548,
+          "clean_nearest_material": "phosphorene",
+          "material_agrees": true
+        },
+        "square/strip/N10": {
+          "relative_median_distance": 9.441,
+          "auroc_vs_known": 1.0,
+          "placement": [
+            [
+              "graphene-ideal/armchair/N31",
+              288
+            ],
+            [
+              "triangular/zigzag/N14",
+              109
+            ],
+            [
+              "triangular/armchair/N9",
+              55
+            ],
+            [
+              "phosphorene/armchair/N7",
+              51
+            ]
+          ],
+          "nearest_material": {
+            "graphene-ideal": 54.17,
+            "triangular": 31.5,
+            "phosphorene": 9.17,
+            "mos2": 5.17
+          },
+          "spearman_vs_clean": 0.244,
+          "clean_nearest_material": "triangular",
+          "material_agrees": false
+        }
+      }
+    }
+  ],
+  "sigma0": 0.04173549929532411,
+  "alpha": 2.2303402529485497,
+  "scales": [
+    1.0,
+    4.0,
+    16.0
+  ],
+  "lam": 1.0,
+  "steps": 2500,
+  "refs_per_ribbon": 2000,
+  "train_ribbons": [
+    "graphene-ideal/armchair/N10",
+    "graphene-ideal/armchair/N11",
+    "graphene-ideal/armchair/N12",
+    "graphene-ideal/armchair/N13",
+    "graphene-ideal/armchair/N14",
+    "graphene-ideal/armchair/N15",
+    "graphene-ideal/armchair/N16",
+    "graphene-ideal/armchair/N20",
+    "graphene-ideal/armchair/N27",
+    "graphene-ideal/armchair/N31",
+    "graphene-ideal/armchair/N40",
+    "graphene-ideal/armchair/N5",
+    "graphene-ideal/armchair/N50",
+    "graphene-ideal/armchair/N6",
+    "graphene-ideal/armchair/N7",
+    "graphene-ideal/armchair/N8",
+    "graphene-ideal/armchair/N9",
+    "graphene-ideal/zigzag/N10",
+    "graphene-ideal/zigzag/N11",
+    "graphene-ideal/zigzag/N12",
+    "graphene-ideal/zigzag/N16",
+    "graphene-ideal/zigzag/N20",
+    "graphene-ideal/zigzag/N27",
+    "graphene-ideal/zigzag/N4",
+    "graphene-ideal/zigzag/N40",
+    "graphene-ideal/zigzag/N5",
+    "graphene-ideal/zigzag/N50",
+    "graphene-ideal/zigzag/N6",
+    "graphene-ideal/zigzag/N7",
+    "graphene-ideal/zigzag/N8",
+    "graphene-ideal/zigzag/N9",
+    "mos2/armchair/N14",
+    "mos2/armchair/N7",
+    "mos2/armchair/N9",
+    "mos2/zigzag/N14",
+    "mos2/zigzag/N7",
+    "mos2/zigzag/N9",
+    "phosphorene/armchair/N14",
+    "phosphorene/armchair/N27",
+    "phosphorene/armchair/N7",
+    "phosphorene/armchair/N9",
+    "phosphorene/zigzag/N14",
+    "phosphorene/zigzag/N27",
+    "phosphorene/zigzag/N7",
+    "phosphorene/zigzag/N9",
+    "triangular/armchair/N14",
+    "triangular/armchair/N27",
+    "triangular/armchair/N7",
+    "triangular/armchair/N9",
+    "triangular/zigzag/N14",
+    "triangular/zigzag/N27",
+    "triangular/zigzag/N7",
+    "triangular/zigzag/N9"
+  ]
+}

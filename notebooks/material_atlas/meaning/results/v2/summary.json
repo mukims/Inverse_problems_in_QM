@@ -1,0 +1,141 @@
+{
+  "summary": {
+    "hbn": {
+      "AE (atlas_v5m loo)": {
+        "known_identification_pct": 99.99,
+        "median_spearman_hidden_ribbons": 0.809,
+        "material_agreement_pct": 100.0,
+        "min_auroc_vs_known": 0.9699,
+        "square_spearman": 0.916,
+        "square_auroc_vs_known": 1.0
+      },
+      "physics": {
+        "known_identification_pct": 100.0,
+        "median_spearman_hidden_ribbons": 0.986,
+        "material_agreement_pct": 100.0,
+        "min_auroc_vs_known": 1.0,
+        "square_spearman": 0.644,
+        "square_auroc_vs_known": 1.0
+      },
+      "multiscale": {
+        "known_identification_pct": 100.0,
+        "median_spearman_hidden_ribbons": 0.962,
+        "material_agreement_pct": 100.0,
+        "min_auroc_vs_known": 1.0,
+        "square_spearman": 0.72,
+        "square_auroc_vs_known": 1.0
+      },
+      "stress": {
+        "known_identification_pct": 100.0,
+        "median_spearman_hidden_ribbons": 0.55,
+        "material_agreement_pct": 100.0,
+        "min_auroc_vs_known": 1.0,
+        "square_spearman": 0.244,
+        "square_auroc_vs_known": 1.0
+      }
+    },
+    "mos2": {
+      "AE (atlas_v5m loo)": {
+        "known_identification_pct": 99.98,
+        "median_spearman_hidden_ribbons": 0.811,
+        "material_agreement_pct": 50.0,
+        "min_auroc_vs_known": 1.0,
+        "square_spearman": 0.911,
+        "square_auroc_vs_known": 1.0
+      },
+      "physics": {
+        "known_identification_pct": 100.0,
+        "median_spearman_hidden_ribbons": 0.876,
+        "material_agreement_pct": 83.3,
+        "min_auroc_vs_known": 1.0,
+        "square_spearman": 0.809,
+        "square_auroc_vs_known": 1.0
+      },
+      "multiscale": {
+        "known_identification_pct": 99.98,
+        "median_spearman_hidden_ribbons": 0.74,
+        "material_agreement_pct": 100.0,
+        "min_auroc_vs_known": 1.0,
+        "square_spearman": 0.803,
+        "square_auroc_vs_known": 1.0
+      },
+      "stress": {
+        "known_identification_pct": 100.0,
+        "median_spearman_hidden_ribbons": 0.579,
+        "material_agreement_pct": 100.0,
+        "min_auroc_vs_known": 1.0,
+        "square_spearman": 0.466,
+        "square_auroc_vs_known": 1.0
+      }
+    },
+    "phosphorene": {
+      "AE (atlas_v5m loo)": {
+        "known_identification_pct": 99.98,
+        "median_spearman_hidden_ribbons": 0.88,
+        "material_agreement_pct": 75.0,
+        "min_auroc_vs_known": 0.9939,
+        "square_spearman": 0.856,
+        "square_auroc_vs_known": 0.9999
+      },
+      "physics": {
+        "known_identification_pct": 100.0,
+        "median_spearman_hidden_ribbons": 0.956,
+        "material_agreement_pct": 100.0,
+        "min_auroc_vs_known": 1.0,
+        "square_spearman": 0.976,
+        "square_auroc_vs_known": 1.0
+      },
+      "multiscale": {
+        "known_identification_pct": 99.99,
+        "median_spearman_hidden_ribbons": 0.938,
+        "material_agreement_pct": 87.5,
+        "min_auroc_vs_known": 1.0,
+        "square_spearman": 0.901,
+        "square_auroc_vs_known": 1.0
+      },
+      "stress": {
+        "known_identification_pct": 100.0,
+        "median_spearman_hidden_ribbons": 0.593,
+        "material_agreement_pct": 87.5,
+        "min_auroc_vs_known": 1.0,
+        "square_spearman": 0.463,
+        "square_auroc_vs_known": 1.0
+      }
+    },
+    "triangular": {
+      "AE (atlas_v5m loo)": {
+        "known_identification_pct": 99.98,
+        "median_spearman_hidden_ribbons": 0.639,
+        "material_agreement_pct": 100.0,
+        "min_auroc_vs_known": 0.9999,
+        "square_spearman": 0.725,
+        "square_auroc_vs_known": 1.0
+      },
+      "physics": {
+        "known_identification_pct": 100.0,
+        "median_spearman_hidden_ribbons": 0.265,
+        "material_agreement_pct": 25.0,
+        "min_auroc_vs_known": 1.0,
+        "square_spearman": -0.127,
+        "square_auroc_vs_known": 1.0
+      },
+      "multiscale": {
+        "known_identification_pct": 99.99,
+        "median_spearman_hidden_ribbons": 0.394,
+        "material_agreement_pct": 62.5,
+        "min_auroc_vs_known": 1.0,
+        "square_spearman": 0.047,
+        "square_auroc_vs_known": 1.0
+      },
+      "stress": {
+        "known_identification_pct": 100.0,
+        "median_spearman_hidden_ribbons": 0.003,
+        "material_agreement_pct": 25.0,
+        "min_auroc_vs_known": 1.0,
+        "square_spearman": -0.061,
+        "square_auroc_vs_known": 1.0
+      }
+    }
+  },
+  "runtime_s": 2843
+}
