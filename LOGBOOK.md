@@ -835,8 +835,9 @@ Artifacts written:
 | **Total** | | | | | **28.92** | **36.24** | | **98.67** |
 
   - **Key Decision Findings for Human (F1–F6 in `2026-10-02-full-run-decisions.md`)**:
-    - N7–N14 across all 8 models: ~4.9 h compute (~7.4 h batch wall time).
-    - Recommendation (b) (N7, N9, N14 for all + N27 for hBN, phosphorene, triangular): ~15.2 h compute (~22.9 h batch wall time).
+    - N7–N14 across all 8 models: **5.6 h / 16.2 h** (compute-scaled 6.4× / batch-wall).
+    - Recommendation (b) (N7, N9, N14 for all + N27 for hBN, phosphorene, triangular): **13.3 h / 24.5 h** (compute-scaled / batch-wall).
+    - Reading the methods: batch-wall overstates small ribbons (smoke's 50 seeds carry fixed pool/lead startup costs that 1,000 seeds amortise); compute-scaled overstates large ribbons (concurrency reaches ~9×, not 6.4×). The full run time lies between the two.
     - MoS₂ armchair N27 alone adds 13.7 h compute (9.9 h batch wall time).
     - $N=50$ is impractical for MoS₂ armchair (40.8 h alone) and costs 5–6 h per ribbon elsewhere; recommendation to omit from initial full run confirmed.
 
