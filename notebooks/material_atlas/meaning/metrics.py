@@ -67,3 +67,47 @@ def evaluate_embedding(emb, refs, known, untrained, unseen, clean_dist, names, k
         "placement": placement,
         "spearman_embedding_vs_clean_distance": graded,
     }
+
+
+def evaluate_held_out(emb, refs, known, held, clean_dist, names, materials, k=15):
+    """Identification on known ribbons, and placement and graded similarity for each held-out group."""
+    for name in held:
+        if name not in clean_dist or len(clean_dist[name]) != len(names):
+            raise ValueError(f"clean distances for {name!r} must have one entry per training ribbon ({len(names)})")
+    R = [_finite(emb(X), f"references of {names[c]}") for c, X in enumerate(refs)]
+    Ry = np.concatenate([np.full(len(Z), c) for c, Z in enumerate(R)])
+    R = np.concatenate(R)
+    index = NearestNeighbors(n_neighbors=min(k, len(R))).fit(R)
+
+    def query(Z):
+        dist, idx = index.kneighbors(Z)
+        return dist[:, 0], np.array([Counter(row.tolist()).most_common(1)[0][0] for row in Ry[idx]])
+
+    d_known, correct = [], []
+    for c, X in enumerate(known):
+        d1, votes = query(_finite(emb(X), f"test spectra of {names[c]}"))
+        d_known.append(d1)
+        correct.append(votes == c)
+    d_known, correct = np.concatenate(d_known), np.concatenate(correct)
+    scale = float(np.median(d_known))
+    centroids = np.stack([R[Ry == c].mean(axis=0) for c in range(len(names))])
+
+    groups = {}
+    for name, X in held.items():
+        Z = _finite(emb(X), name)
+        d1, votes = query(Z)
+        mats = Counter(materials[c] for c in votes.tolist())
+        top_mat = mats.most_common(1)[0][0]
+        clean_nearest = materials[int(np.argmin(clean_dist[name]))]
+        groups[name] = {
+            "relative_median_distance": round(float(np.median(d1) / scale), 3),
+            "auroc_vs_known": _auroc(d_known, d1),
+            "placement": [(names[c], int(n)) for c, n in Counter(votes.tolist()).most_common(4)],
+            "nearest_material": {m: round(100.0 * n / len(votes), 2) for m, n in mats.most_common()},
+            "spearman_vs_clean": round(float(spearmanr(np.linalg.norm(centroids - Z.mean(axis=0), axis=1),
+                                                       clean_dist[name]).correlation), 3),
+            "clean_nearest_material": clean_nearest,
+            "material_agrees": bool(top_mat == clean_nearest),
+        }
+    return {"known_identification_pct": round(100 * float(correct.mean()), 2), "groups": groups}
+
