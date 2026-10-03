@@ -97,3 +97,50 @@ def test_physics_mode_requires_distance_matrix():
 def test_embed_structure_handles_empty_input():
     enc = StructureEncoder(latent=8, seq_len=64)
     assert embed_structure(enc, np.zeros((0, 64), np.float32)).shape == (0, 8)
+
+
+from meaning.contrastive import stress_loss
+
+
+def test_single_sigma_list_equals_float_sigma():
+    y = torch.tensor([0, 0, 1, 1, 2, 2])
+    z = _unit(6, 4)
+    D = torch.tensor([[0.0, 0.04, 0.4], [0.04, 0.0, 0.3], [0.4, 0.3, 0.0]])
+    assert float(contrastive_loss(z, y, D=D, sigma=[0.038])) == pytest.approx(float(contrastive_loss(z, y, D=D, sigma=0.038)))
+
+
+def test_multiscale_targets_still_rank_far_ribbons():
+    # anchor ribbon 0; ribbon 1 at 0.04 (a width step), ribbon 2 at 0.4 (another material)
+    D = torch.tensor([0.0, 0.04, 0.4])
+    single = torch.exp(-D / 0.038)
+    multi = torch.stack([torch.exp(-D / s) for s in (0.038, 0.152, 0.608)]).mean(0)
+    assert float(single[2] / single[1]) < 1e-3          # BUILD-18: the far ribbon's target is ~0 (saturated)
+    assert float(multi[2] / multi[1]) > 0.1             # multiscale keeps it ranked
+
+
+def test_multiscale_sigmas_must_be_positive():
+    y = torch.tensor([0, 0, 1, 1])
+    D = torch.tensor([[0.0, 1.0], [1.0, 0.0]])
+    with pytest.raises(ValueError, match="sigma"):
+        contrastive_loss(_unit(4, 3), y, D=D, sigma=[0.1, 0.0])
+
+
+def test_stress_is_zero_when_distances_match_and_grows_otherwise():
+    y = torch.tensor([0, 1, 2])
+    D = torch.tensor([[0.0, 1.0, 3.0], [1.0, 0.0, 2.0], [3.0, 2.0, 0.0]])
+    on_line = torch.tensor([[0.0], [0.5], [1.5]])        # alpha = 0.5 reproduces D exactly
+    assert float(stress_loss(on_line, y, D, alpha=0.5)) == pytest.approx(0.0, abs=1e-6)
+    assert float(stress_loss(on_line * 2, y, D, alpha=0.5)) > 0.1
+
+
+def test_stress_gradient_is_finite_for_identical_embeddings():
+    y = torch.tensor([0, 0, 1, 1])
+    D = torch.tensor([[0.0, 1.0], [1.0, 0.0]])
+    z = torch.zeros(4, 3, requires_grad=True)            # every pair at distance 0
+    stress_loss(z, y, D, alpha=0.5).backward()
+    assert torch.isfinite(z.grad).all()
+
+
+def test_stress_needs_two_ribbons():
+    with pytest.raises(ValueError, match="two ribbons"):
+        stress_loss(_unit(3, 2), torch.tensor([0, 0, 0]), torch.zeros(1, 1), alpha=1.0)

@@ -23,11 +23,25 @@ def contrastive_loss(z, y, tau=0.1, D=None, sigma=None):
         if bool((target.sum(1) == 0).any()):
             raise ValueError("every anchor needs at least one other spectrum of its ribbon in the batch")
     else:
-        if sigma is None or sigma <= 0:
-            raise ValueError(f"physics mode needs sigma > 0, got {sigma}")
-        target = torch.exp(-D[y][:, y] / sigma).masked_fill(self_mask, 0.0)
+        sig = torch.as_tensor(sigma if sigma is not None else [], dtype=z.dtype).reshape(-1)
+        if sig.numel() == 0 or bool((sig <= 0).any()):
+            raise ValueError(f"physics mode needs every sigma > 0, got {sigma}")
+        Dyy = D[y][:, y]
+        target = torch.stack([torch.exp(-Dyy / s) for s in sig]).mean(0).masked_fill(self_mask, 0.0)
     target = target / target.sum(1, keepdim=True)
     return -(target * logp).sum(1).mean()
+
+
+def stress_loss(z, y, D, alpha):
+    """Mean squared mismatch between embedding distance and alpha * clean distance, over pairs of different ribbons.
+
+    The distance is clamped below at 1e-6 so identical embeddings still have a finite gradient.
+    """
+    diff = y[:, None] != y[None, :]
+    if not bool(diff.any()):
+        raise ValueError("stress needs at least two ribbons in the batch")
+    dz = ((z[:, None, :] - z[None, :, :]) ** 2).sum(-1).clamp_min(1e-12).sqrt()
+    return ((dz - alpha * D[y][:, y])[diff] ** 2).mean()
 
 
 class StructureEncoder(nn.Module):
