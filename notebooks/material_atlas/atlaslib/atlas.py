@@ -29,6 +29,8 @@ class Located:
     unknown_recon: bool = False
     novelty_ratio: float = 0.0
     novelty_s: float = 0.0
+    nearest_model: str = ""
+    novelty_z: float | None = None
 
 
 class Atlas:
@@ -109,7 +111,7 @@ class Atlas:
         atlas.threshold = float(np.percentile(rec[val], 99)) if np.any(val) else float(np.percentile(rec, 99))
         return atlas
 
-    def calibrate_novelty(self, store, registry, model_ids, val_seed_min=None, max_seed=None, n0=None):
+    def calibrate_novelty(self, store, registry, model_ids, val_seed_min=None, max_seed=None, n0=None, group_by="edge"):
         """Calibrate class-conditional thresholds tau(model, density) on validation seeds (FULL-3).
         1. Per class (model, density): c = median(log s), w = 1.4826 * MAD(log s).
         2. Edge scale: w_edge = median of w over that edge's classes.
@@ -120,6 +122,8 @@ class Atlas:
         6. Choose n0 on validation: if n0 is None, scan n0 in {0, 25, 50, 100, 150, 300}
            by calibrating on the first half of validation seeds and measuring per-class
            false-alarm dispersion index (var / mean) on the second half."""
+        if group_by not in ("edge", "material_edge"):
+            raise ValueError(f"group_by must be 'edge' or 'material_edge', got {group_by!r}")
         class_samples = {}
         for mid in model_ids:
             m = registry.get(mid)
@@ -139,7 +143,8 @@ class Atlas:
                 loc = self.locate(c_val, *on_axis(self.spec, m, e_t, m.band_top_t))
                 s_vals = np.array([r.novelty_s for r in loc])
                 pred_dens = np.array([r.density for r in loc])
-                class_samples[(mid, f"{d:.4f}", m.edge)] = {
+                group = m.edge if group_by == "edge" else f"{m.material}/{m.edge}"
+                class_samples[(mid, f"{d:.4f}", group)] = {
                     "scores": s_vals,
                     "seeds": s_val,
                     "pred_dens": pred_dens
@@ -342,14 +347,18 @@ class Atlas:
                 tau = float(d_map.get(snapped_key, d_map[min(d_map.keys(), key=lambda k_d: abs(float(k_d) - pred_dens))]))
                 is_unk = bool(s > tau)
                 ratio = float(s / tau)
+                p = self.threshold_params.get(target_mid, {}).get(snapped_key)
+                z = float((np.log(max(s, 1e-12)) - p["c"]) / p["w"]) if p else None
             else:
                 is_unk = unk_recon
                 ratio = float(rec[r] / self.threshold) if self.threshold > 0 else 0.0
+                z = None
 
             out.append(Located(mat, edge, width, extrap, pred_dens,
                                len(members) / self.k, nov, is_unk, float(rec[r]),
                                width_vote=width_vote, unknown_recon=unk_recon,
-                               novelty_ratio=ratio, novelty_s=s))
+                               novelty_ratio=ratio, novelty_s=s,
+                               nearest_model=target_mid, novelty_z=z))
         return out
 
     def add_models(self, store, registry, model_ids, max_seed=None, refs_per_model=None, seed=2):

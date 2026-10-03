@@ -216,3 +216,52 @@ def test_scale_shrinkage_reduces_small_sample_dispersion(tmp_path):
     # Shrinkage pulls scales toward the common edge median, reducing variance across classes
     assert shrunk_scale_var < raw_scale_var
 
+
+FAST_NOV = dict(latent=8, epochs=6, patience=3, k=7, refs_per_model=200, threads=2)
+
+
+def test_group_by_material_edge_gives_one_tail_per_material(tmp_path):
+    store, models = toy_store(tmp_path)                       # alpha and beta, both armchair
+    reg = Registry(models)
+    atlas = Atlas.build(store, reg, reg.ids(), InputSpec(), **FAST_NOV)
+    atlas.calibrate_novelty(store, reg, reg.ids(), group_by="material_edge")
+    assert set(atlas.z_star) == {"alpha/armchair", "beta/armchair"}
+
+
+def test_group_by_is_irrelevant_for_a_single_material(tmp_path):
+    store, models = toy_store(tmp_path, materials=(("alpha", 1.0),))
+    reg = Registry(models)
+    atlas = Atlas.build(store, reg, reg.ids(), InputSpec(), **FAST_NOV)
+    by_edge = atlas.calibrate_novelty(store, reg, reg.ids())
+    by_material = atlas.calibrate_novelty(store, reg, reg.ids(), group_by="material_edge")
+    assert by_edge == by_material
+
+
+def test_group_by_rejects_unknown_values(tmp_path):
+    store, models = toy_store(tmp_path, materials=(("alpha", 1.0),))
+    reg = Registry(models)
+    atlas = Atlas.build(store, reg, reg.ids(), InputSpec(), **FAST_NOV)
+    with pytest.raises(ValueError, match="group_by"):
+        atlas.calibrate_novelty(store, reg, reg.ids(), group_by="width")
+
+
+def test_closeness_score_agrees_with_the_unknown_flag(tmp_path):
+    store, models = toy_store(tmp_path)
+    reg = Registry(models)
+    atlas = Atlas.build(store, reg, reg.ids(), InputSpec(), **FAST_NOV)
+    atlas.calibrate_novelty(store, reg, reg.ids(), group_by="material_edge")
+    probes = np.stack([toy_spectrum(lv, w, d, 50_000 + i) for i, (lv, w, d) in
+                       enumerate([(1.0, 7, 0.01), (3.0, 14, 0.04), (2.0, 9, 0.02), (5.0, 9, 0.01)])])
+    for r in atlas.locate(probes, E, 3.0):
+        assert r.nearest_model.startswith(f"{r.material}/{r.edge}/")
+        assert r.novelty_z is not None and np.isfinite(r.novelty_z)
+        assert r.unknown == (r.novelty_z > atlas.z_star[f"{r.material}/{r.edge}"])
+
+
+def test_uncalibrated_map_reports_no_closeness(tmp_path):
+    store, models = toy_store(tmp_path, materials=(("alpha", 1.0),))
+    reg = Registry(models)
+    atlas = Atlas.build(store, reg, reg.ids(), InputSpec(), **FAST_NOV)
+    r = atlas.locate(toy_spectrum(1.0, 9, 0.01, 1)[None], E, 3.0)[0]
+    assert r.novelty_z is None and r.nearest_model == "alpha/armchair/N9"
+
