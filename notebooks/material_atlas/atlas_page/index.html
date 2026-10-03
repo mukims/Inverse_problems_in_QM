@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shazam Atlas</title>
+<style>
+  :root { --bg:#fbfaf7; --fg:#1d1c1a; --muted:#6b675f; --line:#e3dfd6; --card:#ffffff; --accent:#2f5d8a; --warn:#a4402c;
+          --m0:#2f5d8a; --m1:#c2702c; --m2:#4f8a4f; --m3:#8a4f8a; --m4:#a4402c; --m5:#5c7f8f; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#161513; --fg:#ece9e2; --muted:#a29d93; --line:#2e2c28; --card:#1f1e1b; --accent:#7fa8d1; --warn:#e07a62;
+          --m0:#7fa8d1; --m1:#e0a05f; --m2:#86c086; --m3:#c08ac0; --m4:#e07a62; --m5:#94b8c7; } }
+  :root[data-theme="dark"] { --bg:#161513; --fg:#ece9e2; --muted:#a29d93; --line:#2e2c28; --card:#1f1e1b; --accent:#7fa8d1; --warn:#e07a62;
+          --m0:#7fa8d1; --m1:#e0a05f; --m2:#86c086; --m3:#c08ac0; --m4:#e07a62; --m5:#94b8c7; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui, sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:16px; }
+  h1 { font-size:1.4rem; margin:0 0 4px; } p.sub { color:var(--muted); margin:0 0 16px; }
+  .grid { display:grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap:16px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; min-width:0; }
+  .filters { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+  select, input, textarea, button { font:inherit; color:var(--fg); background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:4px 6px; max-width:100%; }
+  canvas { width:100%; height:auto; display:block; touch-action:none; }
+  svg { width:100%; height:auto; display:block; }
+  textarea { width:100%; min-height:120px; }
+  .legend span { display:inline-flex; align-items:center; gap:4px; margin-right:10px; font-size:13px; }
+  .legend i { width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .answer dt { color:var(--muted); font-size:13px; } .answer dd { margin:0 0 6px; font-weight:600; }
+  .err { color:var(--warn); } .tip { color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Shazam Atlas</h1>
+  <p class="sub">Every point is one reference spectrum in Shazam's map (2-D projection of its 32-d embedding). Paste a spectrum to see where it lands.</p>
+  <div class="grid">
+    <section class="card">
+      <div class="filters">
+        <select id="f-material"><option value="">all materials</option></select>
+        <select id="f-edge"><option value="">all edges</option></select>
+        <select id="f-density"><option value="">all densities</option></select>
+        <label>width <input id="f-wmin" type="number" min="1" style="width:4.5em"> – <input id="f-wmax" type="number" min="1" style="width:4.5em"></label>
+      </div>
+      <canvas id="map" width="1200" height="900" aria-label="Map of reference spectra"></canvas>
+      <div class="legend" id="legend"></div>
+      <p class="tip" id="hover">Hover a point to see its ribbon and spectrum.</p>
+      <svg id="spec" viewBox="0 0 600 220" aria-label="Spectrum"></svg>
+    </section>
+    <section class="card">
+      <h2 style="font-size:1.05rem;margin:0 0 6px">Look up a spectrum</h2>
+      <p class="tip">Two columns per line: energy (eV, from 0) and transmission. Cover 0–8.30 eV, or give the band top.</p>
+      <textarea id="paste" spellcheck="false" placeholder="0.00 0.000&#10;0.02 0.000&#10;..."></textarea>
+      <label class="tip">band top (eV, optional) <input id="bandtop" type="number" step="0.01" style="width:7em"></label>
+      <button id="go">Locate</button>
+      <div id="result" class="answer"></div>
+    </section>
+  </div>
+</main>
+<script type="module">
+import { loadPage, toInput, locate, project } from "./shazam.js";
+const $ = (id) => document.getElementById(id);
+const page = await loadPage("data/");
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const materials = [...new Set(page.models.map((m) => m.material))];
+const colour = (mat) => css(`--m${materials.indexOf(mat) % 6}`);
+const xy = []; for (let r = 0; r < page.n_refs; r++) xy.push(project(page.refs.subarray(r * page.D, (r + 1) * page.D), page));
+const xs = xy.map((p) => p[0]), ys = xy.map((p) => p[1]);
+const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+const cv = $("map"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height, pad = 30;
+const toPx = ([x, y]) => [pad + ((x - x0) / (x1 - x0)) * (W - 2 * pad), H - pad - ((y - y0) / (y1 - y0)) * (H - 2 * pad)];
+for (const [id, vals] of [["f-material", materials], ["f-edge", [...new Set(page.models.map((m) => m.edge))]],
+                          ["f-density", [...new Set(Array.from(page.refDensity, (d) => d.toFixed(4)))].sort()]])
+  for (const v of vals) $(id).add(new Option(v, v));
+$("legend").innerHTML = materials.map((m) => `<span><i style="background:${colour(m)}"></i>${m}</span>`).join("");
+let query = null;
+function visible(r) {
+  const m = page.models[page.refModel[r]], d = page.refDensity[r].toFixed(4);
+  const wmin = +$("f-wmin").value || 0, wmax = +$("f-wmax").value || Infinity;
+  return (!$("f-material").value || m.material === $("f-material").value) && (!$("f-edge").value || m.edge === $("f-edge").value)
+    && (!$("f-density").value || d === $("f-density").value) && m.width >= wmin && m.width <= wmax;
+}
+function draw() {
+  ctx.fillStyle = css("--card"); ctx.fillRect(0, 0, W, H);
+  for (let r = 0; r < page.n_refs; r++) {
+    if (!visible(r)) continue;
+    const [px, py] = toPx(xy[r]); ctx.fillStyle = colour(page.models[page.refModel[r]].material);
+    ctx.globalAlpha = page.models[page.refModel[r]].edge === "zigzag" ? 0.45 : 0.75;
+    ctx.fillRect(px - 2, py - 2, 4, 4);
+  }
+  ctx.globalAlpha = 1;
+  if (query) { const [px, py] = toPx(query); ctx.strokeStyle = css("--fg"); ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(px, py, 10, 0, 2 * Math.PI); ctx.stroke(); }
+}
+function plot(series) {                                   // series: [{y: [...416], colour, label}]
+  const n = page.spec.n_channels, el = $("spec");
+  const path = (y) => y.map((v, i) => `${i ? "L" : "M"}${(40 + (i / (n - 1)) * 550).toFixed(1)},${(200 - v * 180).toFixed(1)}`).join("");
+  el.innerHTML = `<line x1="40" y1="200" x2="590" y2="200" stroke="${css("--line")}"/>`
+    + series.map((s) => `<path d="${path(s.y)}" fill="none" stroke="${s.colour}" stroke-width="1.6"/>`).join("")
+    + `<text x="40" y="216" font-size="11" fill="${css("--muted")}">0 eV</text><text x="560" y="216" font-size="11" fill="${css("--muted")}">${page.spec.e_max_t} eV</text>`
+    + series.map((s, i) => `<text x="${50 + 200 * i}" y="14" font-size="11" fill="${s.colour}">${s.label}</text>`).join("");
+}
+cv.addEventListener("pointermove", (ev) => {
+  const b = cv.getBoundingClientRect(), mx = ((ev.clientX - b.left) / b.width) * W, my = ((ev.clientY - b.top) / b.height) * H;
+  let best = -1, bd = 64;
+  for (let r = 0; r < page.n_refs; r++) { if (!visible(r)) continue; const [px, py] = toPx(xy[r]); const d = (px - mx) ** 2 + (py - my) ** 2; if (d < bd) { bd = d; best = r; } }
+  if (best < 0) return;
+  const m = page.models[page.refModel[best]], dk = page.refDensity[best].toFixed(4);
+  $("hover").textContent = `${m.id} · density ${(page.refDensity[best] * 100).toFixed(2)}%`;
+  plot([{ y: page.clean[m.id], colour: css("--muted"), label: "clean" }, ...(page.median[m.id][dk] ? [{ y: page.median[m.id][dk], colour: colour(m.material), label: `median at ${dk}` }] : [])]);
+});
+for (const id of ["f-material", "f-edge", "f-density", "f-wmin", "f-wmax"]) $(id).addEventListener("input", draw);
+$("go").addEventListener("click", () => {
+  try {
+    const rows = $("paste").value.trim().split(/\n+/).map((l) => l.trim().split(/[\s,;]+/).map(Number)).filter((r) => r.length >= 2 && r.every(Number.isFinite));
+    if (rows.length < 2) throw new Error("paste at least two lines of 'energy transmission'");
+    const bt = $("bandtop").value === "" ? null : +$("bandtop").value;
+    const x = toInput(rows.map((r) => r[0]), rows.map((r) => r[1]), page.spec, bt);
+    const a = locate(x, page);
+    query = project(a.zs, page); draw();
+    plot([{ y: Array.from(x), colour: css("--fg"), label: "your spectrum" }, { y: page.clean[a.nearest_model], colour: colour(a.material), label: `clean ${a.nearest_model}` }]);
+    $("result").innerHTML = `<dl>
+      <dt>Verdict</dt><dd class="${a.unknown ? "err" : ""}">${a.unknown ? "Unknown: outside every known class" : "Known"}</dd>
+      <dt>Closest model</dt><dd>${a.nearest_model}</dd>
+      <dt>Material · edge · width</dt><dd>${a.material} · ${a.edge} · N ${a.width_vote}</dd>
+      <dt>Impurity density</dt><dd>${(a.density * 100).toFixed(2)}%</dd>
+      <dt>Closeness (s/τ; ≤ 1 is inside the class)</dt><dd>${a.novelty_ratio.toFixed(2)}${a.novelty_z === null ? "" : ` · z = ${a.novelty_z.toFixed(2)}`}</dd></dl>`;
+  } catch (e) { $("result").innerHTML = `<p class="err">${e.message}</p>`; }
+});
+draw();
+</script>
+</body>
+</html>
