@@ -352,11 +352,19 @@ class Atlas:
                                novelty_ratio=ratio, novelty_s=s))
         return out
 
-    def add_models(self, store, registry, model_ids):
-        """Embed new models with the frozen encoder and append them as references."""
+    def add_models(self, store, registry, model_ids, max_seed=None, refs_per_model=None, seed=2):
+        """Embed new models with the frozen encoder and append them as references.
+
+        max_seed: only seeds <= max_seed (and the pristine spectrum) become references; pass the last
+        training seed so validation and test seeds stay unseen. refs_per_model: random cap per model, as in build().
+        """
         report = {}
+        rng = np.random.default_rng(seed)
         for mid in model_ids:
-            X, _, dens, _ = self._load_inputs(store, registry, [mid], self.spec)
+            X, _, dens, _ = self._load_inputs(store, registry, [mid], self.spec, max_seed=max_seed)
+            if refs_per_model is not None and len(X) > refs_per_model:
+                keep = rng.permutation(len(X))[:refs_per_model]
+                X, dens = X[keep], dens[keep]
             Z, rec = embed(self.encoder, X)
             Zs = (Z - self.mu) / self.sd
             report[mid] = float(np.mean(rec > self.threshold))
@@ -364,9 +372,26 @@ class Atlas:
             self.refs = np.vstack([self.refs, Zs])
             self.ref_model = np.concatenate([self.ref_model, np.full(len(Zs), len(self.models) - 1)])
             self.ref_density = np.concatenate([self.ref_density, dens])
-            self._nn = NearestNeighbors(n_neighbors=self.k).fit(self.refs)
+        self._nn = NearestNeighbors(n_neighbors=self.k).fit(self.refs)
         self._build_model_nns()
         return report
+
+    def without_models(self, model_ids):
+        """A copy of this map with the given models' references removed (frozen encoder, no retraining)."""
+        drop = set(model_ids)
+        present = {m.model_id for m in self.models}
+        if drop - present:
+            raise KeyError(f"not in this map: {sorted(drop - present)}")
+        keep = [i for i, m in enumerate(self.models) if m.model_id not in drop]
+        new_index = {old: new for new, old in enumerate(keep)}
+        mask = np.isin(self.ref_model, keep)
+        return Atlas(self.spec, self.encoder, self.mu, self.sd, self.refs[mask],
+                     np.array([new_index[i] for i in self.ref_model[mask]]), self.ref_density[mask],
+                     [self.models[i] for i in keep], self.threshold, self.k,
+                     threshold_table={k: v for k, v in self.threshold_table.items() if k not in drop},
+                     novelty=self.novelty,
+                     threshold_params={k: v for k, v in self.threshold_params.items() if k not in drop},
+                     z_star=self.z_star, w_edge=self.w_edge, n0=self.n0)
 
     # ---------- persistence ----------
     def save(self, path):
