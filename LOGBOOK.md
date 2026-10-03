@@ -1094,6 +1094,63 @@ Artifacts written:
 
 ---
 
+### [2026-10-03] PAGE-1: Shazam Interactive Atlas Page & In-Browser Lookup
+
+* **Overview & Implementation**:
+  - Implemented standalone in-browser interactive Shazam map and live lookup engine per `docs/superpowers/plans/2026-10-02-shazam-atlas-page.md` and approved overnight execution `docs/superpowers/plans/2026-10-03-page1-overnight.md`.
+  - Pure client-side runtime: zero external dependencies, loading binary float32 encoder weights (`encoder.bin`), reference embeddings (`refs.bin`), metadata (`model.json`), and 2D PCA projections directly in JavaScript (`shazam.js`).
+  - Features real-time 1D convolution (`Conv1dAE` forward pass), streaming nearest-neighbor search ($k=16$ cosine/Euclidean distance), novelty ratio calibration ($s/\tau$), live spectrum plotting in SVG, and interactive two-column copy-paste prediction.
+
+* **Export Specification & Size**:
+  - **Exported Map**: `notebooks/material_atlas/atlas_v4m` (frozen encoder map chosen by human).
+  - **Store Source**: `MultiStore(~/atlas_store/engine_v1, ~/atlas_store/materials_ev_full)`.
+  - **Reference Cap**: 500 references per model across 61 registered ribbon models ($N_{\text{refs}} = 30,500$).
+  - **Export Directory Size**: **11 MB** (`notebooks/material_atlas/atlas_page/data/`), satisfying the $< 12$ MB size budget.
+    - `encoder.bin`: 972 KB (float32 weights)
+    - `refs.bin`: 3.8 MB (float32 embeddings)
+    - `model.json`: 2.0 MB (models, clean & median spectra, thresholds, PCA)
+    - `test_vectors.json`: 4.1 MB (320 validation spectra)
+    - `ref_density.bin`: 120 KB (float32)
+    - `ref_model.bin`: 60 KB (uint16)
+
+* **Verification Benchmarks & Expectations**:
+  - **Copy Agreement with Full `atlas_v4m` Map** ($N = 1,220$ held-out test spectra across all 61 models):
+    - Material agreement: **100.0%** (target $\ge 99.5\%$) — **MET**
+    - Edge agreement: **100.0%** (target $\ge 99.5\%$) — **MET**
+    - Width vote agreement: **100.0%**
+    - Nearest model agreement: **100.0%**
+    - Unknown flag agreement: **99.34%** (target $\ge 97\%$) — **MET**
+  - **Node.js In-Browser Engine Verification** (`test_shazam.mjs`, $N = 320$ test vectors including 20 unseen square strip spectra):
+    - Max absolute input difference ($\max |x_{\text{JS}} - x_{\text{Py}}|$): **0.000239** ($< 5\times 10^{-4}$) — **MET**
+    - Max absolute embedding difference ($\max |z_{\text{JS}} - z_{\text{Py}}|$): **0.000301** ($< 5\times 10^{-4}$) — **MET**
+    - Prediction Agreement (JS vs Py):
+      - Material: **100%**
+      - Edge: **100%**
+      - Width vote: **100%**
+      - Nearest model: **100%**
+      - Unknown flag: **100%**
+    - Verification Status: **PASS**.
+
+* **Status**:
+  - Code and exported data committed and pushed to git repository.
+  - Page is **not published** publicly, awaiting reviewer publication.
+
+Artifacts written:
+- `notebooks/material_atlas/atlaslib/atlas.py` (`with_reference_cap`)
+- `notebooks/material_atlas/atlas_page/export_page.py`
+- `notebooks/material_atlas/atlas_page/shazam.js`
+- `notebooks/material_atlas/atlas_page/package.json`
+- `notebooks/material_atlas/atlas_page/test_shazam.mjs`
+- `notebooks/material_atlas/atlas_page/index.html`
+- `notebooks/material_atlas/atlas_page/data/encoder.bin`
+- `notebooks/material_atlas/atlas_page/data/refs.bin`
+- `notebooks/material_atlas/atlas_page/data/ref_model.bin`
+- `notebooks/material_atlas/atlas_page/data/ref_density.bin`
+- `notebooks/material_atlas/atlas_page/data/model.json`
+- `notebooks/material_atlas/atlas_page/data/test_vectors.json`
+
+---
+
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
 
