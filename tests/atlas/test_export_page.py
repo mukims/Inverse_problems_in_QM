@@ -28,3 +28,24 @@ def test_export_writes_consistent_files(tmp_path):
     tv = json.loads((out / "test_vectors.json").read_text())
     assert len(tv) == 12 and {"material", "edge", "width_vote", "unknown", "nearest_model"} <= set(tv[0]["answer"])
     assert len(meta["pca"]["components"]) == 2 and set(meta["clean"]) == set(reg.ids())
+
+
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
+
+PAGE = Path(__file__).resolve().parents[2] / "notebooks/material_atlas/atlas_page"
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_javascript_matches_python_on_toy_export(tmp_path):
+    store, models = toy_store(tmp_path, n_seeds=40)
+    reg = Registry(models)
+    atlas = Atlas.build(store, reg, reg.ids(), InputSpec(), **FAST)
+    out = tmp_path / "page"
+    export_page(atlas, store, reg, reg.ids(), out, refs_per_model=20, n_test=40, val=(1030, 1039), test_seed_min=0)
+    run = subprocess.run(["node", str(PAGE / "test_shazam.mjs"), str(out)], capture_output=True, text=True, cwd=PAGE)
+    assert run.returncode == 0 and "PASS" in run.stdout, run.stdout + run.stderr
+
