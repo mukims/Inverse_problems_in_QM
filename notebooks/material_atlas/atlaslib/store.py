@@ -125,3 +125,34 @@ class CloudStore:
         _, pris = self.read_pristine(model_id)
         c, _ = self.read_cloud(model_id, density)
         return float(np.mean(c > pris[None, :] + 1e-6))
+
+
+class MultiStore:
+    """Read-only view over several CloudStores (e.g. graphene and new materials); each model lives in exactly one."""
+
+    def __init__(self, *stores):
+        self.stores = [s if isinstance(s, CloudStore) else CloudStore(s) for s in stores]
+        self._owner = {}
+        for st in self.stores:
+            for mid in st.models():
+                if mid in self._owner:
+                    raise ValueError(f"{mid} is in more than one store")
+                self._owner[mid] = st
+
+    def _store(self, model_id):
+        if model_id not in self._owner:
+            raise KeyError(f"{model_id} is in none of the stores")
+        return self._owner[model_id]
+
+    def read_pristine(self, model_id):
+        return self._store(model_id).read_pristine(model_id)
+
+    def read_cloud(self, model_id, density):
+        return self._store(model_id).read_cloud(model_id, density)
+
+    def densities(self, model_id):
+        return self._store(model_id).densities(model_id)
+
+    def models(self):
+        return sorted(self._owner)
+
