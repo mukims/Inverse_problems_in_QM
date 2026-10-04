@@ -3,10 +3,48 @@ import numpy as np
 import pytest
 
 from atlaslib import InputSpec
-from atlaslib.lookup import window_input, window_inputs
+from atlaslib.lookup import Catalogue, window_input, window_inputs
+from atlaslib.registry import RibbonModel
+from atlaslib.store import CloudStore
 from toy import E, toy_spectrum
 
 SPEC = InputSpec(version="v4")
+DENSITIES = (0.01, 0.02, 0.04)
+SPLIT = dict(train_max=99, val=(100, 169))   # toy seeds 0-199: train 0-99, validation 100-169, test 170-199
+TEST = np.arange(170, 200)
+LEVEL = {"alpha": 1.0, "beta": 4.0}   # beta at 4% must not look like alpha at 0%: 4 e^-1.2 > 1
+
+
+def _spectrum(material, width, density, seed):
+    return toy_spectrum(LEVEL[material], width, density, int(seed + density * 1e5))
+
+
+def _toy_lookup_store(root):
+    store, models = CloudStore(root), []
+    for name in LEVEL:
+        for w in (7, 9, 14):
+            m = RibbonModel(name, "armchair", w, 1.0, 2 * w, 3.0)
+            models.append(m)
+            store.write_pristine(m.model_id, E, toy_spectrum(LEVEL[name], w, 0.0, 10**6))
+            for d in DENSITIES:
+                seeds = np.arange(200)
+                store.write_cloud(m.model_id, d, m.impurities_for_density(d),
+                                  np.stack([_spectrum(name, w, d, s) for s in seeds]), seeds, E)
+    return store, models
+
+
+@pytest.fixture(scope="module")
+def toy(tmp_path_factory):
+    store, models = _toy_lookup_store(tmp_path_factory.mktemp("lookup") / "store")
+    return store, models, Catalogue.build(store, models, SPEC, **SPLIT)
+
+
+def _items(models, densities=DENSITIES, seeds=TEST[:10]):
+    for m in models:
+        for d in densities:
+            for s in seeds:
+                yield m, d, _spectrum(m.material, m.width, d, s)
+
 
 # ---------- Task 1: window-aware transform ----------
 
@@ -54,3 +92,51 @@ def test_bad_signatures_are_rejected(energies, T, message):
 def test_a_units_of_t_spec_is_refused():
     with pytest.raises(ValueError, match="eV-axis"):
         window_input(InputSpec(version="v2"), E, toy_spectrum(1.0, 9, 0.02, 7))
+
+
+# ---------- Task 2: catalogue ----------
+
+def test_catalogue_reproduces_stored_ensembles_and_clean_anchor(toy):
+    store, models, cat = toy
+    assert cat.ids == sorted(m.model_id for m in models)
+    for k, m in enumerate(cat.models):
+        e, pris = store.read_pristine(m.model_id)
+        assert np.allclose(cat.mu[k, 0], window_input(SPEC, e, pris)[0], atol=1e-6)
+        assert np.all(cat.sd[k, 0] == 0)
+        for d in DENSITIES:
+            c, s = store.read_cloud(m.model_id, d)
+            tr = window_inputs(SPEC, e, c[s <= 99])[0]
+            j = int(np.argmin(np.abs(cat.grid - d)))
+            assert np.allclose(cat.mu[k, j], np.median(tr, axis=0), atol=1e-6)
+            assert np.allclose(cat.sd[k, j], tr.std(axis=0), atol=1e-6)
+
+
+def test_catalogue_grid_and_validation_split(toy):
+    _, _, cat = toy
+    assert cat.grid.size == 101 and cat.grid[0] == 0.0 and abs(cat.grid[-1] - 0.05) < 1e-12
+    assert len(cat.val_x) == 6 * 3 * 70
+    assert set(np.unique(cat.val_conc)) == set(DENSITIES)
+
+
+def test_without_drops_a_material_and_its_validation_spectra(toy):
+    _, _, cat = toy
+    sub = cat.without(["beta"])
+    assert [m.material for m in sub.models] == ["alpha"] * 3
+    assert len(sub.val_x) == 3 * 3 * 70 and sub.val_dev.max() == 2
+    with pytest.raises(ValueError, match="no catalogued device"):
+        cat.without(["gamma"])
+
+
+def test_catalogue_save_load_round_trip(toy, tmp_path):
+    _, _, cat = toy
+    cat.save(tmp_path / "cat")
+    back = Catalogue.load(tmp_path / "cat")
+    assert back.ids == cat.ids and back.kappa == cat.kappa and back.spec == cat.spec
+    for name in ("grid", "mu", "sd", "val_x", "val_dev", "val_conc"):
+        assert np.array_equal(getattr(back, name), getattr(cat, name))
+
+
+def test_build_refuses_a_units_of_t_spec(toy):
+    store, models, _ = toy
+    with pytest.raises(ValueError, match="eV-axis"):
+        Catalogue.build(store, models, InputSpec(version="v2"), **SPLIT)
