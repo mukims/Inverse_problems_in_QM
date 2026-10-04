@@ -33,7 +33,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **FULL-4** | 2026-10-03 | **30 New-Material Models (FULL-4 Production Run)** | **New-Material Disorder Clouds on Shared eV Axis** (hBN, Phosphorene, MoS₂, Triangular across N7, N9, N14 + N27 for hBN, Phosphorene, Triangular) | `~/atlas_store/materials_ev_full/` (30 models $\times$ 4 densities $\times$ 1,000 seeds = **120,000 spectra**; seeds 0–999) | Direct generation on InputSpec v3 eV grid (`generation_grid_t`); zero-padding above band top; multi-orbital whole-atom impurities (Bug #11, MoS₂ $V = 0.2535\,\text{eV}$); Caroli formula | **100% Validated** | N/A (Production data generation) | N/A | **Completed (All Store Checks PASS)**: 30/30 models in `materials_ev_full` passed all store invariants (`check_store.py`: CleanErr $< 1.7 \times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, all clouds hold exactly seeds 0–999). Total batch wall time **9.34 h** (33,639 s, 100.45 worker-compute hours, concurrency $10.75\times$ on 16 workers). Prepares data for BUILD-23 (`2026-10-02-shazam-new-materials.md`). |
 | **BUILD-23** | 2026-10-03 | **61 Ribbon Models (Graphene + 4 New Materials) + Square Strip** | **Atlas v4m (Frozen Atlas v4 Encoder + MultiStore + Per-Material Novelty Calibration)** | `engine_v1` (18,600 graphene test) + `materials_ev_full` (18,000 new material test) + `novelty_v1` (600 square test) | InputSpec v4 (unit="eV", despike=True, shared 416-ch grid); frozen `atlas_v4` weights; per-material/edge novelty tails; seeds 0–699 train/refs, 700–849 val/cal, 850–999 test | **100.0% Mat<br>99.98% Edge<br>99.88% Width** | N/A (Stage 1–2 identification & novelty) | N/A | **Completed (All Gates G1–G4 Passed)**: G1 Graphene unchanged (width 99.925% vs 99.93%; false alarms arm 1.06%, zz 1.43%); G2 New materials identified (all materials 100.0%, edge $\ge 99.896\%$, width $\ge 99.479\%$, false alarms 0.58–1.46%); G3 Unseen square strip 100.0% unknown; G4 Leave-one-material-out 99.83–100.0% unknown across all 4 materials. Results in `notebooks/material_atlas/atlas_v4m/results.json`. |
 | **BUILD-24** | 2026-10-03 | **61 Ribbon Models (Graphene + 4 New Materials) + Square Strip** | **Atlas v5m (Retrained Joint Encoder + Retrained Leave-One-Material-Out Maps)** | `engine_v1` (18,600 test) + `materials_ev_full` (18,000 test) + `novelty_v1` (600 square test) | InputSpec v4 (unit="eV", despike=True, 416-ch grid); 60-epoch joint autoencoder retrained on all materials; per-material/edge novelty tails; seeds 0–699 train, 700–849 val, 850–999 test | **100.0% Mat<br>100.0% Edge<br>99.97% Width** | N/A (Stage 1–2 identification & novelty) | N/A | **Completed (G1 MISSED on zigzag 1.631%, G2–G4 Passed)**: Perfect 100% material, edge, and width accuracy across all 4 new materials (graphene width 99.957%); unseen square strip 100.0% unknown; LOMO 96.125–100.0% unknown. **Decided by the human (2026-10-03): `atlas_v4m` (frozen) is the production map for new materials.** `atlas_v5m` and its `loo_*` maps are kept as the retrained comparison and as MEANING-2's AE baselines. Results in `notebooks/material_atlas/atlas_v5m/results.json`. |
-| **BUILD-25** | 2026-10-03 | **61 Ribbon Models + Square Strip (4 Hidden Material Groups)** | **MEANING-2 (Graded Similarity Across Materials: AE vs Physics vs Multiscale vs Stress)** | `engine_v1` (18,600 test) + `materials_ev_full` (18,000 test) + `novelty_v1` (600 square test) | InputSpec v4 (416-ch eV grid); 2,500 contrastive training steps per encoder per hidden material; seeds 0–699 train/refs, 700–849 val, 850–999 test | **99.98–100.0%** (Known Ident across all encoders) | N/A | N/A | **Completed (E1 & E5 MET, E2–E4 MISSED)**: Evaluated 4 encoders (AE baseline `atlas_v5m/loo_*`, physics, multiscale soft-targets, stress loss) across 4 leave-one-material-out splits. Contrastive encoders achieve 100% min AUROC vs known and 99.98–100% known identification. Multiscale reaches 0.962 (hBN) and 0.938 (phosphorene) hidden-ribbon Spearman correlation against clean-spectrum ground truth, but drops on MoS₂ (0.740) and triangular (0.394). Human's decision preserves `atlas_v4m` production encoder. Runtime: 2,843 s. Results in `notebooks/material_atlas/meaning/results/v2/`. |
+| **BUILD-25** | 2026-10-03 | **61 Ribbon Models + Square Strip (4 Hidden Material Groups)** | **MEANING-2 (Graded Similarity Across Materials: AE vs Physics vs Multiscale vs Stress)** | `engine_v1` (18,600 test) + `materials_ev_full` (18,000 test) + `novelty_v1` (600 square test) | InputSpec v4 (416-ch eV grid); 2,500 contrastive training steps per encoder per hidden material; seeds 0–699 train/refs, 700–849 val, 850–999 test | **99.98–100.0%** (Known Ident across all encoders) | N/A | N/A | **Completed (E1 & E5 MET, E2–E4 MISSED)**: Evaluated 4 encoders (AE baseline `atlas_v5m/loo_*`, physics, multiscale soft-targets, stress loss) across 4 leave-one-material-out splits. Contrastive encoders achieve 100% min AUROC vs known and 99.98–100% known identification. Multiscale reaches 0.962 (hBN) and 0.938 (phosphorene) hidden-ribbon Spearman correlation against clean-spectrum ground truth, but drops on MoS₂ (0.740) and triangular (0.394). No change to Shazam: `atlas_v4m` stays production. Whether a meaning encoder should replace the autoencoder is the human's decision. Runtime: 2,843 s. Results in `notebooks/material_atlas/meaning/results/v2/`. |
 | **PAGE-1** | 2026-10-03 | **61 Ribbon Models + Square Strip** | **Shazam Interactive Atlas Page & In-Browser Lookup** | `notebooks/material_atlas/atlas_page/data/` (11 MB export) | Pure JS Conv1dAE forward pass + streaming k-NN + novelty calibration on frozen `atlas_v4m` map; 500 refs/model ($N_{\text{refs}} = 30,500$) | **100% Mat<br>100% Edge<br>100% Width** | N/A (Client-side interactive engine) | N/A | **Completed (All Checks & Tests PASS)**: Directory size 11 MB ($< 12$ MB). Agreement with full map: 100% material, 100% edge, 100% width, 99.34% unknown ($N=1,220$). Node test PASS across 320 vectors ($\max |x| = 2.4\times 10^{-4}$, $\max |z| = 3.0\times 10^{-4}$, 100% agreement with Python). Ready for reviewer publishing. |
 | **BUILD-26** | 2026-10-04 | **5 Pilot Ribbons (Graphene, hBN, MoS₂, Phosphorene, Triangular)** | **CONC-1 (Concentration Estimation Beyond 7/9-AGNR)** | `~/atlas_store/conc_v1` (5 models $\times$ 24 densities $\times$ 1,000 seeds = 120,000 spectra) | 24-density grid ($0.25\%\text{--}6.0\%$); Stage 3 generic XGBoost + split-conformal intervals; Shazam routing on frozen `atlas_v4m` map | **N/A** (Stage 3 Concentration) | **0.0907–0.3042 pp** (Oracle MAE across materials) | **0.0571–0.2572** ($q$ conformal halfwidth) | **Completed (Coverage Gate & Expectations MET, Routing Gate MISSED)**: Conformal coverage gate passed on all 5 ribbons (88.8–91.3%, within 88–92%). Median relative error $\le 10\%$ met on all 5 ribbons (MoS₂ 2.58%, triangular 2.29%, graphene 3.58%, phosphorene 3.59%, hBN 9.13%). Above-4% routed % significantly lower than inside-4% across all ribbons. Shazam inside routed % 64.1–97.0% (gate $\ge 99\%$ missed). Generation wall time 4.31 h (120 clouds). |
 
@@ -1076,14 +1076,14 @@ Artifacts written:
 | **stress** | 100.0% | 0.003 | 25.0% | 1.0000 | -0.061 | 1.0000 |
 
 * **Pre-Registered Expectations (E1–E5)**:
-  - **E1 (Known identification $\ge 99.5\%$ for every encoder and hidden material)**: **MET**. All 16 evaluations exceed 99.98% (physics and stress achieve 100.00% across all materials).
+  - **E1 (Known identification $\ge 99.5\%$ for every encoder and hidden material)**: **MET**. All 16 evaluations are at least 99.98% (physics and stress achieve 100.00% across all materials).
   - **E2 (Graded similarity: median Spearman $\ge 0.8$ for multiscale or stress, and above physics)**: **MISSED**. Multiscale achieves strong correlation on hBN (0.962) and phosphorene (0.938), but drops to 0.740 on MoS₂ and 0.394 on triangular. Furthermore, physics beats multiscale on 3 of 4 materials (hBN: 0.986 vs 0.962; MoS₂: 0.876 vs 0.740; phosphorene: 0.956 vs 0.938).
   - **E3 (Unseen lattice: square strip Spearman $\ge 0.6$ for multiscale or stress)**: **MISSED**. Multiscale surpasses 0.6 on three materials (phosphorene 0.901, MoS₂ 0.803, hBN 0.720), but collapses on triangular (0.047); stress underperforms across all systems (max 0.466).
-  - **E4 (Closest material agreement $\ge 75\%$ for best encoder on every hidden material, and at least as high as AE)**: **MISSED**. While multiscale and physics reach 87.5–100% agreement on hBN, MoS₂, and phosphorene (improving over AE's 50.0% on MoS₂ and 75.0% on phosphorene), triangular agreement drops to 62.5% (multiscale) and 25.0% (physics), falling below AE's 100.0%.
+  - **E4 (Closest material agreement $\ge 75\%$ for best encoder on every hidden material, and at least as high as AE)**: **MISSED**. While multiscale and physics reach 83.3–100% agreement on hBN, MoS₂, and phosphorene (improving over AE's 50.0% on MoS₂ and 75.0% on phosphorene), triangular agreement drops to 62.5% (multiscale) and 25.0% (physics), falling below AE's 100.0%.
   - **E5 (Separation: $\min \text{AUROC} \ge 0.95$ for best encoder)**: **MET**. All contrastive encoders achieve $\min \text{AUROC} = 1.0000$ across all 4 hidden materials, maintaining clean separation from known classes.
 
 * **Decision**:
-  - Confirms the human's decision in BUILD-24: **retain `atlas_v4m` (frozen autoencoder)** as Shazam's production encoder for new materials, downstream concentration estimation (CONC-1), and atlas page export (PAGE-1).
+  - No change to Shazam: `atlas_v4m` stays production. Whether a meaning encoder should replace the autoencoder is the human's decision.
 
 Artifacts written:
 - `notebooks/material_atlas/meaning/results/v2/summary.json`
@@ -1101,7 +1101,7 @@ Artifacts written:
 * **Overview & Implementation**:
   - Implemented standalone in-browser interactive Shazam map and live lookup engine per `docs/superpowers/plans/2026-10-02-shazam-atlas-page.md` and approved overnight execution `docs/superpowers/plans/2026-10-03-page1-overnight.md`.
   - Pure client-side runtime: zero external dependencies, loading binary float32 encoder weights (`encoder.bin`), reference embeddings (`refs.bin`), metadata (`model.json`), and 2D PCA projections directly in JavaScript (`shazam.js`).
-  - Features real-time 1D convolution (`Conv1dAE` forward pass), streaming nearest-neighbor search ($k=16$ cosine/Euclidean distance), novelty ratio calibration ($s/\tau$), live spectrum plotting in SVG, and interactive two-column copy-paste prediction.
+  - Features real-time 1D convolution (`Conv1dAE` forward pass), streaming nearest-neighbor search ($k=15$ cosine/Euclidean distance), novelty ratio calibration ($s/\tau$), live spectrum plotting in SVG, and interactive two-column copy-paste prediction.
 
 * **Export Specification & Size**:
   - **Exported Map**: `notebooks/material_atlas/atlas_v4m` (frozen encoder map chosen by human).
@@ -1168,6 +1168,7 @@ Artifacts written:
   - Estimator: Generic Stage 3 XGBoost regressor (800 trees, depth 8, learning rate 0.04) trained on normalized spectra $T / T_{\text{pristine}}$ with relative split-conformal calibration ($1 - \alpha = 90\%$).
   - Split: Seeds 0–699 train (16,800 spectra), 700–849 validation/calibration (3,600 spectra), 850–999 test (3,600 spectra).
   - Routing: Shazam classification and novelty filtering evaluated using the frozen production map **`atlas_v4m`** (per human decision).
+  - **Data caveat (low-count duplicates)**: At very low impurity counts (e.g. 0.22%, 2 of 900 atoms in MoS₂ and triangular), distinct seeds can draw identical sites (seeds 31, 33 and 116 draw sites [386, 475] from `RandomState(seed).choice(900, 2, replace=False)`) or physically equivalent configurations related by lattice translation along the ribbon (triangular seed 926 [test] equals seed 256 [train] to $1.5\times 10^{-10}$ due to translation invariance of $T$). Within one density this is physics, not a generator bug, and `check_store` rightly passes it. At very low impurity counts, distinct seeds can be physically equivalent configurations, so the seed split no longer guarantees unseen configurations. Here it touches 1 of 150 test spectra at 0.22%.
 
 * **Cloud Generation Performance Summary (`~/atlas_store/conc_v1`)**:
   - Total parallel batch execution time: **4.31 h** (15,501.56 s) on 16 worker cores.
@@ -1194,9 +1195,42 @@ Artifacts written:
 | `phosphorene/armchair/N9` | 0.1442 pp | 0.0359 (3.59%) | 0.9103 (91.03%) | 0.0960 | **89.833%** (2156/2400) | 0.1056 pp | 0.9160 | **82.500%** (990/1200) | 0.2369 pp | 0.8859 |
 | `triangular/zigzag/N9` | 0.0907 pp | 0.0229 (2.29%) | 0.8883 (88.83%) | 0.0571 | **64.083%** (1538/2400) | 0.0650 pp | 0.8869 | **35.417%** (425/1200) | 0.1455 pp | 0.8306 |
 
-* **Shazam Misrouting Breakdown (Held-Out Test Set)**:
+* **Inside-4% Routing by Density: Routing Collapses Between Library Densities**:
+  - The gate's premise ($\ge 99\%$ inside 4%) was the reviewer's error: "inside 4%" is not "in Shazam's library". Shazam's library has references at only four densities, and 0.22% (0.25% nominal) sits below the lowest. Routing collapses between those reference densities.
+  - For the N9 zigzag ribbons, the four library densities are 0.44%, 1.00%, 2.00%, and 4.00% (4, 9, 18, and 36 of 900 atoms).
+  - Evaluated via `notebooks/material_atlas/conc_v1/routing_by_density.py` (`routing_by_density.json`):
+
+| Density | MoS₂ zigzag N9 (routed % / unk %) | triangular zigzag N9 (routed % / unk %) |
+|---|---|---|
+| 0.22% (below the library) | 1 / 99 | 0 / 100 |
+| 0.44% (library) | 97 / 3 | 98 / 2 |
+| 0.78% | 95 / 5 | 51 / 49 |
+| 1.00% (library) | 99 / 1 | 100 / 0 |
+| 1.56% | 88 / 12 | 30 / 70 |
+| 2.00% (library) | 99 / 1 | 99 / 1 |
+| 2.78% | 45 / 55 | 0 / 100 |
+| 3.00% | 57 / 43 | 5 / 95 |
+| 4.00% (library) | 100 / 0 | 100 / 0 |
+
+  - **Physical Reading**: On these narrow-cloud ribbons, a spectrum between two library densities lies outside both reference clouds and is flagged unknown. It is not misidentified: MoS₂ and triangular have 0 silent misreads (0 misidentifications across the entire test set). The fix is references at more densities, which is the human's density-range decision.
+
+* **Shazam Misrouting Breakdown & hBN Above-4% Silent Misreads**:
   - `graphene-ideal/armchair/N13`: 95.694% routed, 4.250% unknown, 2 spectra misrouted to `graphene-ideal/armchair/N6` (0.056%).
   - `hbn/armchair/N9`: 89.278% routed, 2.694% unknown, 285 spectra misrouted to `hbn/armchair/N7` (7.917%) and 4 to `hbn/armchair/N14` (0.111%).
+    - **hBN above 4% failure mode**: Across the 1,200 test spectra above 4% ($d > 0.04$), 886 are routed (73.8%), 30 are flagged unknown (2.5%), and **284 are silently read as hBN armchair N7 with no flag** (23.7%), rising to 52.0% at 6.0%. This is the same failure mode as BUILD-22's out-of-range 9-AGNR.
+    - **Per-density breakdown for hBN armchair N9 above 4%** (`routing_by_density.json`):
+
+| Target Density | Stored Density | Routed % | Unknown % | Silently Misread as N7 (%) | Median $s/\tau$ |
+|---|---|---|---|---|---|
+| 4.25% | 0.0422 | 96.0% | 0.0% | 4.0% | 0.7127 |
+| 4.50% | 0.0450 | 96.0% | 0.0% | 4.0% | 0.7024 |
+| 4.75% | 0.0478 | 90.7% | 0.0% | 9.3% | 0.7178 |
+| 5.00% | 0.0500 | 86.7% | 0.0% | 13.3% | 0.7415 |
+| 5.25% | 0.0522 | 74.7% | 2.7% | 22.7% | 0.7576 |
+| 5.50% | 0.0550 | 58.7% | 2.7% | 38.7% | 0.7743 |
+| 5.75% | 0.0578 | 48.7% | 6.0% | 45.3% | 0.7937 |
+| 6.00% | 0.0600 | 39.3% | 8.7% | 52.0% | 0.8080 |
+
   - `mos2/zigzag/N9`: 73.833% routed, 26.167% unknown, **0 spectra misrouted** (100% pure when identified).
   - `phosphorene/armchair/N9`: 87.389% routed, 11.722% unknown, 32 spectra misrouted to `phosphorene/armchair/N7` (0.889%).
   - `triangular/zigzag/N9`: 54.528% routed, 45.472% unknown, **0 spectra misrouted** (100% pure when identified).
@@ -1234,10 +1268,12 @@ Artifacts written:
   - **Gate (Oracle Conformal Coverage within $90 \pm 2\%$, i.e. 88.0%–92.0% for every ribbon)**: **MET**. All 5 ribbons satisfy the conformal coverage guarantee (graphene: 90.36%, hBN: 91.31%, MoS₂: 91.22%, phosphorene: 91.03%, triangular: 88.83%).
   - **Gate (Shazam Inside-4% Routed % $\ge 99.0\%$ for every ribbon)**: **MISSED**. Graphene armchair N13 achieved 97.000%, hBN armchair N9 achieved 97.000%, phosphorene armchair N9 achieved 89.833%, MoS₂ zigzag N9 achieved 84.542%, and triangular zigzag N9 achieved 64.083%. (For MoS₂ and triangular, all unrouted spectra are flagged unknown rather than misidentified: 0 misidentifications).
   - **Expectation (Oracle Median Relative Error $\le 10.0\%$ for every ribbon)**: **MET**. All 5 materials comfortably beat the 10% threshold: triangular 2.29%, MoS₂ 2.58%, graphene 3.58%, phosphorene 3.59%, and hBN 9.13%.
-  - **Expectation (Above-4% Routed % clearly lower than Inside-4%)**: **MET**. Across all materials, spectra above the 4% training boundary have substantially lower routing rates (graphene: 97.0% $\to$ 93.1%; hBN: 97.0% $\to$ 73.8%; MoS₂: 84.5% $\to$ 52.4%; phosphorene: 89.8% $\to$ 82.5%; triangular: 64.1% $\to$ 35.4%), demonstrating that Shazam's calibrated novelty detector flags high-disorder unseen regimes as out-of-distribution.
+  - **Expectation (Above-4% Routed % clearly lower than Inside-4%)**: **MET**. Across all materials, routing rates fall above 4% (graphene: 97.0% $\to$ 93.1%; hBN: 97.0% $\to$ 73.8%; MoS₂: 84.5% $\to$ 52.4%; phosphorene: 89.8% $\to$ 82.5%; triangular: 64.1% $\to$ 35.4%). However, for hBN this reduction occurs mainly through **silent misreads as N7**, not novelty flags (284 of 1,200 read as hBN armchair N7 with no flag, rising to 52% at 6.0%, analogous to BUILD-22's out-of-range 9-AGNR); whereas MoS₂ and triangular have 0 misreads and fall purely through unknown flags.
 
 Artifacts written:
 - `notebooks/material_atlas/conc_v1/metrics.json`
+- `notebooks/material_atlas/conc_v1/routing_by_density.py`
+- `notebooks/material_atlas/conc_v1/routing_by_density.json`
 - `notebooks/tbribbon/conc_v1_report.json`
 - `notebooks/tbribbon/conc_v1.log`
 - `docs/materials/README.md`
