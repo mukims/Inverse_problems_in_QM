@@ -77,8 +77,10 @@ class Catalogue:
     stored: dict            # model_id -> stored densities used
     kappa: float = 1.0
     settings: dict = None
+    kappa_material: dict = None   # material -> kappa for the concentration interval only; device choice keeps kappa
 
     def __post_init__(self):
+        self.kappa_material = dict(self.kappa_material or {})
         self._s = np.sqrt(np.asarray(self.sd, np.float64) ** 2 + S0 ** 2).astype(np.float32)
         self._logs = np.log(self._s)
 
@@ -134,7 +136,7 @@ class Catalogue:
         return Catalogue(self.spec, [self.models[k] for k in keep], self.grid, self.mu[keep], self.sd[keep],
                          self.val_x[vk], np.array([remap[int(i)] for i in self.val_dev[vk]]), self.val_conc[vk],
                          {self.models[k].model_id: self.stored[self.models[k].model_id] for k in keep},
-                         kappa=self.kappa, settings=self.settings)
+                         kappa=self.kappa, settings=self.settings, kappa_material=self.kappa_material)
 
     def save(self, path):
         path = Path(path)
@@ -143,7 +145,8 @@ class Catalogue:
                  val_dev=self.val_dev, val_conc=self.val_conc)
         (path / "manifest.json").write_text(json.dumps({
             "spec": self.spec.as_dict(), "models": [asdict(m) for m in self.models], "stored": self.stored,
-            "kappa": self.kappa, "settings": self.settings, "n_devices": len(self.models),
+            "kappa": self.kappa, "kappa_material": self.kappa_material, "settings": self.settings,
+            "n_devices": len(self.models),
             "created": date.today().isoformat()}, indent=2))
 
     @classmethod
@@ -153,7 +156,7 @@ class Catalogue:
         a = np.load(path / "catalogue.npz")
         return cls(InputSpec(**man["spec"]), [RibbonModel(**m) for m in man["models"]], a["grid"], a["mu"], a["sd"],
                    a["val_x"], a["val_dev"], a["val_conc"], man["stored"], kappa=man["kappa"],
-                   settings=man["settings"])
+                   settings=man["settings"], kappa_material=man.get("kappa_material"))
 
 
 def misfit(cat, x, mask, devices=None):
@@ -233,7 +236,13 @@ def lookup(cat, energies, T, top_k=5):
     b = int(order[0])
     dev = int(devs[b])
     m = cat.models[dev]
-    conc, lo, hi = _interval(cat.grid, post[b])
+    k_m = cat.kappa_material.get(m.material)
+    if k_m is None:
+        w = post[b]
+    else:                         # the chosen device's concentration interval uses its material's kappa
+        ll = log_likelihood(cat, x, mask, [dev])[0] / k_m
+        w = np.exp(ll - ll.max())
+    conc, lo, hi = _interval(cat.grid, w)
     pv = p_value(cat, dev, mask, float(misfit(cat, x, mask, [dev])[0].min()))
     e = cat.spec.energies_t()[mask]
     return Match(device=m.model_id, material=m.material, edge=m.edge, width=int(m.width),
@@ -243,32 +252,65 @@ def lookup(cat, energies, T, top_k=5):
                  window=(round(float(e[0]), 6), round(float(e[-1]), 6), int(mask.sum())))
 
 
-def calibrate(cat, target=0.90, kappas=None, per_device=50, top_k=5):
-    """Smallest kappa >= 1 whose 90% intervals cover the true concentration on validation spectra (sets cat.kappa)."""
-    kappas = np.round(np.geomspace(1.0, 1000.0, 61), 3) if kappas is None else np.asarray(kappas, dtype=float)
+KAPPAS = np.round(np.geomspace(1.0, 1000.0, 61), 3)
+
+
+def _calibration_rows(cat, devices, per_device, top_k):
+    """(log-likelihood over the candidates, candidates, true device, true concentration) for validation spectra."""
     full = np.ones(cat.spec.n_channels, dtype=bool)
     rows = []
-    for dev in range(len(cat.models)):
+    for dev in devices:
         ii = np.flatnonzero(cat.val_dev == dev)
         ii = ii[np.linspace(0, len(ii) - 1, min(per_device, len(ii))).astype(int)]
         for i in ii:
             devs, _ = candidates(cat, cat.val_x[i], full, top_k)
             rows.append((log_likelihood(cat, cat.val_x[i], full, devs), devs, dev, float(cat.val_conc[i])))
-    cover = []
-    for k in kappas:
-        hit = 0
-        for ll, devs, true_dev, c in rows:
-            p = np.exp(ll / k - (ll / k).max())
-            b = int(np.argmax(p.sum(axis=1)))
-            _, lo, hi = _interval(cat.grid, p[b])
-            hit += int(devs[b] == true_dev and lo <= c <= hi)
-        cover.append(hit / len(rows))
-    cover = np.array(cover)
+    return rows
+
+
+def _coverage(cat, rows, kappa_device, kappa_conc):
+    """Share of rows whose device is right and whose 90% interval contains the true concentration."""
+    hit = 0
+    for ll, devs, true_dev, c in rows:
+        p = np.exp(ll / kappa_device - (ll / kappa_device).max())
+        b = int(np.argmax(p.sum(axis=1)))
+        if devs[b] != true_dev:
+            continue
+        w = p[b] if kappa_conc == kappa_device else np.exp(ll[b] / kappa_conc - (ll[b] / kappa_conc).max())
+        _, lo, hi = _interval(cat.grid, w)
+        hit += int(lo <= c <= hi)
+    return hit / len(rows)
+
+
+def _first_reaching(cover, target):
     ok = np.flatnonzero(cover >= target)
-    i = int(ok[0]) if ok.size else int(np.argmax(cover))
+    return int(ok[0]) if ok.size else int(np.argmax(cover))
+
+
+def calibrate(cat, target=0.90, kappas=None, per_device=50, top_k=5):
+    """Smallest kappa >= 1 whose 90% intervals cover the true concentration on validation spectra (sets cat.kappa)."""
+    kappas = KAPPAS if kappas is None else np.asarray(kappas, dtype=float)
+    rows = _calibration_rows(cat, range(len(cat.models)), per_device, top_k)
+    cover = np.array([_coverage(cat, rows, k, k) for k in kappas])
+    i = _first_reaching(cover, target)
     cat.kappa = float(kappas[i])
     return {"kappa": cat.kappa, "coverage": float(cover[i]), "n": len(rows),
             "scan": [[float(k), float(c)] for k, c in zip(kappas, cover)]}
+
+
+def calibrate_per_material(cat, target=0.90, kappas=None, per_device=50, top_k=5):
+    """Per material, the smallest kappa >= 1 whose concentration intervals reach the target coverage on that
+    material's validation spectra. Device choice keeps the global cat.kappa. Sets cat.kappa_material."""
+    kappas = KAPPAS if kappas is None else np.asarray(kappas, dtype=float)
+    out = {}
+    for mat in sorted({m.material for m in cat.models}):
+        rows = _calibration_rows(cat, [k for k, m in enumerate(cat.models) if m.material == mat], per_device, top_k)
+        cover = np.array([_coverage(cat, rows, cat.kappa, k) for k in kappas])
+        i = _first_reaching(cover, target)
+        cat.kappa_material[mat] = float(kappas[i])
+        out[mat] = {"kappa": float(kappas[i]), "coverage": float(cover[i]), "n": len(rows)}
+    return out
+
 
 
 

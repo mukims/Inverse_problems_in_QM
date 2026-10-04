@@ -1,11 +1,13 @@
 import dataclasses
+import json
 
 # tests/atlas/test_lookup.py
 import numpy as np
 import pytest
 
 from atlaslib import InputSpec
-from atlaslib.lookup import Catalogue, P_NO_MATCH, calibrate, candidates, lookup, window_input, window_inputs
+from atlaslib.lookup import (Catalogue, P_NO_MATCH, calibrate, calibrate_per_material, candidates, lookup,
+                             window_input, window_inputs)
 from atlaslib.registry import RibbonModel
 from atlaslib.store import CloudStore
 from toy import E, toy_spectrum
@@ -255,5 +257,53 @@ def test_larger_kappa_widens_the_interval(toy):
     narrow = lookup(dataclasses.replace(cat, kappa=1.0), E, T)
     wide = lookup(dataclasses.replace(cat, kappa=8.0), E, T)
     assert wide.concentration_hi - wide.concentration_lo >= narrow.concentration_hi - narrow.concentration_lo
+
+
+# ---------- Per-material kappa (BUILD-28) ----------
+
+def test_material_kappa_leaves_the_device_choice_unchanged(toy):
+    _, models, cat = toy
+    wide = dataclasses.replace(cat, kappa_material={"alpha": 50.0, "beta": 50.0})
+    for m, d, T in _items(models, seeds=TEST[:3]):
+        r, r2 = lookup(cat, E, T), lookup(wide, E, T)
+        assert (r2.device, r2.probability, r2.runners_up, r2.p_value) == (r.device, r.probability, r.runners_up, r.p_value)
+
+
+def test_material_kappa_sets_that_materials_interval(toy):
+    _, _, cat = toy
+    T = _spectrum("alpha", 9, 0.02, 174)
+    per = lookup(dataclasses.replace(cat, kappa=1.0, kappa_material={"alpha": 8.0}), E, T)
+    glob = lookup(dataclasses.replace(cat, kappa=8.0), E, T)
+    assert per.device == glob.device == "alpha/armchair/N9"
+    assert (per.concentration, per.concentration_lo, per.concentration_hi) == \
+        (glob.concentration, glob.concentration_lo, glob.concentration_hi)
+
+
+def test_a_material_without_its_own_kappa_uses_the_global_one(toy):
+    _, _, cat = toy
+    T = _spectrum("alpha", 9, 0.02, 175)
+    assert lookup(dataclasses.replace(cat, kappa=3.0, kappa_material={"beta": 50.0}), E, T) == \
+        lookup(dataclasses.replace(cat, kappa=3.0), E, T)
+
+
+def test_calibrate_per_material_reaches_the_target_for_each_material(toy):
+    _, _, cat = toy
+    c = dataclasses.replace(cat, kappa=2.0)
+    res = calibrate_per_material(c, per_device=40)
+    assert set(res) == {"alpha", "beta"} and c.kappa == 2.0
+    for mat, v in res.items():
+        assert v["kappa"] >= 1.0 and 0.9 <= v["coverage"] <= 1.0 and v["n"] == 3 * 40
+        assert c.kappa_material[mat] == v["kappa"]
+
+
+def test_kappa_material_survives_save_and_load(toy, tmp_path):
+    _, _, cat = toy
+    dataclasses.replace(cat, kappa_material={"alpha": 2.5}).save(tmp_path / "cat")
+    assert Catalogue.load(tmp_path / "cat").kappa_material == {"alpha": 2.5}
+    man = json.loads((tmp_path / "cat" / "manifest.json").read_text())
+    del man["kappa_material"]                       # a catalogue saved before BUILD-28
+    (tmp_path / "cat" / "manifest.json").write_text(json.dumps(man))
+    assert Catalogue.load(tmp_path / "cat").kappa_material == {}
+
 
 
