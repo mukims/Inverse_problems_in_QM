@@ -36,6 +36,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-25** | 2026-10-03 | **61 Ribbon Models + Square Strip (4 Hidden Material Groups)** | **MEANING-2 (Graded Similarity Across Materials: AE vs Physics vs Multiscale vs Stress)** | `engine_v1` (18,600 test) + `materials_ev_full` (18,000 test) + `novelty_v1` (600 square test) | InputSpec v4 (416-ch eV grid); 2,500 contrastive training steps per encoder per hidden material; seeds 0–699 train/refs, 700–849 val, 850–999 test | **99.98–100.0%** (Known Ident across all encoders) | N/A | N/A | **Completed (E1 & E5 MET, E2–E4 MISSED)**: Evaluated 4 encoders (AE baseline `atlas_v5m/loo_*`, physics, multiscale soft-targets, stress loss) across 4 leave-one-material-out splits. Contrastive encoders achieve 100% min AUROC vs known and 99.98–100% known identification. Multiscale reaches 0.962 (hBN) and 0.938 (phosphorene) hidden-ribbon Spearman correlation against clean-spectrum ground truth, but drops on MoS₂ (0.740) and triangular (0.394). No change to Shazam: `atlas_v4m` stays production. Whether a meaning encoder should replace the autoencoder is the human's decision. Runtime: 2,843 s. Results in `notebooks/material_atlas/meaning/results/v2/`. |
 | **PAGE-1** | 2026-10-03 | **61 Ribbon Models + Square Strip** | **Shazam Interactive Atlas Page & In-Browser Lookup** | `notebooks/material_atlas/atlas_page/data/` (11 MB export) | Pure JS Conv1dAE forward pass + streaming k-NN + novelty calibration on frozen `atlas_v4m` map; 500 refs/model ($N_{\text{refs}} = 30,500$) | **100% Mat<br>100% Edge<br>100% Width** | N/A (Client-side interactive engine) | N/A | **Completed (All Checks & Tests PASS)**: Directory size 11 MB ($< 12$ MB). Agreement with full map: 100% material, 100% edge, 100% width, 99.34% unknown ($N=1,220$). Node test PASS across 320 vectors ($\max |x| = 2.4\times 10^{-4}$, $\max |z| = 3.0\times 10^{-4}$, 100% agreement with Python). Ready for reviewer publishing. |
 | **BUILD-26** | 2026-10-04 | **5 Pilot Ribbons (Graphene, hBN, MoS₂, Phosphorene, Triangular)** | **CONC-1 (Concentration Estimation Beyond 7/9-AGNR)** | `~/atlas_store/conc_v1` (5 models $\times$ 24 densities $\times$ 1,000 seeds = 120,000 spectra) | 24-density grid ($0.25\%\text{--}6.0\%$); Stage 3 generic XGBoost + split-conformal intervals; Shazam routing on frozen `atlas_v4m` map | **N/A** (Stage 3 Concentration) | **0.0907–0.3042 pp** (Oracle MAE across materials) | **0.0571–0.2572** ($q$ conformal halfwidth) | **Completed (Coverage Gate & Expectations MET, Routing Gate MISSED)**: Conformal coverage gate passed on all 5 ribbons (88.8–91.3%, within 88–92%). Median relative error $\le 10\%$ met on all 5 ribbons (MoS₂ 2.58%, triangular 2.29%, graphene 3.58%, phosphorene 3.59%, hBN 9.13%). Above-4% routed % significantly lower than inside-4% across all ribbons. Shazam inside routed % 64.1–97.0% (gate $\ge 99\%$ missed). Generation wall time 4.31 h (120 clouds). |
+| **BUILD-27** | 2026-10-04 | **61 Ribbon Models + Pilot Ribbons + Square Strip** | **LOOKUP-1 (Shazam Ensemble Lookup: Device & Concentration from One Signature)** | `engine_v1` (18,600 test) + `materials_ev_full` (18,000 test) + `conc_v1` (15,000 pilot test $\le 5\%$, 3,000 $> 5\%$) + `novelty_v1` (600 square test) | Label-free `InputSpec v4` window-aware transform; 61-device catalogue interpolated PCHIP 0–5% (0.05% step); misfit pre-screen + posterior; $\kappa = 6.31$ calibrated; $p$-value match rejection | **99.989% Mat+Edge+Width**<br>(100% Mat, 99.995% Edge, 99.989% Width) | **0.0849 pp** (T1 Catalogue MAE)<br>**0.1411 pp** (T2 Pilot MAE) | **90.883%** (T1 Catalogue Cov)<br>**87.427%** (T2 Pilot Cov) | **Completed (T1, T2, T4, Speed MET; T3, T5 MISSED)**: Direct single-signature inverse lookup without trained classifiers. T1: 99.989% device accuracy, 2.5% median rel error, 90.88% coverage, false "no match" 0.81–1.46% across all materials (all MET). T2: 99.96% device, 3.97% median rel error, 87.43% coverage (all MET). T4: hidden materials 98.96–100.0% rejected, square 100.0% rejected (MET). Speed: 22.4 ms median (MET). T3: coarse/narrow window device accuracy 43.7–88.4%; probability bins over-estimate confidence by 11–17 pp on low-confidence windows (MISSED). T5: hBN silent wrong 6.17% (MISSED vs $<2\%$; today 23.7%). Results in `notebooks/material_atlas/lookup_v1/results.json`. |
 
 
 ---
@@ -1277,6 +1278,129 @@ Artifacts written:
 - `notebooks/tbribbon/conc_v1_report.json`
 - `notebooks/tbribbon/conc_v1.log`
 - `docs/materials/README.md`
+
+---
+
+### [2026-10-04] BUILD-27: LOOKUP-1 Shazam Ensemble Lookup (Device & Concentration from One Signature)
+
+* **Overview & Setup**:
+  - Implemented Shazam's ensemble lookup per spec `docs/superpowers/specs/2026-10-04-shazam-ensemble-lookup-design.md` and plan `docs/superpowers/plans/2026-10-04-shazam-ensemble-lookup.md`.
+  - Replaces trained black-box classifiers with direct Bayesian posterior lookup over disordered device ensembles: given an arbitrary transmission signature ($E$ in eV from charge neutrality, $T(E)$ over any window), Shazam identifies the closest catalogued device, its impurity concentration with a 90% credible interval, runner-up candidates, and a calibrated "no match" rejection flag.
+  - **Catalogue**: 61 registered devices (31 graphene ribbons from `~/atlas_store/engine_v1/`, excluding clean square strip; 30 ribbons of hBN, phosphorene, MoS₂, and triangular from `~/atlas_store/materials_ev_full/`).
+  - **Ensemble statistics & interpolation**: Label-free `InputSpec(version="v4")` transform (despike $T > 2m+2$, resample to 416-ch grid $[0, 8.30]\,\text{eV}$, clip at 64, $\log(1+T)/\log(65)$). Training seeds 0–699 at 0% (clean anchor with $\sigma=0$), 0.5%, 1%, 2%, 4% interpolated via PCHIP per channel along concentration onto 101-point grid $0\text{--}5\%$ (step 0.05%; extrapolated above 4%). Spread floor $S_0 = 0.01$ in transformed units.
+  - **Query pipeline**: Window-aware transform (uncovered channels outside $[E_{\min}, E_{\max}]$ are marked absent; $M \ge 10$ channels required). Misfit pre-screen selects top-$k = 5$ candidate devices by $\min_d \text{mean}_E ((x - \mu)/\sigma_{\text{eff}})^2$. Posterior $p(D, d \mid x) \propto \exp(\ell_D(d)/\kappa)$ with uniform prior. Credible interval computed from posterior median and 5th–95th percentiles padded by half a grid step.
+  - **Calibration**: Correlation correction $\kappa$ calibrated on validation seeds 700–849 ($n = 3,050$ spectra, 50 per device). Calibrated **$\kappa = 6.31$** achieves **90.9%** validation coverage (target 90%).
+  - **Match rejection**: Evaluates test statistic $\min_d \text{misfit}$ on the best device over the query mask against that device's own validation spectra ($N_{\text{val}} \le 200$). Flags `no_match` if $p < 0.01$.
+  - **Split**: Seeds 0–699 catalogue build, 700–849 calibration ($\kappa$, $p$-values), 850–999 test evaluation across all stores. Fully label-free test signatures (raw $T$ with physical $E$).
+
+* **T1. Catalogue Benchmark (61 Devices $\times$ 4 Stored Densities $\times$ 150 Seeds = 36,600 Test Spectra)**:
+  - Overall: 99.989% Device Accuracy, 100.0% Material Accuracy, 99.995% Material+Edge Accuracy, 99.995% Top-3 Accuracy.
+  - Concentration: 2.50% Median Relative Error, 0.0849 pp MAE.
+  - Reliability: 90.883% 90% Interval Coverage, 1.093% False "No Match" rate, 0.005% Silent Wrong rate.
+
+| Material | $N$ | Device % | Material+Edge % | Median Rel Err % | MAE (pp) | Coverage % (90% target) | False "No Match" % | Silent Wrong % |
+|---|---|---|---|---|---|---|---|---|
+| `graphene-ideal` (31 ribbons) | 18,600 | 99.995% | 100.0% | 1.25% | 0.0622 pp | 94.699% | 1.129% | 0.000% |
+| `hbn` (8 ribbons) | 4,800 | 99.938% | 99.958% | 10.00% | 0.2136 pp | 56.271% | 1.458% | 0.042% |
+| `mos2` (6 ribbons) | 3,600 | 100.000% | 100.0% | 2.50% | 0.0802 pp | 99.083% | 0.833% | 0.000% |
+| `phosphorene` (8 ribbons) | 4,800 | 100.000% | 100.0% | 2.50% | 0.0851 pp | 95.438% | 0.812% | 0.000% |
+| `triangular` (8 ribbons) | 4,800 | 100.000% | 100.0% | 1.25% | 0.0473 pp | 100.000% | 1.062% | 0.000% |
+| **All Materials (Pooled)** | **36,600** | **99.989%** | **99.995%** | **2.50%** | **0.0849 pp** | **90.883%** | **1.093%** | **0.005%** |
+
+* **T2. Off-Grid Interpolation Benchmark (Pilot Store `~/atlas_store/conc_v1`, 20 Levels $\le 5\%$, 150 Seeds = 15,000 Spectra)**:
+  - Tests continuous concentration interpolation between and beyond stored reference nodes.
+
+| Ribbon | $N$ | Device % | Top-3 % | Median Rel Err % | MAE (pp) | Coverage % | No Match % | Silent Wrong % |
+|---|---|---|---|---|---|---|---|---|
+| `graphene-ideal/armchair/N13` | 3,000 | 100.000% | 100.0% | 3.33% | 0.1194 pp | 87.867% | 0.200% | 0.000% |
+| `hbn/armchair/N9` | 3,000 | 99.867% | 100.0% | 10.00% | 0.2806 pp | 63.633% | 1.100% | 0.067% |
+| `mos2/zigzag/N9` | 3,000 | 100.000% | 100.0% | 3.57% | 0.1117 pp | 97.967% | 1.367% | 0.000% |
+| `phosphorene/armchair/N9` | 3,000 | 99.933% | 100.0% | 3.88% | 0.1173 pp | 87.900% | 2.100% | 0.000% |
+| `triangular/zigzag/N9` | 3,000 | 100.000% | 100.0% | 2.60% | 0.0766 pp | 99.767% | 3.067% | 0.000% |
+| **Overall T2** | **15,000** | **99.960%** | **100.0%** | **3.97%** | **0.1411 pp** | **87.427%** | **1.567%** | **0.013%** |
+
+* **T3. Energy Window Sub-Sampling Benchmark (Catalogue $n_3=20$, Pilot $n_3=30$ per Cloud)**:
+  - Evaluates lookup performance under constrained experimental measurement windows.
+
+| Window | Cat Dev % | Cat Top-3 % | Cat Med Rel Err % | Pilot Dev % | Pilot Top-3 % | Pilot Med Rel Err % | Reliability Bins ($n \ge 50$): Stated vs Observed % |
+|---|---|---|---|---|---|---|---|
+| `0.0–0.5 eV` | 46.434% | 67.561% | 15.00% | 43.733% | 57.900% | 13.33% | [0.2, 0.4]: 24.2% vs 14.3% ($n=4140$)<br>[0.4, 0.6]: 49.8% vs 56.9% ($n=1637$)<br>[0.6, 0.8]: 70.9% vs 80.5% ($n=246$)<br>[0.8, 1.0]: 98.6% vs 99.9% ($n=1857$) |
+| `0.0–1.0 eV` | 69.242% | 84.734% | 10.00% | 64.233% | 71.167% | 12.00% | [0.2, 0.4]: 24.6% vs 13.7% ($n=2448$)<br>[0.4, 0.6]: 48.8% vs 54.4% ($n=835$)<br>[0.6, 0.8]: 69.7% vs 86.3% ($n=430$)<br>[0.8, 1.0]: 98.0% vs 99.5% ($n=4167$) |
+| `1.0–3.0 eV` | 88.402% | 91.803% | 5.00% | 79.933% | 80.000% | 4.00% | [0.2, 0.4]: 20.0% vs 6.5% ($n=1240$)<br>[0.8, 1.0]: 99.7% vs 99.9% ($n=6626$) |
+| `3.0–8.3 eV` | 78.648% | 81.926% | 3.75% | 59.767% | 60.000% | 5.00% | [0.2, 0.4]: 20.0% vs 3.4% ($n=2320$)<br>[0.8, 1.0]: 100.0% vs 99.9% ($n=5554$) |
+
+* **T4. Out-of-Catalogue Rejection Benchmark (Leave-One-Material-Out + Square Strip N10)**:
+  - Evaluates $p$-value rejection calibration when testing materials not present in the catalogue (`Catalogue.without([M])`).
+
+| Hidden System | $N$ | No Match % ($\ge 95\%$ target) | Nearest Material % | Top-3 Nearest Devices Named |
+|---|---|---|---|---|
+| `hbn` (hidden) | 4,800 | **99.958%** | graphene 89.21%, phosphorene 10.79% | `graphene-ideal/armchair/N15` (1941), `N6` (1231), `N9` (1083) |
+| `mos2` (hidden) | 3,600 | **100.000%** | graphene 55.92%, triangular 44.08% | `triangular/armchair/N7` (1587), `graphene-ideal/armchair/N10` (1121), `N7` (329) |
+| `phosphorene` (hidden) | 4,800 | **98.958%** | graphene 100.00% | `graphene-ideal/armchair/N6` (985), `graphene-ideal/armchair/N10` (726), `N7` (595) |
+| `triangular` (hidden) | 4,800 | **100.000%** | MoS₂ 67.25%, graphene 32.75% | `mos2/zigzag/N14` (2219), `graphene-ideal/armchair/N5` (1257), `mos2/zigzag/N9` (856) |
+| `square/strip/N10` (unseen) | 600 | **100.000%** | graphene 100.00% | `graphene-ideal/armchair/N8` (416), `graphene-ideal/armchair/N50` (125), `N14` (43) |
+
+* **T5. Beyond 5% Extrapolation Benchmark (Pilot Store, Densities $> 5\%$, $N=600$ per Ribbon)**:
+  - Checks behavior when true concentration exceeds the 5% catalogue interpolation grid.
+
+| Ribbon | Device % | No Match % | Silent Wrong % | Median Rel Err % | MAE (pp) | Median Reported Conc % |
+|---|---|---|---|---|---|---|
+| `graphene-ideal/armchair/N13` | 100.000% | 2.167% | **0.000%** | 15.07% | 0.8197 pp | 4.85% |
+| `hbn/armchair/N9` | 93.667% | 1.167% | **6.167%** | 18.65% | 1.0200 pp | 4.65% |
+| `mos2/zigzag/N9` | 100.000% | 33.667% | **0.000%** | 14.50% | 0.7921 pp | 4.85% |
+| `phosphorene/armchair/N9` | 88.667% | 18.333% | **8.833%** | 16.36% | 0.9114 pp | 4.70% |
+| `triangular/zigzag/N9` | 100.000% | 91.500% | **0.000%** | 14.33% | 0.7200 pp | 4.95% |
+
+* **Latency & Speed**:
+  - Single unlabelled signature CPU query time: **Median 22.4 ms**, 90th Percentile **23.1 ms** ($N=100$). Sub-25 ms performance on CPU satisfies the $< 50\,\text{ms}$ interactive specification.
+
+* **Side-by-Side Comparison: Shazam Ensemble Lookup vs Today's Shazam (`atlas_v4m` + CONC-1)**:
+  - **T1 Identification**:
+    - `graphene-ideal`: Lookup 99.995% device vs today's `atlas_v4m` 99.925% width (unknown: 1.13% vs 1.23%).
+    - `hbn`: Lookup 99.938% device vs today's `atlas_v4m` 99.479% width (unknown: 1.46% vs 1.35%).
+    - `mos2`: Lookup 100.000% device vs today's `atlas_v4m` 100.0% width (unknown: 0.83% vs 1.25%).
+    - `phosphorene`: Lookup 100.000% device vs today's `atlas_v4m` 100.0% width (unknown: 0.81% vs 0.90%).
+    - `triangular`: Lookup 100.000% device vs today's `atlas_v4m` 100.0% width (unknown: 1.06% vs 1.02%).
+  - **T2 Between-Library Routing & Concentration**:
+    - Today's Shazam routes only when a spectrum is near its 4 discrete library nodes: mean routed rate over $\le 5\%$ densities is 97.40% (graphene), 96.07% (hBN), 85.80% (MoS₂), 91.60% (phosphorene), and 65.33% (triangular), dropping to 0–5% between library densities on triangular and MoS₂.
+    - Ensemble Lookup eliminates this routing gap completely: device accuracy is **99.96%** overall (graphene 100%, hBN 99.87%, MoS₂ 100%, phosphorene 99.93%, triangular 100%) with 87.43% interval coverage and 3.97% median relative error across all continuous pilot densities.
+  - **T4 Unknown / Out-of-Distribution Detection**:
+    - Today's `atlas_v4m`: hBN 100.0%, MoS₂ 100.0%, phosphorene 99.83%, triangular 100.0%, square strip 100.0% unknown.
+    - Ensemble Lookup: hBN 99.96%, MoS₂ 100.0%, phosphorene 98.96%, triangular 100.0%, square strip 100.0% `no_match`.
+  - **T5 High-Disorder Silent Misreads**:
+    - Today's `atlas_v4m`: hBN armchair N9 silently misreads as N7 at 22.7% (5.22%), 38.7% (5.5%), 45.3% (5.78%), and 52.0% (6.0%), with 0% misread on MoS₂ and triangular, and 3.3–6.7% on phosphorene.
+    - Ensemble Lookup: hBN silent wrong rate drops to 6.17% (a ~4× reduction); MoS₂ and triangular stay at exactly 0.0% silent wrong; phosphorene has 8.83% silent wrong. Reported concentrations gracefully saturate near the grid ceiling ($\sim 4.7\text{--}4.95\%$).
+
+* **Pre-Registered Expectations Verdicts**:
+  1. **T1 (Catalogue)**: **MET**.
+     - Device accuracy: 99.989% ($\ge 99.9\%$: MET).
+     - Median relative concentration error: 2.50% ($\le 5\%$: MET).
+     - 90% coverage: 90.883% (within 88.0%–92.0%: MET).
+     - False "no match" per material: graphene 1.13%, hBN 1.46%, MoS₂ 0.83%, phosphorene 0.81%, triangular 1.06% (all within 0.5%–1.5%: MET).
+  2. **T2 (Off-Grid Pilot $\le 5\%$)**: **MET**.
+     - Device accuracy: 99.960% ($\ge 99.5\%$: MET).
+     - Median relative error: 3.97% ($\le 6\%$: MET).
+     - 90% coverage: 87.427% (within 85.0%–95.0%: MET).
+     - False "no match": 1.567% ($\le 2.0\%$: MET).
+  3. **T3 (Window Sub-sampling & Calibration)**: **MISSED**.
+     - Top-1 and top-3 accuracy reported as found (0–0.5 eV: 46.4% / 43.7% dev, 67.6% / 57.9% top-3; 1–3 eV: 88.4% / 79.9% dev, 91.8% / 80.0% top-3).
+     - Probability calibration: in bins with $n \ge 50$, low-confidence bins diverge by more than $\pm 10$ percentage points from stated probabilities (e.g. in 0–1 eV, [0.2, 0.4] has stated 24.6% vs observed 13.7% [-10.9 pp], [0.6, 0.8] has stated 69.7% vs observed 86.3% [+16.6 pp]; in 1–3 eV, [0.2, 0.4] has stated 20.0% vs observed 6.5% [-13.5 pp]; in 3–8.3 eV, [0.2, 0.4] has stated 20.0% vs observed 3.4% [-16.6 pp]). High-confidence bins [0.8, 1.0] are well-calibrated (stated 98–100%, observed 99.5–99.9%).
+  4. **T4 (Hidden Materials & Unseen Square Strip)**: **MET**.
+     - All hidden materials exceed 95% rejection: hBN 99.958%, MoS₂ 100.0%, phosphorene 98.958%, triangular 100.0%.
+     - Unseen square strip: 100.000% ($\ge 99\%$: MET).
+  5. **T5 (Beyond 5% Extrapolation)**: **MISSED**.
+     - Silent wrong rates: graphene 0.0%, MoS₂ 0.0%, triangular 0.0%, phosphorene 8.833%, hBN 6.167%.
+     - hBN armchair N9 is 6.167% (misses the $< 2.0\%$ target, though dramatically improved over today's 23.7%).
+  6. **Speed**: **MET**.
+     - Median CPU latency: 22.4 ms ($< 50\,\text{ms}$: MET).
+
+Artifacts written:
+- `notebooks/material_atlas/lookup_v1/manifest.json`
+- `notebooks/material_atlas/lookup_v1/catalogue.npz` (untracked, git-ignored)
+- `notebooks/material_atlas/lookup_v1/results.json`
+- `notebooks/material_atlas/lookup_v1/eval.log`
+- `notebooks/material_atlas/build_lookup.py`
+- `notebooks/material_atlas/eval_lookup.py`
 
 ---
 
