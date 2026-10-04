@@ -37,6 +37,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **PAGE-1** | 2026-10-03 | **61 Ribbon Models + Square Strip** | **Shazam Interactive Atlas Page & In-Browser Lookup** | `notebooks/material_atlas/atlas_page/data/` (11 MB export) | Pure JS Conv1dAE forward pass + streaming k-NN + novelty calibration on frozen `atlas_v4m` map; 500 refs/model ($N_{\text{refs}} = 30,500$) | **100% Mat<br>100% Edge<br>100% Width** | N/A (Client-side interactive engine) | N/A | **Completed (All Checks & Tests PASS)**: Directory size 11 MB ($< 12$ MB). Agreement with full map: 100% material, 100% edge, 100% width, 99.34% unknown ($N=1,220$). Node test PASS across 320 vectors ($\max |x| = 2.4\times 10^{-4}$, $\max |z| = 3.0\times 10^{-4}$, 100% agreement with Python). Ready for reviewer publishing. |
 | **BUILD-26** | 2026-10-04 | **5 Pilot Ribbons (Graphene, hBN, MoS₂, Phosphorene, Triangular)** | **CONC-1 (Concentration Estimation Beyond 7/9-AGNR)** | `~/atlas_store/conc_v1` (5 models $\times$ 24 densities $\times$ 1,000 seeds = 120,000 spectra) | 24-density grid ($0.25\%\text{--}6.0\%$); Stage 3 generic XGBoost + split-conformal intervals; Shazam routing on frozen `atlas_v4m` map | **N/A** (Stage 3 Concentration) | **0.0907–0.3042 pp** (Oracle MAE across materials) | **0.0571–0.2572** ($q$ conformal halfwidth) | **Completed (Coverage Gate & Expectations MET, Routing Gate MISSED)**: Conformal coverage gate passed on all 5 ribbons (88.8–91.3%, within 88–92%). Median relative error $\le 10\%$ met on all 5 ribbons (MoS₂ 2.58%, triangular 2.29%, graphene 3.58%, phosphorene 3.59%, hBN 9.13%). Above-4% routed % significantly lower than inside-4% across all ribbons. Shazam inside routed % 64.1–97.0% (gate $\ge 99\%$ missed). Generation wall time 4.31 h (120 clouds). |
 | **BUILD-27** | 2026-10-04 | **61 Ribbon Models + Pilot Ribbons + Square Strip** | **LOOKUP-1 (Shazam Ensemble Lookup: Device & Concentration from One Signature)** | `engine_v1` (18,600 test) + `materials_ev_full` (18,000 test) + `conc_v1` (15,000 pilot test $\le 5\%$, 3,000 $> 5\%$) + `novelty_v1` (600 square test) | Label-free `InputSpec v4` window-aware transform; 61-device catalogue interpolated PCHIP 0–5% (0.05% step); misfit pre-screen + posterior; $\kappa = 6.31$ calibrated; $p$-value match rejection | **99.989% Mat+Edge+Width**<br>(100% Mat, 99.995% Edge, 99.989% Width) | **0.0849 pp** (T1 Catalogue MAE)<br>**0.1411 pp** (T2 Pilot MAE) | **90.883%** (T1 Catalogue Cov)<br>**87.427%** (T2 Pilot Cov) | **Completed (T1, T2, T4, Speed MET; T3, T5 MISSED)**: Direct single-signature inverse lookup without trained classifiers. T1: 99.989% device accuracy, 2.5% median rel error, 90.88% coverage, false "no match" 0.81–1.46% across all materials (all MET). T2: 99.96% device, 3.97% median rel error, 87.43% coverage (all MET). T4: hidden materials 98.96–100.0% rejected, square 100.0% rejected (MET). Speed: 22.4 ms median (MET). T3: coarse/narrow window device accuracy 43.7–88.4%; probability bins over-estimate confidence by 11–17 pp on low-confidence windows (MISSED). T5: hBN silent wrong 6.17% vs today's 39.7% like-for-like (MISSED vs $<2\%$; phosphorene 8.83% vs today's 4.8%). Results in `notebooks/material_atlas/lookup_v1/results.json`. |
+| **BUILD-28** | 2026-10-04 | **61 Ribbon Models + Pilot Ribbons + Square Strip** | **LOOKUP-1b (Shazam Ensemble Lookup: Per-Material $\kappa$ Concentration Intervals)** | `lookup_v2` (61 models, 36,600 T1 test, 15,000 T2 pilot test, 600 square test); global $\kappa = 6.31$ for device choice, per-material $\kappa \in [1.0, 39.81]$ for intervals | Global $\kappa = 6.31$ for candidates and probabilities; per-material interval $\kappa$ calibrated on validation spectra (graphene 3.981, hBN 39.811, MoS₂ 1.585, phosphorene 3.981, triangular 1.0) | **99.989% Mat+Edge+Width**<br>(Identical to BUILD-27) | **0.0827 pp** (T1 Catalogue MAE)<br>**0.1447 pp** (T2 Pilot MAE) | **90.954%** (T1 Catalogue Cov)<br>**85.887%** (T2 Pilot Cov) | **Completed (All Expectations MET)**: Per-material $\kappa$ resolves hBN under-coverage without altering device choice. T1: hBN coverage 56.3% $\to$ 89.8%; all materials 89.8–91.4% (85–95% target MET). T2: hBN coverage 63.6% $\to$ 89.9%; all ribbons 82.4–89.9% ($\ge 80\%$ target MET). Device choice, probabilities, and rejections identical to BUILD-27 across all 90 checks (MET). Results in `notebooks/material_atlas/lookup_v2/results.json`. |
 
 
 ---
@@ -1406,6 +1407,80 @@ Artifacts written:
 - `notebooks/material_atlas/lookup_v1/eval.log`
 - `notebooks/material_atlas/build_lookup.py`
 - `notebooks/material_atlas/eval_lookup.py`
+
+---
+
+### [2026-10-04] BUILD-28: LOOKUP-1b Per-Material $\kappa$ for Concentration Intervals (Honest hBN Coverage)
+
+* **Overview & Setup**:
+  - Implemented per-material correlation correction $\kappa$ for concentration credible intervals per spec `docs/superpowers/specs/2026-10-04-shazam-ensemble-lookup-design.md` (Section 8) and plan `docs/superpowers/plans/2026-10-04-lookup-per-material-kappa.md`.
+  - Solves the under-coverage problem observed in BUILD-27, where hBN concentration intervals achieved only 56.3% coverage in T1 (and 63.6% in T2) under a single global $\kappa = 6.31$, because hBN requires wider intervals ($\kappa = 39.811$) while MoS₂ and triangular require tighter intervals ($\kappa = 1.585$ and $1.000$).
+  - **Device Choice Unchanged**: Device selection, probability calculation, candidate ranking, and $p$-value match rejection strictly retain the global calibrated $\kappa = 6.31$. Only the chosen device's concentration credible interval uses `cat.kappa_material[material]` (falling back to global $\kappa$ if unlisted).
+  - **Catalogue & Calibration**: 61 registered devices in `notebooks/material_atlas/lookup_v2/`. Seeds 0–699 train/catalogue, 700–849 calibration, 850–999 test.
+
+* **Calibration Parameters (`lookup_v2/manifest.json`)**:
+
+| Material | Interval $\kappa$ | Validation Coverage | $N_{\text{val}}$ Spectra |
+| :--- | :---: | :---: | :---: |
+| `graphene-ideal` | 3.981 | 90.4% | 1,550 |
+| `hbn` | 39.811 | 90.5% | 400 |
+| `mos2` | 1.585 | 90.0% | 300 |
+| `phosphorene` | 3.981 | 91.0% | 400 |
+| `triangular` | 1.000 | 92.5% | 400 |
+| **Global (Device Choice)** | **6.310** | **90.9%** | **3,050** |
+
+* **Device Choice Invariance Check**:
+  - All device-choice metrics (`device_pct`, `material_pct`, `material_edge_pct`, `top3_pct`, `no_match_pct`, `silent_wrong_pct`) across T1 all, T2 all, all 4 T3 spectral windows (both catalogue and pilot), all T3 reliability bins, all T4 leave-one-material-out rejections, and all T5 high-disorder ribbons are **identically equal to BUILD-27** across all 90 evaluation points.
+
+* **T1 Catalogue Benchmark (Per-Material Coverage & Error Progression)**:
+
+| Material | Stored Clouds | BUILD-27 Cov | BUILD-28 Cov | BUILD-27 Med Rel Err | BUILD-28 Med Rel Err | BUILD-27 MAE | BUILD-28 MAE |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `graphene-ideal` (31 ribbons) | 18,600 | 94.699% | 91.360% | 1.25% | 1.25% | 0.0622 pp | 0.0626 pp |
+| `hbn` (8 ribbons) | 4,800 | 56.271% | **89.771%** | 10.00% | 10.00% | 0.2136 pp | 0.1921 pp |
+| `mos2` (6 ribbons) | 3,600 | 99.083% | 90.861% | 2.50% | 2.50% | 0.0802 pp | 0.0816 pp |
+| `phosphorene` (8 ribbons) | 4,800 | 95.438% | 90.188% | 2.50% | 2.50% | 0.0851 pp | 0.0867 pp |
+| `triangular` (8 ribbons) | 4,800 | 100.000% | 91.396% | 1.25% | 2.50% | 0.0473 pp | 0.0477 pp |
+| **All Materials (Pooled)** | **36,600** | **90.883%** | **90.954%** | **2.50%** | **2.50%** | **0.0849 pp** | **0.0827 pp** |
+
+* **T2 Off-Grid Interpolation Benchmark (Per-Ribbon Coverage & Error Progression)**:
+
+| Ribbon ($d \le 5.0\%$, 20 densities) | Test Spectra | BUILD-27 Cov | BUILD-28 Cov | BUILD-27 Med Rel Err | BUILD-28 Med Rel Err | BUILD-27 MAE | BUILD-28 MAE |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `graphene-ideal/armchair/N13` | 3,000 | 87.867% | 82.367% | 3.33% | 3.33% | 0.1194 pp | 0.1194 pp |
+| `hbn/armchair/N9` | 3,000 | 63.633% | **89.867%** | 10.00% | 11.22% | 0.2806 pp | 0.3019 pp |
+| `mos2/zigzag/N9` | 3,000 | 97.967% | 85.433% | 3.57% | 3.57% | 0.1117 pp | 0.1106 pp |
+| `phosphorene/armchair/N9` | 3,000 | 87.900% | 83.600% | 3.88% | 3.79% | 0.1173 pp | 0.1166 pp |
+| `triangular/zigzag/N9` | 3,000 | 99.767% | 88.167% | 2.60% | 2.50% | 0.0766 pp | 0.0750 pp |
+| **All Ribbons (Pooled)** | **15,000** | **87.427%** | **85.887%** | **3.97%** | **3.97%** | **0.1411 pp** | **0.1447 pp** |
+
+* **Pre-Registered Expectations Verdicts**:
+  1. **T1 Coverage per Material (Target: 85–95% for every material)**: **MET**.
+     - Graphene: 91.360%
+     - hBN: 89.771%
+     - MoS₂: 90.861%
+     - Phosphorene: 90.188%
+     - Triangular: 91.396%
+     - All 5 materials comfortably fall within the 85–95% band (BUILD-27 ranged from 56.3% to 100%).
+  2. **T2 Coverage per Ribbon (Target: $\ge 80\%$ for every ribbon)**: **MET**.
+     - Graphene armchair N13: 82.367%
+     - hBN armchair N9: 89.867%
+     - MoS₂ zigzag N9: 85.433%
+     - Phosphorene armchair N9: 83.600%
+     - Triangular zigzag N9: 88.167%
+     - All 5 ribbons exceed 80% (BUILD-27 hBN was 63.633%).
+  3. **Device Choice Unchanged**: **MET**.
+     - Device-choice metrics, runner-up rankings, posterior probabilities, no-match rejections, reliability bins, and silent wrong rates are 100% identical to BUILD-27 across all 90 verification points.
+
+Artifacts written:
+- `notebooks/material_atlas/lookup_v2/manifest.json`
+- `notebooks/material_atlas/lookup_v2/catalogue.npz` (untracked, git-ignored)
+- `notebooks/material_atlas/lookup_v2/results.json`
+- `notebooks/material_atlas/lookup_v2/eval.log`
+- `notebooks/material_atlas/atlaslib/lookup.py`
+- `notebooks/material_atlas/build_lookup.py`
+- `notebooks/material_atlas/eval_lookup.py`
+- `tests/atlas/test_lookup.py`
 
 ---
 
