@@ -2,6 +2,7 @@
 from atlaslib.registry import RibbonModel
 
 from .bands import band_edges
+from .lattice2d import LATTICES, lattice_ribbon
 from .lattices import honeycomb_ribbon, square_strip, hbn_ribbon, phosphorene_ribbon, mos2_ribbon, triangular_ribbon
 
 MATERIALS = {
@@ -13,6 +14,26 @@ MATERIALS = {
     "phosphorene": {"builder": "phosphorene", "params": {}, "t_ev": 3.665, "source": "Rudenko 2014 5-hopping"},
     "mos2": {"builder": "mos2", "params": {}, "t_ev": 1.0, "orbitals_per_site": 3, "impurity_v_t": 0.2535,
              "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"},
+    # MATERIALS-2 (2026-10-04): Liu et al. PRB 88, 085433 (2013) Table II, GGA, nearest neighbour; V = 0.5 x t2
+    "ws2": {"builder": "mos2", "params": {"eps1": 1.130, "eps2": 2.275, "t0": -0.206, "t1": 0.567, "t2": 0.536,
+                                          "t11": 0.286, "t12": 0.384, "t22": -0.061},
+            "t_ev": 1.0, "orbitals_per_site": 3, "impurity_v_t": 0.268, "source": "Liu 2013 3-band GGA; V = 0.5 x t2"},
+    "mose2": {"builder": "mos2", "params": {"eps1": 0.919, "eps2": 2.065, "t0": -0.188, "t1": 0.317, "t2": 0.456,
+                                            "t11": 0.211, "t12": 0.290, "t22": 0.130},
+              "t_ev": 1.0, "orbitals_per_site": 3, "impurity_v_t": 0.228, "source": "Liu 2013 3-band GGA; V = 0.5 x t2"},
+    "wse2": {"builder": "mos2", "params": {"eps1": 0.943, "eps2": 2.179, "t0": -0.207, "t1": 0.457, "t2": 0.486,
+                                           "t11": 0.263, "t12": 0.329, "t22": 0.034},
+             "t_ev": 1.0, "orbitals_per_site": 3, "impurity_v_t": 0.243, "source": "Liu 2013 3-band GGA; V = 0.5 x t2"},
+    # Liu, Jiang, Yao PRB 84, 195430 (2011): t = 2 hbar v_F / (sqrt3 a) with first-principles v_F (Table I, eq. 43)
+    "silicene": {"builder": "honeycomb", "params": {"t": 1.0}, "t_ev": 1.067,
+                 "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"},
+    "germanene": {"builder": "honeycomb", "params": {"t": 1.0}, "t_ev": 0.991,
+                  "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"},
+    # toy lattices with flat bands, built from lattice data (tbribbon.lattice2d)
+    "kagome": {"builder": "lattice", "params": {}, "t_ev": 1.0, "source": "idealised kagome, flat band at +2t"},
+    "lieb": {"builder": "lattice", "params": {}, "t_ev": 1.0, "source": "idealised Lieb, flat band at 0"},
+    "checkerboard": {"builder": "lattice", "params": {}, "t_ev": 1.0,
+                     "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"},
 }
 
 
@@ -30,6 +51,8 @@ def _build(material, edge, width):
         return phosphorene_ribbon(width, edge, **spec["params"])
     if spec["builder"] == "mos2":
         return mos2_ribbon(width, edge, **spec["params"])
+    if spec["builder"] == "lattice":
+        return lattice_ribbon(LATTICES[material], width, edge, **spec["params"])
     raise KeyError(spec["builder"])
 
 

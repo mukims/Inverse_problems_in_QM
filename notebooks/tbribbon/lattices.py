@@ -124,11 +124,20 @@ def phosphorene_ribbon(N, edge, t1=-1.220, t2=3.665, t3=-0.205, t4=-0.105, t5=-0
     return RibbonHamiltonian(H0, H1, p, s)
 
 
-def mos2_ribbon(N, edge, eps1=1.046, eps2=2.104, t0=-0.184, t1=0.401, t2=0.507, t11=0.218, t12=0.338, t22=0.057):
-    """Monolayer MoS2 3-band tight-binding ribbon on triangular Mo lattice (Liu et al. PRB 2013).
-    Basis: {dz2, dxy, dx2-y2} per Mo site. On-site shifted by midgap (0.7666 eV) so midgap is at E = 0.
-    Energy unit t_ref = 1.0 eV."""
-    e_mid = 0.7666
+def tmd_midgap(eps1, eps2, t0, t11, t12, t22):
+    """Mid-gap at K of the three-band NN model (Liu et al. PRB 88, 085433, Table I): (E_v(K) + E_c(K)) / 2."""
+    e_v = eps2 - 1.5 * (t11 + t22) - 3 * np.sqrt(3) * t12
+    e_c = eps1 - 3 * t0
+    return (e_v + e_c) / 2
+
+
+def mos2_ribbon(N, edge, eps1=1.046, eps2=2.104, t0=-0.184, t1=0.401, t2=0.507, t11=0.218, t12=0.338, t22=0.057,
+                e_mid=None):
+    """Monolayer MX2 3-band tight-binding ribbon on the triangular metal lattice (Liu et al. PRB 2013); defaults: MoS2.
+    Basis: {dz2, dxy, dx2-y2} per metal site. On-site shifted by the mid-gap at K (0.7666 eV for MoS2, from
+    tmd_midgap unless given) so mid-gap is at E = 0. Energy unit t_ref = 1.0 eV."""
+    if e_mid is None:
+        e_mid = round(tmd_midgap(eps1, eps2, t0, t11, t12, t22), 4)
     H0_site = np.diag([eps1 - e_mid, eps2 - e_mid, eps2 - e_mid]).astype(complex)
 
     HR1 = np.array([
