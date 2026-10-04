@@ -155,3 +155,91 @@ class Catalogue:
                    a["val_x"], a["val_dev"], a["val_conc"], man["stored"], kappa=man["kappa"],
                    settings=man["settings"])
 
+
+def misfit(cat, x, mask, devices=None):
+    """Mean squared deviation in units of the spread over the window: (devices, grid)."""
+    mu = cat.mu if devices is None else cat.mu[np.asarray(devices)]
+    s = cat._s if devices is None else cat._s[np.asarray(devices)]
+    z = (x[mask] - mu[:, :, mask]) / s[:, :, mask]
+    return (z ** 2).mean(axis=-1)
+
+
+def log_likelihood(cat, x, mask, devices):
+    """Gaussian log-likelihood per channel, summed over the window: (devices, grid)."""
+    idx = np.asarray(devices)
+    s = cat._s[idx][:, :, mask]
+    z = (x[mask] - cat.mu[idx][:, :, mask]) / s
+    return -0.5 * (z ** 2).sum(axis=-1) - cat._logs[idx][:, :, mask].sum(axis=-1)
+
+
+def candidates(cat, x, mask, top_k=5):
+    """Misfit pre-screen: the top_k devices by best-concentration misfit, best first, and their misfits."""
+    best = misfit(cat, x, mask).min(axis=1)
+    order = np.argsort(best, kind="stable")[:top_k]
+    return order, best[order]
+
+
+def p_value(cat, device, mask, stat):
+    """Share of the device's own validation spectra whose best misfit over the same window is at least `stat`."""
+    V = cat.val_x[cat.val_dev == device]
+    if len(V) == 0:
+        raise ValueError(f"{cat.models[device].model_id} has no validation spectra")
+    if len(V) > P_VALUE_SPECTRA:
+        V = V[np.linspace(0, len(V) - 1, P_VALUE_SPECTRA).astype(int)]
+    z = (V[:, mask][:, None, :] - cat.mu[device][:, mask][None]) / cat._s[device][:, mask][None]
+    stats = (z ** 2).mean(axis=-1).min(axis=1)
+    return float((np.sum(stats >= stat) + 1) / (len(stats) + 1))
+
+
+def posterior(cat, x, mask, devices, kappa=None):
+    """p(device, concentration | signature) over the candidates, uniform prior: (devices, grid), sums to 1."""
+    ll = log_likelihood(cat, x, mask, devices) / (cat.kappa if kappa is None else kappa)
+    p = np.exp(ll - ll.max())
+    return p / p.sum()
+
+
+def _interval(grid, w):
+    """Posterior median and 90% interval of a weight vector on the grid, padded by half a grid step."""
+    c = np.cumsum(w) / np.sum(w)
+    q = lambda p: float(grid[min(int(np.searchsorted(c, p)), grid.size - 1)])
+    half = float(grid[1] - grid[0]) / 2 if grid.size > 1 else 0.0
+    return q(0.5), max(float(grid[0]), q(0.05) - half), min(float(grid[-1]), q(0.95) + half)
+
+
+@dataclass(frozen=True)
+class Match:
+    device: str
+    material: str
+    edge: str
+    width: int
+    probability: float
+    concentration: float
+    concentration_lo: float
+    concentration_hi: float
+    runners_up: tuple          # ((device, probability), ...) for the other candidates, most probable first
+    p_value: float
+    no_match: bool
+    window: tuple              # (first channel eV, last channel eV, channels)
+    impurity_layout: object = None   # reserved for the spatial-distribution layer
+
+
+def lookup(cat, energies, T, top_k=5):
+    """The closest catalogued device for one signature: energies in eV from charge neutrality, T over any window."""
+    x, mask = window_input(cat.spec, energies, T)
+    devs, _ = candidates(cat, x, mask, top_k)
+    post = posterior(cat, x, mask, devs)
+    p_dev = post.sum(axis=1)
+    order = np.argsort(-p_dev, kind="stable")
+    b = int(order[0])
+    dev = int(devs[b])
+    m = cat.models[dev]
+    conc, lo, hi = _interval(cat.grid, post[b])
+    pv = p_value(cat, dev, mask, float(misfit(cat, x, mask, [dev])[0].min()))
+    e = cat.spec.energies_t()[mask]
+    return Match(device=m.model_id, material=m.material, edge=m.edge, width=int(m.width),
+                 probability=float(p_dev[b]), concentration=conc, concentration_lo=lo, concentration_hi=hi,
+                 runners_up=tuple((cat.models[int(devs[i])].model_id, float(p_dev[i])) for i in order[1:]),
+                 p_value=pv, no_match=pv < P_NO_MATCH,
+                 window=(round(float(e[0]), 6), round(float(e[-1]), 6), int(mask.sum())))
+
+

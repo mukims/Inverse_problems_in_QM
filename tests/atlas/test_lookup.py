@@ -1,12 +1,15 @@
+import dataclasses
+
 # tests/atlas/test_lookup.py
 import numpy as np
 import pytest
 
 from atlaslib import InputSpec
-from atlaslib.lookup import Catalogue, window_input, window_inputs
+from atlaslib.lookup import Catalogue, P_NO_MATCH, candidates, lookup, window_input, window_inputs
 from atlaslib.registry import RibbonModel
 from atlaslib.store import CloudStore
 from toy import E, toy_spectrum
+
 
 SPEC = InputSpec(version="v4")
 DENSITIES = (0.01, 0.02, 0.04)
@@ -140,3 +143,98 @@ def test_build_refuses_a_units_of_t_spec(toy):
     store, models, _ = toy
     with pytest.raises(ValueError, match="eV-axis"):
         Catalogue.build(store, models, InputSpec(version="v2"), **SPLIT)
+
+
+# ---------- Task 3: lookup ----------
+
+def test_lookup_names_device_and_concentration(toy):
+    _, models, cat = toy
+    items = list(_items(models))
+    right, rel = 0, []
+    for m, d, T in items:
+        r = lookup(cat, E, T)
+        if r.device == m.model_id:
+            right += 1
+            rel.append(abs(r.concentration - d) / d)
+    assert right / len(items) >= 0.95
+    assert np.median(rel) <= 0.15
+
+
+def test_match_fields(toy):
+    _, _, cat = toy
+    r = lookup(cat, E, _spectrum("alpha", 9, 0.02, 170))
+    assert r.device == f"{r.material}/{r.edge}/N{r.width}"
+    assert 0 < r.probability <= 1 and len(r.runners_up) == 4
+    assert abs(r.probability + sum(p for _, p in r.runners_up) - 1) < 1e-6
+    assert r.concentration_lo <= r.concentration <= r.concentration_hi
+    assert r.window == (0.0, 3.98, 200) and r.impurity_layout is None
+    assert r.no_match == (r.p_value < P_NO_MATCH)
+
+
+def test_prescreen_keeps_the_true_device(toy):
+    _, models, cat = toy
+    for m, d, T in _items(models, seeds=TEST[:5]):
+        x, mask = window_input(SPEC, E, T)
+        devs, _ = candidates(cat, x, mask, top_k=2)
+        assert cat.ids.index(m.model_id) in devs
+
+
+def test_channels_outside_the_window_do_not_matter(toy):
+    _, _, cat = toy
+    T = _spectrum("alpha", 9, 0.02, 171)
+    w = E <= 2.0
+    r = lookup(cat, E[w], T[w])
+    _, mask = window_input(SPEC, E[w], T[w])
+    mu = cat.mu.copy()
+    mu[:, :, ~mask] = np.random.default_rng(0).random(mu[:, :, ~mask].shape)
+    assert lookup(dataclasses.replace(cat, mu=mu), E[w], T[w]) == r
+    assert r.window[2] == int(mask.sum())
+
+
+def test_left_out_material_is_no_match(toy):
+    _, models, cat = toy
+    sub = cat.without(["beta"])
+    flags = [lookup(sub, E, T).no_match for m, d, T in _items([m for m in models if m.material == "beta"])]
+    assert np.mean(flags) >= 0.9
+
+
+def test_own_device_p_values_are_not_small(toy):
+    _, models, cat = toy
+    p = np.array([lookup(cat, E, T).p_value for m, d, T in _items(models)])
+    assert np.mean(p < P_NO_MATCH) <= 0.05
+    assert np.mean(p < 0.1) <= 0.3
+
+
+def test_an_empty_window_is_not_a_confident_match(toy):
+    _, _, cat = toy
+    e = np.round(np.arange(3.5, 3.985, 0.01), 6)
+    assert lookup(cat, e, np.zeros(e.size)).probability < 0.6
+
+
+def test_a_coarse_grid_signature_is_still_identified(toy):
+    _, _, cat = toy
+    right = sum(lookup(cat, E[::10], _spectrum("alpha", 9, 0.02, s)[::10]).device == "alpha/armchair/N9" for s in TEST[:10])
+    assert right >= 8
+
+
+def test_a_spiked_signature_gives_the_same_answer(toy):
+    _, _, cat = toy
+    T = _spectrum("alpha", 9, 0.02, 172)
+    spiked = T.copy()
+    spiked[150] = 400.0
+    r, r2 = lookup(cat, E, T), lookup(cat, E, spiked)
+    assert r2.device == r.device and abs(r2.concentration - r.concentration) <= 0.0005 + 1e-12
+
+
+def test_beyond_the_grid_reports_the_top_of_the_range(toy):
+    _, _, cat = toy
+    r = lookup(cat, E, toy_spectrum(1.0, 9, 0.08, 12345))
+    assert np.isfinite(r.probability) and 0.04 <= r.concentration <= cat.grid[-1]
+
+
+def test_saved_catalogue_gives_the_same_match(toy, tmp_path):
+    _, _, cat = toy
+    cat.save(tmp_path / "cat")
+    T = _spectrum("alpha", 9, 0.02, 170)
+    assert lookup(Catalogue.load(tmp_path / "cat"), E, T) == lookup(cat, E, T)
+
