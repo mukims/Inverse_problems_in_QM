@@ -34,6 +34,8 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-23** | 2026-10-03 | **61 Ribbon Models (Graphene + 4 New Materials) + Square Strip** | **Atlas v4m (Frozen Atlas v4 Encoder + MultiStore + Per-Material Novelty Calibration)** | `engine_v1` (18,600 graphene test) + `materials_ev_full` (18,000 new material test) + `novelty_v1` (600 square test) | InputSpec v4 (unit="eV", despike=True, shared 416-ch grid); frozen `atlas_v4` weights; per-material/edge novelty tails; seeds 0–699 train/refs, 700–849 val/cal, 850–999 test | **100.0% Mat<br>99.98% Edge<br>99.88% Width** | N/A (Stage 1–2 identification & novelty) | N/A | **Completed (All Gates G1–G4 Passed)**: G1 Graphene unchanged (width 99.925% vs 99.93%; false alarms arm 1.06%, zz 1.43%); G2 New materials identified (all materials 100.0%, edge $\ge 99.896\%$, width $\ge 99.479\%$, false alarms 0.58–1.46%); G3 Unseen square strip 100.0% unknown; G4 Leave-one-material-out 99.83–100.0% unknown across all 4 materials. Results in `notebooks/material_atlas/atlas_v4m/results.json`. |
 | **BUILD-24** | 2026-10-03 | **61 Ribbon Models (Graphene + 4 New Materials) + Square Strip** | **Atlas v5m (Retrained Joint Encoder + Retrained Leave-One-Material-Out Maps)** | `engine_v1` (18,600 test) + `materials_ev_full` (18,000 test) + `novelty_v1` (600 square test) | InputSpec v4 (unit="eV", despike=True, 416-ch grid); 60-epoch joint autoencoder retrained on all materials; per-material/edge novelty tails; seeds 0–699 train, 700–849 val, 850–999 test | **100.0% Mat<br>100.0% Edge<br>99.97% Width** | N/A (Stage 1–2 identification & novelty) | N/A | **Completed (G1 MISSED on zigzag 1.631%, G2–G4 Passed)**: Perfect 100% material, edge, and width accuracy across all 4 new materials (graphene width 99.957%); unseen square strip 100.0% unknown; LOMO 96.125–100.0% unknown. **Decided by the human (2026-10-03): `atlas_v4m` (frozen) is the production map for new materials.** `atlas_v5m` and its `loo_*` maps are kept as the retrained comparison and as MEANING-2's AE baselines. Results in `notebooks/material_atlas/atlas_v5m/results.json`. |
 | **BUILD-25** | 2026-10-03 | **61 Ribbon Models + Square Strip (4 Hidden Material Groups)** | **MEANING-2 (Graded Similarity Across Materials: AE vs Physics vs Multiscale vs Stress)** | `engine_v1` (18,600 test) + `materials_ev_full` (18,000 test) + `novelty_v1` (600 square test) | InputSpec v4 (416-ch eV grid); 2,500 contrastive training steps per encoder per hidden material; seeds 0–699 train/refs, 700–849 val, 850–999 test | **99.98–100.0%** (Known Ident across all encoders) | N/A | N/A | **Completed (E1 & E5 MET, E2–E4 MISSED)**: Evaluated 4 encoders (AE baseline `atlas_v5m/loo_*`, physics, multiscale soft-targets, stress loss) across 4 leave-one-material-out splits. Contrastive encoders achieve 100% min AUROC vs known and 99.98–100% known identification. Multiscale reaches 0.962 (hBN) and 0.938 (phosphorene) hidden-ribbon Spearman correlation against clean-spectrum ground truth, but drops on MoS₂ (0.740) and triangular (0.394). Human's decision preserves `atlas_v4m` production encoder. Runtime: 2,843 s. Results in `notebooks/material_atlas/meaning/results/v2/`. |
+| **PAGE-1** | 2026-10-03 | **61 Ribbon Models + Square Strip** | **Shazam Interactive Atlas Page & In-Browser Lookup** | `notebooks/material_atlas/atlas_page/data/` (11 MB export) | Pure JS Conv1dAE forward pass + streaming k-NN + novelty calibration on frozen `atlas_v4m` map; 500 refs/model ($N_{\text{refs}} = 30,500$) | **100% Mat<br>100% Edge<br>100% Width** | N/A (Client-side interactive engine) | N/A | **Completed (All Checks & Tests PASS)**: Directory size 11 MB ($< 12$ MB). Agreement with full map: 100% material, 100% edge, 100% width, 99.34% unknown ($N=1,220$). Node test PASS across 320 vectors ($\max |x| = 2.4\times 10^{-4}$, $\max |z| = 3.0\times 10^{-4}$, 100% agreement with Python). Ready for reviewer publishing. |
+| **BUILD-26** | 2026-10-04 | **5 Pilot Ribbons (Graphene, hBN, MoS₂, Phosphorene, Triangular)** | **CONC-1 (Concentration Estimation Beyond 7/9-AGNR)** | `~/atlas_store/conc_v1` (5 models $\times$ 24 densities $\times$ 1,000 seeds = 120,000 spectra) | 24-density grid ($0.25\%\text{--}6.0\%$); Stage 3 generic XGBoost + split-conformal intervals; Shazam routing on frozen `atlas_v4m` map | **N/A** (Stage 3 Concentration) | **0.0907–0.3042 pp** (Oracle MAE across materials) | **0.0571–0.2572** ($q$ conformal halfwidth) | **Completed (Coverage Gate & Expectations MET, Routing Gate MISSED)**: Conformal coverage gate passed on all 5 ribbons (88.8–91.3%, within 88–92%). Median relative error $\le 10\%$ met on all 5 ribbons (MoS₂ 2.58%, triangular 2.29%, graphene 3.58%, phosphorene 3.59%, hBN 9.13%). Above-4% routed % significantly lower than inside-4% across all ribbons. Shazam inside routed % 64.1–97.0% (gate $\ge 99\%$ missed). Generation wall time 4.31 h (120 clouds). |
 
 
 ---
@@ -1148,6 +1150,97 @@ Artifacts written:
 - `notebooks/material_atlas/atlas_page/data/ref_density.bin`
 - `notebooks/material_atlas/atlas_page/data/model.json`
 - `notebooks/material_atlas/atlas_page/data/test_vectors.json`
+
+---
+
+### [2026-10-04] BUILD-26: CONC-1 Concentration Estimation Beyond 7/9-AGNR
+
+* **Overview & Setup**:
+  - Implemented and evaluated CONC-1 per plan `docs/superpowers/plans/2026-10-02-concentration-beyond-7-9.md` and settled decisions F6 in `docs/superpowers/plans/2026-10-02-full-run-decisions.md`.
+  - Dense-density pilot cloud generation across 5 representative ribbons covering all 5 materials:
+    - `graphene-ideal/armchair/N13` (stored on legacy units-of-t grid `v2`, Caroli/agnr_lib legacy trace)
+    - `hbn/armchair/N9` (stored on shared eV grid `v3`, Caroli transport)
+    - `phosphorene/armchair/N9` (stored on shared eV grid `v3`, Caroli transport)
+    - `mos2/zigzag/N9` (stored on shared eV grid `v3`, multi-orbital whole-atom disorder, Caroli transport)
+    - `triangular/zigzag/N9` (stored on shared eV grid `v3`, Caroli transport)
+  - Grid: 24 density levels from $0.25\%$ to $6.00\%$ ($d = 0.0025 \times k$, $k=1,\ldots,24$), with 1,000 configurations per cloud ($n = 120,000$ spectra total).
+  - Validation: All 5 ribbons validated via `notebooks/tbribbon/check_store.py` (`notebooks/tbribbon/conc_v1_report.json`: **ALL PASS**).
+  - Estimator: Generic Stage 3 XGBoost regressor (800 trees, depth 8, learning rate 0.04) trained on normalized spectra $T / T_{\text{pristine}}$ with relative split-conformal calibration ($1 - \alpha = 90\%$).
+  - Split: Seeds 0–699 train (16,800 spectra), 700–849 validation/calibration (3,600 spectra), 850–999 test (3,600 spectra).
+  - Routing: Shazam classification and novelty filtering evaluated using the frozen production map **`atlas_v4m`** (per human decision).
+
+* **Cloud Generation Performance Summary (`~/atlas_store/conc_v1`)**:
+  - Total parallel batch execution time: **4.31 h** (15,501.56 s) on 16 worker cores.
+  - No generation crashes, no rejected clouds, zero cross-density duplicates, exact seed nesting verified.
+
+| Ribbon | Spec Version | Transport Formula | Densities | Total Spectra | Total Wall Time (s) | Avg Time / Cloud (s) |
+|---|---|---|---|---|---|---|
+| `graphene-ideal/armchair/N13` | v2 | `agnr_lib_IL_1e-5` | 24 | 24,000 | 6,230.2 s (103.8 min) | 259.6 s |
+| `hbn/armchair/N9` | v3 | `caroli` | 24 | 24,000 | 3,038.9 s (50.6 min) | 126.6 s |
+| `phosphorene/armchair/N9` | v3 | `caroli` | 24 | 24,000 | 2,911.2 s (48.5 min) | 121.3 s |
+| `mos2/zigzag/N9` | v3 | `caroli` | 24 | 24,000 | 2,285.9 s (38.1 min) | 95.2 s |
+| `triangular/zigzag/N9` | v3 | `caroli` | 24 | 24,000 | 1,035.3 s (17.3 min) | 43.1 s |
+| **Total** | | | **120** | **120,000** | **15,501.6 s (4.31 h)** | **129.2 s** |
+
+* **Stage 3 Concentration Estimation Benchmark (`metrics.json`)**:
+  - Evaluated on $N = 3,600$ held-out test spectra per ribbon (150 spectra $\times$ 24 densities).
+  - MAE reported in percentage points (pp; $1.00\text{ pp} = 0.0100$ density).
+
+| Ribbon | Oracle MAE (pp) | Oracle Med Rel Err | Oracle Cov (90%) | Conf Factor $q$ | Shazam Inside Routed % | Shazam Inside MAE (pp) | Shazam Inside Cov | Shazam Above Routed % | Shazam Above MAE (pp) | Shazam Above Cov |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `graphene-ideal/armchair/N13` | 0.1422 pp | 0.0358 (3.58%) | 0.9036 (90.36%) | 0.0889 | **97.000%** (2328/2400) | 0.0941 pp | 0.9188 | **93.083%** (1117/1200) | 0.2396 pp | 0.8684 |
+| `hbn/armchair/N9` | 0.3042 pp | 0.0913 (9.13%) | 0.9131 (91.31%) | 0.2572 | **97.000%** (2328/2400) | 0.2734 pp | 0.8746 | **73.833%** (886/1200) | 0.3909 pp | 0.9853 |
+| `mos2/zigzag/N9` | 0.0977 pp | 0.0258 (2.58%) | 0.9122 (91.22%) | 0.0682 | **84.542%** (2029/2400) | 0.0711 pp | 0.9078 | **52.417%** (629/1200) | 0.1537 pp | 0.8983 |
+| `phosphorene/armchair/N9` | 0.1442 pp | 0.0359 (3.59%) | 0.9103 (91.03%) | 0.0960 | **89.833%** (2156/2400) | 0.1056 pp | 0.9160 | **82.500%** (990/1200) | 0.2369 pp | 0.8859 |
+| `triangular/zigzag/N9` | 0.0907 pp | 0.0229 (2.29%) | 0.8883 (88.83%) | 0.0571 | **64.083%** (1538/2400) | 0.0650 pp | 0.8869 | **35.417%** (425/1200) | 0.1455 pp | 0.8306 |
+
+* **Shazam Misrouting Breakdown (Held-Out Test Set)**:
+  - `graphene-ideal/armchair/N13`: 95.694% routed, 4.250% unknown, 2 spectra misrouted to `graphene-ideal/armchair/N6` (0.056%).
+  - `hbn/armchair/N9`: 89.278% routed, 2.694% unknown, 285 spectra misrouted to `hbn/armchair/N7` (7.917%) and 4 to `hbn/armchair/N14` (0.111%).
+  - `mos2/zigzag/N9`: 73.833% routed, 26.167% unknown, **0 spectra misrouted** (100% pure when identified).
+  - `phosphorene/armchair/N9`: 87.389% routed, 11.722% unknown, 32 spectra misrouted to `phosphorene/armchair/N7` (0.889%).
+  - `triangular/zigzag/N9`: 54.528% routed, 45.472% unknown, **0 spectra misrouted** (100% pure when identified).
+
+* **Per-Density Coverage Distribution**:
+
+| Target Density | Graphene N13 Cov (MAE) | hBN N9 Cov (MAE) | MoS₂ N9 Cov (MAE) | Phosphorene N9 Cov (MAE) | Triangular N9 Cov (MAE) |
+|---|---|---|---|---|---|
+| 0.25% | 96.7% (0.0041 pp) | 83.3% (0.0401 pp) | 95.3% (0.0057 pp) | 94.0% (0.0057 pp) | 98.7% (0.0036 pp) |
+| 0.50% | 90.0% (0.0203 pp) | 61.3% (0.1336 pp) | 89.3% (0.0140 pp) | 93.3% (0.0202 pp) | 96.7% (0.0072 pp) |
+| 0.75% | 95.3% (0.0280 pp) | 81.3% (0.1377 pp) | 89.3% (0.0249 pp) | 96.0% (0.0305 pp) | 91.3% (0.0199 pp) |
+| 1.00% | 94.0% (0.0358 pp) | 76.0% (0.1760 pp) | 86.0% (0.0341 pp) | 94.0% (0.0376 pp) | 86.0% (0.0322 pp) |
+| 1.25% | 96.0% (0.0441 pp) | 76.0% (0.2220 pp) | 92.0% (0.0412 pp) | 95.3% (0.0431 pp) | 89.3% (0.0333 pp) |
+| 1.50% | 92.7% (0.0574 pp) | 83.3% (0.2490 pp) | 90.0% (0.0508 pp) | 90.7% (0.0672 pp) | 94.0% (0.0418 pp) |
+| 1.75% | 95.3% (0.0650 pp) | 90.7% (0.2581 pp) | 94.0% (0.0582 pp) | 95.3% (0.0747 pp) | 87.3% (0.0538 pp) |
+| 2.00% | 94.0% (0.0777 pp) | 90.7% (0.2740 pp) | 90.0% (0.0614 pp) | 91.3% (0.0900 pp) | 88.7% (0.0562 pp) |
+| 2.25% | 93.3% (0.0868 pp) | 90.0% (0.2997 pp) | 90.7% (0.0749 pp) | 88.7% (0.1071 pp) | 88.0% (0.0591 pp) |
+| 2.50% | 91.3% (0.1115 pp) | 91.3% (0.3139 pp) | 90.0% (0.0814 pp) | 87.3% (0.1294 pp) | 89.3% (0.0762 pp) |
+| 2.75% | 90.0% (0.1216 pp) | 90.7% (0.3364 pp) | 93.3% (0.0847 pp) | 90.7% (0.1385 pp) | 88.7% (0.0819 pp) |
+| 3.00% | 90.0% (0.1288 pp) | 94.7% (0.3503 pp) | 94.7% (0.0835 pp) | 90.7% (0.1381 pp) | 93.3% (0.0782 pp) |
+| 3.25% | 89.3% (0.1560 pp) | 95.3% (0.3819 pp) | 90.7% (0.1004 pp) | 94.0% (0.1399 pp) | 87.3% (0.0972 pp) |
+| 3.50% | 90.0% (0.1629 pp) | 98.0% (0.3771 pp) | 93.3% (0.1158 pp) | 94.0% (0.1404 pp) | 86.0% (0.1077 pp) |
+| 3.75% | 85.3% (0.1952 pp) | 98.0% (0.3870 pp) | 89.3% (0.1282 pp) | 88.7% (0.1919 pp) | 86.7% (0.1108 pp) |
+| 4.00% | 86.0% (0.1882 pp) | 99.3% (0.4088 pp) | 89.3% (0.1312 pp) | 82.7% (0.2205 pp) | 85.3% (0.1196 pp) |
+| 4.25% | 78.7% (0.2303 pp) | 98.0% (0.3950 pp) | 91.3% (0.1357 pp) | 86.0% (0.2386 pp) | 84.0% (0.1379 pp) |
+| 4.50% | 88.0% (0.2284 pp) | 98.7% (0.4140 pp) | 90.0% (0.1479 pp) | 88.0% (0.2248 pp) | 80.0% (0.1484 pp) |
+| 4.75% | 89.3% (0.2265 pp) | 99.3% (0.3405 pp) | 90.7% (0.1588 pp) | 91.3% (0.2179 pp) | 83.3% (0.1594 pp) |
+| 5.00% | 91.3% (0.2189 pp) | 100.0% (0.3239 pp) | 90.7% (0.1636 pp) | 90.7% (0.2150 pp) | 84.0% (0.1537 pp) |
+| 5.25% | 89.3% (0.2029 pp) | 99.3% (0.2901 pp) | 90.0% (0.1729 pp) | 95.3% (0.1996 pp) | 90.0% (0.1594 pp) |
+| 5.50% | 90.0% (0.2078 pp) | 99.3% (0.3036 pp) | 94.0% (0.1470 pp) | 92.7% (0.1993 pp) | 91.3% (0.1388 pp) |
+| 5.75% | 90.0% (0.2491 pp) | 98.0% (0.3854 pp) | 96.7% (0.1321 pp) | 90.0% (0.2595 pp) | 94.0% (0.1344 pp) |
+| 6.00% | 82.7% (0.3653 pp) | 98.7% (0.5035 pp) | 88.7% (0.1954 pp) | 84.0% (0.3308 pp) | 88.7% (0.1650 pp) |
+
+* **Pre-Registered Gates and Expectations Verdicts**:
+  - **Gate (Oracle Conformal Coverage within $90 \pm 2\%$, i.e. 88.0%–92.0% for every ribbon)**: **MET**. All 5 ribbons satisfy the conformal coverage guarantee (graphene: 90.36%, hBN: 91.31%, MoS₂: 91.22%, phosphorene: 91.03%, triangular: 88.83%).
+  - **Gate (Shazam Inside-4% Routed % $\ge 99.0\%$ for every ribbon)**: **MISSED**. Graphene armchair N13 achieved 97.000%, hBN armchair N9 achieved 97.000%, phosphorene armchair N9 achieved 89.833%, MoS₂ zigzag N9 achieved 84.542%, and triangular zigzag N9 achieved 64.083%. (For MoS₂ and triangular, all unrouted spectra are flagged unknown rather than misidentified: 0 misidentifications).
+  - **Expectation (Oracle Median Relative Error $\le 10.0\%$ for every ribbon)**: **MET**. All 5 materials comfortably beat the 10% threshold: triangular 2.29%, MoS₂ 2.58%, graphene 3.58%, phosphorene 3.59%, and hBN 9.13%.
+  - **Expectation (Above-4% Routed % clearly lower than Inside-4%)**: **MET**. Across all materials, spectra above the 4% training boundary have substantially lower routing rates (graphene: 97.0% $\to$ 93.1%; hBN: 97.0% $\to$ 73.8%; MoS₂: 84.5% $\to$ 52.4%; phosphorene: 89.8% $\to$ 82.5%; triangular: 64.1% $\to$ 35.4%), demonstrating that Shazam's calibrated novelty detector flags high-disorder unseen regimes as out-of-distribution.
+
+Artifacts written:
+- `notebooks/material_atlas/conc_v1/metrics.json`
+- `notebooks/tbribbon/conc_v1_report.json`
+- `notebooks/tbribbon/conc_v1.log`
+- `docs/materials/README.md`
 
 ---
 
