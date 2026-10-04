@@ -93,7 +93,7 @@ def shares(recs, level=1):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--catalogue", default=str(HERE / "lookup_v1"))
+    ap.add_argument("--catalogue", default=str(HERE / "lookup_v2"))
     ap.add_argument("--graphene-store", default="~/atlas_store/engine_v1")
     ap.add_argument("--materials-store", default="~/atlas_store/materials_ev_full")
     ap.add_argument("--pilot-store", default="~/atlas_store/conc_v1")
@@ -108,7 +108,8 @@ def main():
     store = MultiStore(os.path.expanduser(a.graphene_store), os.path.expanduser(a.materials_store))
     pilot = CloudStore(os.path.expanduser(a.pilot_store))
     n1, n2, n3a, n3b, n4 = (3, 3, 2, 2, 3) if a.smoke else (150, 150, 20, 30, 150)
-    res = {"settings": {"catalogue": a.catalogue, "kappa": cat.kappa, "smoke": a.smoke, "test_seeds": "850-999",
+    res = {"settings": {"catalogue": a.catalogue, "kappa": cat.kappa, "kappa_material": cat.kappa_material,
+                        "smoke": a.smoke, "test_seeds": "850-999",
                         "per_cloud": {"t1": n1, "t2": n2, "t3_catalogue": n3a, "t3_pilot": n3b, "t4": n4}}}
 
     t1 = [(mid, d, *signatures(cat, store, mid, d, 850, n1)) for mid in cat.ids for d in cat.stored[mid]]

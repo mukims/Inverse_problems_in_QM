@@ -1,0 +1,1410 @@
+{
+  "spec": {
+    "version": "v4",
+    "e_max_t": 8.32,
+    "step_t": 0.02,
+    "cap": 64.0,
+    "unit": "eV",
+    "despike": true
+  },
+  "models": [
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 10,
+      "t_ev": 2.7,
+      "sites_per_cell": 20,
+      "band_top_t": 2.919,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 11,
+      "t_ev": 2.7,
+      "sites_per_cell": 22,
+      "band_top_t": 2.932,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 12,
+      "t_ev": 2.7,
+      "sites_per_cell": 24,
+      "band_top_t": 2.942,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 2.7,
+      "sites_per_cell": 26,
+      "band_top_t": 2.95,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 2.7,
+      "sites_per_cell": 28,
+      "band_top_t": 2.956,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 15,
+      "t_ev": 2.7,
+      "sites_per_cell": 30,
+      "band_top_t": 2.962,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 16,
+      "t_ev": 2.7,
+      "sites_per_cell": 32,
+      "band_top_t": 2.966,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 20,
+      "t_ev": 2.7,
+      "sites_per_cell": 40,
+      "band_top_t": 2.978,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 2.7,
+      "sites_per_cell": 54,
+      "band_top_t": 2.987,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 31,
+      "t_ev": 2.7,
+      "sites_per_cell": 62,
+      "band_top_t": 2.99,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 40,
+      "t_ev": 2.7,
+      "sites_per_cell": 80,
+      "band_top_t": 2.994,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 5,
+      "t_ev": 2.7,
+      "sites_per_cell": 10,
+      "band_top_t": 2.732,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 50,
+      "t_ev": 2.7,
+      "sites_per_cell": 100,
+      "band_top_t": 2.996,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 6,
+      "t_ev": 2.7,
+      "sites_per_cell": 12,
+      "band_top_t": 2.802,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 2.7,
+      "sites_per_cell": 14,
+      "band_top_t": 2.848,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 2.7,
+      "sites_per_cell": 16,
+      "band_top_t": 2.879,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 2.7,
+      "sites_per_cell": 18,
+      "band_top_t": 2.902,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 10,
+      "t_ev": 2.7,
+      "sites_per_cell": 20,
+      "band_top_t": 2.971,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 11,
+      "t_ev": 2.7,
+      "sites_per_cell": 22,
+      "band_top_t": 2.976,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 12,
+      "t_ev": 2.7,
+      "sites_per_cell": 24,
+      "band_top_t": 2.98,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 16,
+      "t_ev": 2.7,
+      "sites_per_cell": 32,
+      "band_top_t": 2.988,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 20,
+      "t_ev": 2.7,
+      "sites_per_cell": 40,
+      "band_top_t": 2.992,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 2.7,
+      "sites_per_cell": 54,
+      "band_top_t": 2.996,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 4,
+      "t_ev": 2.7,
+      "sites_per_cell": 8,
+      "band_top_t": 2.851,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 40,
+      "t_ev": 2.7,
+      "sites_per_cell": 80,
+      "band_top_t": 2.998,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 5,
+      "t_ev": 2.7,
+      "sites_per_cell": 10,
+      "band_top_t": 2.899,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 50,
+      "t_ev": 2.7,
+      "sites_per_cell": 100,
+      "band_top_t": 2.999,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 6,
+      "t_ev": 2.7,
+      "sites_per_cell": 12,
+      "band_top_t": 2.926,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 2.7,
+      "sites_per_cell": 14,
+      "band_top_t": 2.944,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 8,
+      "t_ev": 2.7,
+      "sites_per_cell": 16,
+      "band_top_t": 2.956,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 2.7,
+      "sites_per_cell": 18,
+      "band_top_t": 2.965,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 2.3,
+      "sites_per_cell": 28,
+      "band_top_t": 3.35,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 2.3,
+      "sites_per_cell": 54,
+      "band_top_t": 3.378,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 2.3,
+      "sites_per_cell": 14,
+      "band_top_t": 3.255,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 2.3,
+      "sites_per_cell": 18,
+      "band_top_t": 3.302,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 2.3,
+      "sites_per_cell": 28,
+      "band_top_t": 3.375,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 2.3,
+      "sites_per_cell": 54,
+      "band_top_t": 3.385,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 2.3,
+      "sites_per_cell": 14,
+      "band_top_t": 3.34,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 2.3,
+      "sites_per_cell": 18,
+      "band_top_t": 3.358,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 84,
+      "band_top_t": 2.718,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 2.704,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 54,
+      "band_top_t": 2.712,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 2.721,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 21,
+      "band_top_t": 2.714,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 27,
+      "band_top_t": 2.718,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 3.665,
+      "sites_per_cell": 28,
+      "band_top_t": 1.972,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 3.665,
+      "sites_per_cell": 54,
+      "band_top_t": 1.986,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 3.665,
+      "sites_per_cell": 14,
+      "band_top_t": 1.924,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 3.665,
+      "sites_per_cell": 18,
+      "band_top_t": 1.948,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 3.665,
+      "sites_per_cell": 28,
+      "band_top_t": 1.976,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 3.665,
+      "sites_per_cell": 54,
+      "band_top_t": 1.987,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 3.665,
+      "sites_per_cell": 14,
+      "band_top_t": 1.932,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 3.665,
+      "sites_per_cell": 18,
+      "band_top_t": 1.955,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 28,
+      "band_top_t": 2.968,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 54,
+      "band_top_t": 2.991,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 14,
+      "band_top_t": 2.899,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 18,
+      "band_top_t": 2.934,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 14,
+      "band_top_t": 2.957,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 27,
+      "band_top_t": 2.987,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 7,
+      "band_top_t": 2.854,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 9,
+      "band_top_t": 2.905,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    }
+  ],
+  "stored": {
+    "graphene-ideal/armchair/N10": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N11": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N13": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N14": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N15": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N27": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N31": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N40": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N5": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N50": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N6": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N7": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N9": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N10": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N11": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N27": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N4": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N40": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N5": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N50": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N6": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N7": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N9": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N14": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N27": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N7": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N9": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N14": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N27": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N7": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N9": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "mos2/armchair/N14": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "mos2/armchair/N7": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "mos2/armchair/N9": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "mos2/zigzag/N14": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "mos2/zigzag/N7": [
+      0.005714285714285714,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "mos2/zigzag/N9": [
+      0.0044444444444444444,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N14": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N27": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N7": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N9": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N14": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N27": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N7": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N9": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N14": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N27": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N7": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N9": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N14": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N27": [
+      0.005185185185185185,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N7": [
+      0.005714285714285714,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N9": [
+      0.0044444444444444444,
+      0.01,
+      0.02,
+      0.04
+    ]
+  },
+  "kappa": 6.31,
+  "kappa_material": {
+    "graphene-ideal": 3.981,
+    "hbn": 39.811,
+    "mos2": 1.585,
+    "phosphorene": 3.981,
+    "triangular": 1.0
+  },
+  "settings": {
+    "train_max": 699,
+    "val": [
+      700,
+      849
+    ],
+    "grid_max": 0.05,
+    "grid_step": 0.0005,
+    "s0": 0.01,
+    "calibration": {
+      "kappa": 6.31,
+      "coverage": 0.9088524590163934,
+      "n": 3050,
+      "scan": [
+        [
+          1.0,
+          0.6855737704918032
+        ],
+        [
+          1.122,
+          0.698688524590164
+        ],
+        [
+          1.259,
+          0.7154098360655737
+        ],
+        [
+          1.413,
+          0.7288524590163934
+        ],
+        [
+          1.585,
+          0.7449180327868853
+        ],
+        [
+          1.778,
+          0.7586885245901639
+        ],
+        [
+          1.995,
+          0.7731147540983606
+        ],
+        [
+          2.239,
+          0.7918032786885246
+        ],
+        [
+          2.512,
+          0.8085245901639344
+        ],
+        [
+          2.818,
+          0.8229508196721311
+        ],
+        [
+          3.162,
+          0.8377049180327869
+        ],
+        [
+          3.548,
+          0.8567213114754099
+        ],
+        [
+          3.981,
+          0.8678688524590163
+        ],
+        [
+          4.467,
+          0.879016393442623
+        ],
+        [
+          5.012,
+          0.8895081967213114
+        ],
+        [
+          5.623,
+          0.899344262295082
+        ],
+        [
+          6.31,
+          0.9088524590163934
+        ],
+        [
+          7.079,
+          0.9177049180327869
+        ],
+        [
+          7.943,
+          0.9259016393442623
+        ],
+        [
+          8.913,
+          0.9298360655737705
+        ],
+        [
+          10.0,
+          0.9347540983606557
+        ],
+        [
+          11.22,
+          0.9413114754098361
+        ],
+        [
+          12.589,
+          0.9462295081967214
+        ],
+        [
+          14.125,
+          0.9504918032786885
+        ],
+        [
+          15.849,
+          0.9560655737704918
+        ],
+        [
+          17.783,
+          0.960983606557377
+        ],
+        [
+          19.953,
+          0.9642622950819673
+        ],
+        [
+          22.387,
+          0.9688524590163935
+        ],
+        [
+          25.119,
+          0.9711475409836066
+        ],
+        [
+          28.184,
+          0.9760655737704919
+        ],
+        [
+          31.623,
+          0.98
+        ],
+        [
+          35.481,
+          0.9826229508196721
+        ],
+        [
+          39.811,
+          0.9859016393442623
+        ],
+        [
+          44.668,
+          0.9868852459016394
+        ],
+        [
+          50.119,
+          0.9878688524590163
+        ],
+        [
+          56.234,
+          0.9885245901639345
+        ],
+        [
+          63.096,
+          0.9891803278688525
+        ],
+        [
+          70.795,
+          0.9901639344262295
+        ],
+        [
+          79.433,
+          0.9878688524590163
+        ],
+        [
+          89.125,
+          0.9852459016393442
+        ],
+        [
+          100.0,
+          0.980983606557377
+        ],
+        [
+          112.202,
+          0.9773770491803279
+        ],
+        [
+          125.893,
+          0.9698360655737704
+        ],
+        [
+          141.254,
+          0.9626229508196721
+        ],
+        [
+          158.489,
+          0.9577049180327869
+        ],
+        [
+          177.828,
+          0.9531147540983607
+        ],
+        [
+          199.526,
+          0.9491803278688524
+        ],
+        [
+          223.872,
+          0.9452459016393443
+        ],
+        [
+          251.189,
+          0.939016393442623
+        ],
+        [
+          281.838,
+          0.9363934426229508
+        ],
+        [
+          316.228,
+          0.9318032786885246
+        ],
+        [
+          354.813,
+          0.9272131147540984
+        ],
+        [
+          398.107,
+          0.921967213114754
+        ],
+        [
+          446.684,
+          0.9173770491803279
+        ],
+        [
+          501.187,
+          0.9108196721311476
+        ],
+        [
+          562.341,
+          0.9081967213114754
+        ],
+        [
+          630.957,
+          0.9039344262295081
+        ],
+        [
+          707.946,
+          0.899016393442623
+        ],
+        [
+          794.328,
+          0.8927868852459017
+        ],
+        [
+          891.251,
+          0.8901639344262295
+        ],
+        [
+          1000.0,
+          0.8839344262295082
+        ]
+      ]
+    },
+    "calibration_per_material": {
+      "graphene-ideal": {
+        "kappa": 3.981,
+        "coverage": 0.9038709677419355,
+        "n": 1550
+      },
+      "hbn": {
+        "kappa": 39.811,
+        "coverage": 0.905,
+        "n": 400
+      },
+      "mos2": {
+        "kappa": 1.585,
+        "coverage": 0.9,
+        "n": 300
+      },
+      "phosphorene": {
+        "kappa": 3.981,
+        "coverage": 0.91,
+        "n": 400
+      },
+      "triangular": {
+        "kappa": 1.0,
+        "coverage": 0.925,
+        "n": 400
+      }
+    }
+  },
+  "n_devices": 61,
+  "created": "2026-10-04"
+}
