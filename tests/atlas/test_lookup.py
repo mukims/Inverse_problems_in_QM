@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from atlaslib import InputSpec
-from atlaslib.lookup import Catalogue, P_NO_MATCH, candidates, lookup, window_input, window_inputs
+from atlaslib.lookup import Catalogue, P_NO_MATCH, calibrate, candidates, lookup, window_input, window_inputs
 from atlaslib.registry import RibbonModel
 from atlaslib.store import CloudStore
 from toy import E, toy_spectrum
@@ -237,4 +237,23 @@ def test_saved_catalogue_gives_the_same_match(toy, tmp_path):
     cat.save(tmp_path / "cat")
     T = _spectrum("alpha", 9, 0.02, 170)
     assert lookup(Catalogue.load(tmp_path / "cat"), E, T) == lookup(cat, E, T)
+
+
+# ---------- Task 4: calibration ----------
+
+def test_calibrate_reaches_target_coverage_on_validation(toy):
+    _, _, cat = toy
+    c = dataclasses.replace(cat)
+    res = calibrate(c, per_device=40)
+    assert c.kappa == res["kappa"] >= 1.0
+    assert 0.9 <= res["coverage"] <= 1.0 and res["n"] == 6 * 40
+
+
+def test_larger_kappa_widens_the_interval(toy):
+    _, _, cat = toy
+    T = _spectrum("alpha", 9, 0.02, 173)
+    narrow = lookup(dataclasses.replace(cat, kappa=1.0), E, T)
+    wide = lookup(dataclasses.replace(cat, kappa=8.0), E, T)
+    assert wide.concentration_hi - wide.concentration_lo >= narrow.concentration_hi - narrow.concentration_lo
+
 

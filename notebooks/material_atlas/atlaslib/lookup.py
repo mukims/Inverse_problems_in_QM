@@ -243,3 +243,32 @@ def lookup(cat, energies, T, top_k=5):
                  window=(round(float(e[0]), 6), round(float(e[-1]), 6), int(mask.sum())))
 
 
+def calibrate(cat, target=0.90, kappas=None, per_device=50, top_k=5):
+    """Smallest kappa >= 1 whose 90% intervals cover the true concentration on validation spectra (sets cat.kappa)."""
+    kappas = np.round(np.geomspace(1.0, 1000.0, 61), 3) if kappas is None else np.asarray(kappas, dtype=float)
+    full = np.ones(cat.spec.n_channels, dtype=bool)
+    rows = []
+    for dev in range(len(cat.models)):
+        ii = np.flatnonzero(cat.val_dev == dev)
+        ii = ii[np.linspace(0, len(ii) - 1, min(per_device, len(ii))).astype(int)]
+        for i in ii:
+            devs, _ = candidates(cat, cat.val_x[i], full, top_k)
+            rows.append((log_likelihood(cat, cat.val_x[i], full, devs), devs, dev, float(cat.val_conc[i])))
+    cover = []
+    for k in kappas:
+        hit = 0
+        for ll, devs, true_dev, c in rows:
+            p = np.exp(ll / k - (ll / k).max())
+            b = int(np.argmax(p.sum(axis=1)))
+            _, lo, hi = _interval(cat.grid, p[b])
+            hit += int(devs[b] == true_dev and lo <= c <= hi)
+        cover.append(hit / len(rows))
+    cover = np.array(cover)
+    ok = np.flatnonzero(cover >= target)
+    i = int(ok[0]) if ok.size else int(np.argmax(cover))
+    cat.kappa = float(kappas[i])
+    return {"kappa": cat.kappa, "coverage": float(cover[i]), "n": len(rows),
+            "scan": [[float(k), float(c)] for k, c in zip(kappas, cover)]}
+
+
+
