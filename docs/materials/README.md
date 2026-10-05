@@ -46,7 +46,7 @@ material parameters ──► ribbon unit cell (H0, H1) ──► clean leads (s
 - **E = 0** is charge neutrality, which is mid-gap for gapped materials (decision D4). **Only E ≥ 0 is computed** (decision D5), so the valence bands of MoS₂ and phosphorene are not in the data.
 
 ### 2. Leads (`notebooks/tbribbon/leads.py`)
-- **Method.** Sancho–Rubio decimation gives the surface Green's function of each semi-infinite clean lead, with broadening **η_lead = 1e-4**, tolerance 1e-10 and at most 300 iterations.
+- **Method.** Sancho–Rubio decimation gives the surface Green's function of each semi-infinite clean lead, with broadening **η_lead = 1e-4** by default, tolerance 1e-10 and at most 300 iterations. `generate_clouds.py --lead-eta` overrides η_lead for a run. `meta.json` records it, and the generator refuses to mix two values within one ribbon. Only `wse2/zigzag/N14` in the `materials2_ev_*` stores uses 1e-5: its 0.9 meV edge-band mini-gap sits 0.07 meV from a grid point (SMOKE-4).
 - **Right lead** (extends to +∞ through `H1`): `g_R = surface_gf(E, H0, H1)`.
 - **Left lead** (through `H1†`): `g_L = surface_gf(E, H0, H1†)`.
 - **Self-energies:** `Σ_R = H1 g_R H1†` and `Σ_L = H1† g_L H1`.
@@ -97,7 +97,7 @@ There are two generations of stored grid:
     cloud_d0.0050.npy           (n_seeds, n_energies) disordered T(E), one row per seed
     cloud_d0.0050_seeds.npy     the seed of each row
     ...                         one pair per density
-    meta.json                   pristine_formula; per cloud: density, n_impurities, n, formula, t_spectrum_sec
+    meta.json                   pristine_formula, pristine_lead_eta; per cloud: density, n_impurities, n, formula, t_spectrum_sec, lead_eta
 ```
 
 `CloudStore.write_cloud` refuses:

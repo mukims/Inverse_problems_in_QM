@@ -24,6 +24,7 @@ if str(AGNR_PHYSICS) not in sys.path:
 import agnr_lib
 
 _W = {}
+DEFAULT_LEAD_ETA = 1e-4  # LeadCache's default; every store before FULL-5 was generated with it
 
 
 def seeds_for_width(width):
@@ -60,12 +61,15 @@ def _one_agnr(seed):
     return spec, dt
 
 
-def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", seeds=None):
+def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", seeds=None,
+             lead_eta=DEFAULT_LEAD_ETA):
     ctx, wrote = mp.get_context("spawn"), []
     for m in models:
         is_agnr = (m.material == "graphene-ideal" and m.edge == "armchair")
         is_zgnr = (m.material == "graphene-ideal" and m.edge == "zigzag")
         if is_agnr:
+            if lead_eta != DEFAULT_LEAD_ETA:
+                raise ValueError("lead_eta does not apply to graphene armchair: agnr_lib builds its own leads")
             if spec.unit == "eV":
                 raise ValueError("graphene armchair clouds come from agnr_lib on its own grid; "
                                  "they reach the eV axis by resampling, not regeneration")
@@ -102,15 +106,21 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
             def pad(X):
                 return np.pad(np.atleast_2d(np.asarray(X)), ((0, 0), (0, len(e_t) - n_live)))
 
+            pristine_path = store._dir(m.model_id) / "pristine.npy"
+            if pristine_path.exists():
+                stored_eta = store._meta(m.model_id).get("pristine_lead_eta", DEFAULT_LEAD_ETA)
+                if not np.isclose(stored_eta, lead_eta, rtol=1e-9, atol=0):
+                    raise ValueError(f"{m.model_id} was generated with lead_eta={stored_eta:g}; "
+                                     f"refusing to add spectra with lead_eta={lead_eta:g}")
             h = hamiltonian_for(m)
-            leads = LeadCache(h.H0, h.H1, e_live)
+            leads = LeadCache(h.H0, h.H1, e_live, eta=lead_eta)
             is_symmetric_h1 = bool(np.allclose(h.H1, h.H1.T))
             model_formula = formula if (formula == "legacy_trace" and is_symmetric_h1) else "caroli"
-            pristine_path = store._dir(m.model_id) / "pristine.npy"
             if not pristine_path.exists():
                 with ctx.Pool(1, _init, (h.H0, h.H1, e_live, 1, h.H0.shape[0], 0, 0.0, model_formula, leads)) as p:
                     pris_spec, _ = p.map(_one, [0])[0]
-                    store.write_pristine(m.model_id, e_t, pad(pris_spec)[0], formula=model_formula)
+                    store.write_pristine(m.model_id, e_t, pad(pris_spec)[0], formula=model_formula,
+                                         lead_eta=lead_eta)
             for d in densities:
                 n_imp = m.impurities_for_density(d)
                 actual = n_imp / m.n_sites
@@ -124,7 +134,8 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
                 spectra = np.array([r[0] for r in res])
                 times = np.array([r[1] for r in res])
                 median_t_spec = float(np.median(times))
-                store.write_cloud(m.model_id, actual, n_imp, pad(spectra), sd, e_t, formula=model_formula, t_spectrum_sec=median_t_spec)
+                store.write_cloud(m.model_id, actual, n_imp, pad(spectra), sd, e_t, formula=model_formula,
+                                  t_spectrum_sec=median_t_spec, lead_eta=lead_eta)
                 wrote.append((m.model_id, actual))
                 sec_per = dt / len(sd)
                 print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula}) in {dt:.2f}s (wall {sec_per:.4f} s/spec, worker compute median {median_t_spec:.4f} s/spec)", flush=True)
@@ -180,6 +191,8 @@ if __name__ == "__main__":
     ap.add_argument("--models", default="")
     ap.add_argument("--densities", default="0.005,0.01,0.02,0.04")
     ap.add_argument("--spec-version", default="v2", choices=["v2", "v3"])
+    ap.add_argument("--lead-eta", type=float, default=DEFAULT_LEAD_ETA,
+                    help="Sancho-Rubio lead broadening in units of t (not used for graphene armchair)")
     ap.add_argument("--armchair-widths", default="5-16", help="Armchair widths for custom grid")
     ap.add_argument("--zigzag-widths", default="4-12", help="Zigzag widths for custom grid")
     a = ap.parse_args()
@@ -207,5 +220,6 @@ if __name__ == "__main__":
         ms = ([make_model("graphene-ideal", "armchair", n) for n in arm_widths]
               + [make_model("graphene-ideal", "zigzag", n) for n in zig_widths])
     seeds = range(a.n_seeds) if a.n_seeds is not None else None
-    generate(CloudStore(a.store), ms, _parse_densities(a.densities), InputSpec(version=a.spec_version), n_jobs=a.n_jobs, formula=a.formula, seeds=seeds)
+    generate(CloudStore(a.store), ms, _parse_densities(a.densities), InputSpec(version=a.spec_version), n_jobs=a.n_jobs, formula=a.formula, seeds=seeds,
+             lead_eta=a.lead_eta)
 

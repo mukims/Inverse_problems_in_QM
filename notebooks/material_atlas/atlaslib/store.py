@@ -36,7 +36,7 @@ class CloudStore:
         else:
             np.save(p, energies_t)
 
-    def write_pristine(self, model_id, energies_t, T, formula=None):
+    def write_pristine(self, model_id, energies_t, T, formula=None, **extra_meta):
         energies_t = np.asarray(energies_t, dtype=np.float64)
         self._check_energies(model_id, energies_t)
         T = np.asarray(T, dtype=np.float64)
@@ -45,9 +45,12 @@ class CloudStore:
         if not np.all(np.isfinite(T)):
             raise ValueError("pristine spectrum is not finite")
         np.save(self._dir(model_id) / "pristine.npy", T)
-        if formula is not None:
+        if formula is not None or extra_meta:
             meta = self._meta(model_id)
-            meta["pristine_formula"] = str(formula)
+            if formula is not None:
+                meta["pristine_formula"] = str(formula)
+            for extra_k, extra_v in extra_meta.items():
+                meta[f"pristine_{extra_k}"] = extra_v
             self._save_meta(model_id, meta)
 
     def read_pristine(self, model_id):

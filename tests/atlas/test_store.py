@@ -100,3 +100,11 @@ def test_masked_guard_unmasked_when_no_steps(tmp_path):
         s.write_cloud(MID, 0.01, 14, bad, np.arange(3), e)
 
 
+def test_pristine_extra_meta_is_recorded_with_a_prefix(tmp_path):
+    s = CloudStore(tmp_path)
+    s.write_pristine(MID, E, np.ones(10), formula="caroli", lead_eta=1e-5)
+    meta = s._meta(MID)
+    assert meta["pristine_formula"] == "caroli" and meta["pristine_lead_eta"] == 1e-5
+
+
+
