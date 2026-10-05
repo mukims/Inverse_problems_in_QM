@@ -39,6 +39,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-27** | 2026-10-04 | **61 Ribbon Models + Pilot Ribbons + Square Strip** | **LOOKUP-1 (Shazam Ensemble Lookup: Device & Concentration from One Signature)** | `engine_v1` (18,600 test) + `materials_ev_full` (18,000 test) + `conc_v1` (15,000 pilot test $\le 5\%$, 3,000 $> 5\%$) + `novelty_v1` (600 square test) | Label-free `InputSpec v4` window-aware transform; 61-device catalogue interpolated PCHIP 0–5% (0.05% step); misfit pre-screen + posterior; $\kappa = 6.31$ calibrated; $p$-value match rejection | **99.989% Mat+Edge+Width**<br>(100% Mat, 99.995% Edge, 99.989% Width) | **0.0849 pp** (T1 Catalogue MAE)<br>**0.1411 pp** (T2 Pilot MAE) | **90.883%** (T1 Catalogue Cov)<br>**87.427%** (T2 Pilot Cov) | **Completed (T1, T2, T4, Speed MET; T3, T5 MISSED)**: Direct single-signature inverse lookup without trained classifiers. T1: 99.989% device accuracy, 2.5% median rel error, 90.88% coverage, false "no match" 0.81–1.46% across all materials (all MET). T2: 99.96% device, 3.97% median rel error, 87.43% coverage (all MET). T4: hidden materials 98.96–100.0% rejected, square 100.0% rejected (MET). Speed: 22.4 ms median (MET). T3: coarse/narrow window device accuracy 43.7–88.4%; probability bins over-estimate confidence by 11–17 pp on low-confidence windows (MISSED). T5: hBN silent wrong 6.17% vs today's 39.7% like-for-like (MISSED vs $<2\%$; phosphorene 8.83% vs today's 4.8%). Results in `notebooks/material_atlas/lookup_v1/results.json`. |
 | **BUILD-28** | 2026-10-04 | **61 Ribbon Models + Pilot Ribbons + Square Strip** | **LOOKUP-1b (Shazam Ensemble Lookup: Per-Material $\kappa$ Concentration Intervals)** | `lookup_v2` (61 models, 36,600 T1 test, 15,000 T2 pilot test, 600 square test); global $\kappa = 6.31$ for device choice, per-material $\kappa \in [1.0, 39.81]$ for intervals | Global $\kappa = 6.31$ for candidates and probabilities; per-material interval $\kappa$ calibrated on validation spectra (graphene 3.981, hBN 39.811, MoS₂ 1.585, phosphorene 3.981, triangular 1.0) | **99.989% Mat+Edge+Width**<br>(Identical to BUILD-27) | **0.0827 pp** (T1 Catalogue MAE)<br>**0.1447 pp** (T2 Pilot MAE) | **90.954%** (T1 Catalogue Cov)<br>**85.887%** (T2 Pilot Cov) | **Completed (All Expectations MET)**: Per-material $\kappa$ resolves hBN under-coverage without altering device choice. T1: hBN coverage 56.3% $\to$ 89.8%; all materials 89.8–91.4% (85–95% target MET). T2: hBN coverage 63.6% $\to$ 89.9%; all ribbons 82.4–89.9% ($\ge 80\%$ target MET). Device choice, probabilities, and rejections identical to BUILD-27 across all 90 checks (MET). Results in `notebooks/material_atlas/lookup_v2/results.json`. |
 | **SMOKE-4** | 2026-10-05 | **42 New-Material & Lattice Models** | **New-Material Smoke Clouds on Shared eV Axis** (WS₂, MoSe₂, WSe₂, silicene, germanene, kagome, Lieb, checkerboard) | `~/atlas_store/materials2_ev_smoke` (42 models $\times$ 4 densities $\times$ 50 seeds = 8,400 spectra) | Direct generation on InputSpec v3 eV grid; Caroli formula; lead η = 1e-4 except `wse2/zigzag/N14` at lead η = 1e-5 | **100% Validated** | N/A (Smoke data generation) | N/A | **Completed (All Store Checks PASS)**: 42/42 models pass all store invariants (`check_store.py`: CleanErr $\le 6.50\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, nested seeds). First pass: 41/42 passed; `wse2/zigzag/N14` had CleanErr 0.003854 at 0.180 eV due to 0.9 meV edge-band mini-gap. Regenerated at lead η = 1e-5, dropping CleanErr to $4.70\times 10^{-5}$ ($< 10^{-3}$). Second-largest CleanErr is `mose2/zigzag/N7` at $6.50\times 10^{-4}$. FULL-5 projection: ~7.9–9.5 h on 16 workers. |
+| **FULL-5** | 2026-10-05 | **42 New-Material & Lattice Models (FULL-5 Production Run)** | **New-Material Disorder Clouds on Shared eV Axis** (WS₂, MoSe₂, WSe₂, silicene, germanene, kagome, Lieb, checkerboard) | `~/atlas_store/materials2_ev_full/` (42 models $\times$ 4 densities $\times$ 1,000 seeds = **168,000 spectra**; seeds 0–999) | Direct generation on InputSpec v3 eV grid; Caroli formula; lead η = 1e-4 except `wse2/zigzag/N14` at lead η = 1e-5 | **100% Validated** | N/A (Production data generation) | N/A | **Completed (All Store Checks PASS)**: 42/42 models in `materials2_ev_full` passed all store invariants (`check_store.py`: CleanErr $\le 6.50\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, all clouds hold exactly seeds 0–999). Total batch wall time **11.02 h** (39,688 s, 121.99 worker-compute hours, concurrency $11.07\times$ on 16 workers). Prepares data for lookup_v3. |
 
 
 ---
@@ -1566,6 +1567,78 @@ Artifacts written:
 Artifacts written:
 - `notebooks/tbribbon/smoke4.log`
 - `notebooks/tbribbon/materials2_ev_smoke_report.json`
+
+### [2026-10-05] FULL-5: Production Disorder Clouds for New Materials and Lattices (168,000 Spectra, ALL PASS)
+
+* **Overview & Dataset**:
+  - Generated full production disorder clouds for 42 models across 8 new materials and lattices (WS₂, MoSe₂, WSe₂, silicene, germanene, kagome, Lieb, checkerboard) $\times$ $N \in \{7, 9, 14\}$ widths $\times$ 4 densities ($0.5\%, 1.0\%, 2.0\%, 4.0\%$) $\times$ 1,000 seeds (seeds 0–999) = **168,000 spectra** directly into `~/atlas_store/materials2_ev_full`.
+  - Generated on the shared InputSpec v3 eV grid using the Caroli transport formula with exact zero-padding above clean band tops.
+  - **Lead $\eta$ Split**: `wse2/zigzag/N14` generated with lead broadening $\eta = 10^{-5}$ (`--lead-eta 1e-5`, SMOKE-4 mini-gap fix); all other 41 ribbons generated at default lead broadening $\eta = 10^{-4}$.
+
+* **Store Validation Invariants (`check_store.py`)**:
+  - `~/atlas_store/materials2_ev_full` (42 models): **ALL PASS** (`notebooks/tbribbon/materials2_ev_full_report.json`).
+  - Clean Transmission Error: CleanErr $\le 6.50 \times 10^{-4} < 10^{-3}$ across all 42 models (`wse2/zigzag/N14` CleanErr is $4.70 \times 10^{-5}$).
+  - Maximum Disordered Conductance Excess: MaxExcess $= +0.0000 \le 0.05$ across all 42 models.
+  - No cross-density duplicates: PASS.
+  - Strict seed integrity: All 168 cloud arrays hold exactly seeds 0–999 with nested configuration prefix semantics.
+  - Formula integrity: Exactly 42 ribbons verified with formula Caroli for pristine and all 4 densities $\times$ 1,000 seeds.
+  - Lead $\eta$ verification: Exactly 41 ribbons at default $\eta = 10^{-4}$ and `wse2/zigzag/N14` at $\eta = 10^{-5}$.
+
+* **Execution Timings & Hardware Concurrency**:
+  - Hardware: 16 workers, `OMP_NUM_THREADS=1`.
+  - Total batch wall time: **11.02 h** (39,688.28 s).
+  - Total worker compute time: **121.99 h** (439,159.50 s).
+  - Effective concurrency: **11.07×** on 16 workers.
+
+| Model | Compute Median (s/spec) | Batch Wall Time (s) | Worker Compute (h) |
+|---|---|---|---|
+| checkerboard/strip/N7 | 0.6679 | 309.59 | 0.74 |
+| checkerboard/strip/N9 | 1.1037 | 460.72 | 1.23 |
+| checkerboard/strip/N14 | 3.1250 | 1173.09 | 3.47 |
+| germanene/armchair/N7 | 0.3935 | 222.47 | 0.44 |
+| germanene/armchair/N9 | 0.5423 | 274.66 | 0.60 |
+| germanene/armchair/N14 | 1.4842 | 533.67 | 1.65 |
+| germanene/zigzag/N7 | 0.7390 | 312.82 | 0.82 |
+| germanene/zigzag/N9 | 0.7987 | 297.16 | 0.89 |
+| germanene/zigzag/N14 | 1.1543 | 460.99 | 1.28 |
+| kagome/armchair/N7 | 1.8130 | 654.42 | 2.01 |
+| kagome/armchair/N9 | 2.8806 | 1077.38 | 3.20 |
+| kagome/armchair/N14 | 11.8837 | 3654.44 | 13.20 |
+| kagome/zigzag/N7 | 0.4975 | 248.00 | 0.55 |
+| kagome/zigzag/N9 | 0.6516 | 301.98 | 0.72 |
+| kagome/zigzag/N14 | 1.5617 | 616.44 | 1.74 |
+| lieb/strip/N7 | 0.5845 | 281.42 | 0.65 |
+| lieb/strip/N9 | 0.8941 | 387.31 | 0.99 |
+| lieb/strip/N14 | 2.1694 | 828.76 | 2.41 |
+| mose2/armchair/N7 | 1.9794 | 760.99 | 2.20 |
+| mose2/armchair/N9 | 4.4599 | 1473.51 | 4.96 |
+| mose2/armchair/N14 | 11.9405 | 4161.94 | 13.27 |
+| mose2/zigzag/N7 | 0.5744 | 276.02 | 0.64 |
+| mose2/zigzag/N9 | 0.8808 | 378.54 | 0.98 |
+| mose2/zigzag/N14 | 2.1102 | 789.34 | 2.34 |
+| silicene/armchair/N7 | 0.4094 | 223.03 | 0.45 |
+| silicene/armchair/N9 | 0.8294 | 304.75 | 0.92 |
+| silicene/armchair/N14 | 1.7717 | 555.23 | 1.97 |
+| silicene/zigzag/N7 | 0.6777 | 263.40 | 0.75 |
+| silicene/zigzag/N9 | 0.9288 | 323.78 | 1.03 |
+| silicene/zigzag/N14 | 1.4693 | 515.13 | 1.63 |
+| ws2/armchair/N7 | 2.4910 | 933.99 | 2.77 |
+| ws2/armchair/N9 | 4.9826 | 1727.38 | 5.54 |
+| ws2/armchair/N14 | 15.0993 | 5194.10 | 16.78 |
+| ws2/zigzag/N7 | 0.6830 | 319.33 | 0.76 |
+| ws2/zigzag/N9 | 1.0401 | 439.43 | 1.16 |
+| ws2/zigzag/N14 | 2.5794 | 952.61 | 2.87 |
+| wse2/armchair/N7 | 2.2219 | 828.40 | 2.47 |
+| wse2/armchair/N9 | 4.0623 | 1449.81 | 4.51 |
+| wse2/armchair/N14 | 12.1225 | 4275.71 | 13.47 |
+| wse2/zigzag/N7 | 0.5635 | 275.07 | 0.63 |
+| wse2/zigzag/N9 | 0.8701 | 378.34 | 0.97 |
+| wse2/zigzag/N14 | 2.0978 | 793.13 | 2.33 |
+| **Total** | | **39,688.3 s (11.02 h)** | **121.99 h** |
+
+Artifacts written:
+- `notebooks/tbribbon/full5.log`
+- `notebooks/tbribbon/materials2_ev_full_report.json`
 
 ---
 
