@@ -15,10 +15,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--graphene-store", default="~/atlas_store/engine_v1")
     ap.add_argument("--materials-store", default="~/atlas_store/materials_ev_full")
-    ap.add_argument("--out", default=str(HERE / "lookup_v2"))
+    ap.add_argument("--materials2-store", default="~/atlas_store/materials2_ev_full")
+    ap.add_argument("--out", default=str(HERE / "lookup_v3"))
     a = ap.parse_args()
     t0 = time.time()
-    store = MultiStore(os.path.expanduser(a.graphene_store), os.path.expanduser(a.materials_store))
+    store = MultiStore(os.path.expanduser(a.graphene_store), os.path.expanduser(a.materials_store),
+                       os.path.expanduser(a.materials2_store))
     models = []
     for mid in store.models():
         mat, edge, n = mid.split("/")
