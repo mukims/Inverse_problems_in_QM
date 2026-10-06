@@ -254,6 +254,6 @@ with open(repo_dir / "notebooks/material_atlas/meaning/results/v2/hbn.json") as 
 dz_sq_novelty = next(m for m in d_hbn["results"] if m["model"] == "physics")["groups"]["square/strip/N10"]["relative_median_distance"]
 
 # Required output prints
-print(f"Projected: {len(X)} spectra (103 models x 4 concentrations [pristine, d=0.01, 0.02, 0.04] from catalogue.npz + 4 square-strip N=10 spectra from novelty_v1) transformed with InputSpec v4 (416-channel universal eV grid, log1p/log1p(20)).")
+print(f"Projected: {len(X)} spectra: the catalogue's ensemble medians for 103 devices at 0, 1, 2 and 4% density, plus 4 square-strip spectra transformed with InputSpec v4 (416-channel universal eV grid, log1p(T)/log1p(64)).")
 print(f"Explained variance: PC1={var_pca[0]*100:.1f}%, PC2={var_pca[1]*100:.1f}%, Total 2D={var_pca[:2].sum()*100:.1f}%")
 print(f"ΔZ values: MoS2 <-> Triangular ΔZ = {dz_mos2_tri:.2f}; Graphene <-> Phosphorene ΔZ = {dz_gr_phos:.2f}; Graphene <-> hBN ΔZ = {dz_gr_hbn:.2f}; Square-strip novelty ΔZ = {dz_sq_novelty:.2f} (> 10)")

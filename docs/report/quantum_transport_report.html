@@ -312,10 +312,10 @@ Check your Browserslist config to be sure that your targets are set up correctly
           🎯 13&times;13 Confusion Matrix
         </button>
         <button onclick="switchTab('scorecard')" id="btn-scorecard" class="tab-btn px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-colors border border-[var(--border)] bg-[var(--secondary)]">
-          🏆 Master Scorecard
+          🏆 Scorecard
         </button>
         <button onclick="switchTab('traps')" id="btn-traps" class="tab-btn px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-colors border border-[var(--border)] bg-[var(--secondary)]">
-          ⚠️ Forensic Traps
+          ⚠️ Bugs and traps
         </button>
       </nav>
     </header>
@@ -449,7 +449,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
             <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-1">Microscopic Physics Engine</span>
             <h2 class="text-xl font-bold text-[var(--foreground)]">2D Atomic Lattice Ribbon Visualizer</h2>
             <p class="text-xs text-[var(--muted-foreground)]">
-              Inspect the exact atomistic geometry, unit cell boundaries, edge terminations, and Anderson disorder defect distributions for any ribbon model.
+              Illustration only: drawn in the browser, not output from the tight-binding builders. Inspect atomistic geometry, unit cell boundaries, edge terminations, and Anderson disorder defect distributions.
             </p>
           </div>
           <div class="flex items-center gap-2">
@@ -648,9 +648,9 @@ Check your Browserslist config to be sure that your targets are set up correctly
             </p>
           </div>
           <div class="p-3.5 rounded-lg bg-[var(--background)] border border-[var(--border)] space-y-1">
-            <h4 class="font-bold text-purple-400">2. Centroid Invariance</h4>
+            <h4 class="font-bold text-purple-400">2. Upper-Edge Invariance</h4>
             <p class="text-[var(--muted-foreground)] leading-relaxed">
-              Every pristine quantum staircase sits strictly at the geometric center of its Anderson disorder cloud. Random scattering broadens signatures isotropically without shifting their manifold coordinates.
+              Every pristine staircase is the upper edge of its disorder cloud: disorder only lowers transmission, and the store checks confirm disordered medians stay at or below the clean spectrum. Random scattering attenuates transmission without shifting ribbon identity on the manifold.
             </p>
           </div>
           <div class="p-3.5 rounded-lg bg-[var(--background)] border border-[var(--border)] space-y-1">
@@ -792,7 +792,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
           <span class="text-xs text-[var(--muted-foreground)] font-mono">2-Panel: PCA (86.4% Variance) &bull; UMAP Non-Linear Manifold</span>
         </div>
         <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
-          Unsupervised projection of 416 quantum transport signatures (103 catalogue devices across 13 materials at 4 concentrations + 4 square-strip N=10 signatures under InputSpec v4) across all 13 materials, ribbon widths, and Anderson disorder clouds.
+          Unsupervised projection of 416 spectra: the catalogue's ensemble medians for 103 devices at 0, 1, 2 and 4% density, plus 4 square-strip spectra.
         </p>
 
         <div class="p-2 bg-[var(--background)] rounded-xl border border-[var(--border)]">
@@ -809,7 +809,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
           <div class="p-4 rounded-lg bg-[var(--background)] border border-[var(--border)] space-y-2">
             <h3 class="font-bold text-purple-400">Panel B: Topological Clustering &amp; Foliation (UMAP)</h3>
             <p class="text-[var(--muted-foreground)] leading-relaxed">
-              Materials form compact, well-separated topological islands. Within each material island, ribbon width $ creates monotonic 1D foliation trajectories (dashed line: Graphene armchair =5\dots 50$). Disorder spreads isotropically around pristine centroids without breaking cluster separation.
+              Materials form compact, well-separated topological islands. Within each material island, ribbon width $N$ creates monotonic 1D foliation trajectories (dashed line: Graphene armchair $N=5\dots 50$). Disorder spreads from pristine configurations without breaking cluster separation.
             </p>
           </div>
           <div class="p-4 rounded-lg bg-[var(--background)] border border-[var(--border)] space-y-2">
@@ -1155,7 +1155,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
       <div class="border border-[var(--border)] bg-[var(--card)] rounded-2xl p-5 md:p-6 shadow-sm space-y-5">
         <div>
           <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-1">Project Gates</span>
-          <h2 class="text-xl font-bold text-[var(--foreground)]">Master Scorecard &amp; Contractual Benchmarks</h2>
+          <h2 class="text-xl font-bold text-[var(--foreground)]">Scorecard &amp; Contractual Benchmarks</h2>
         </div>
         <div class="overflow-x-auto rounded-xl border border-[var(--border)]">
           <table class="w-full text-left text-xs">
