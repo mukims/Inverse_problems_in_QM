@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+</head>
+<body class="bg-transparent text-[var(--foreground)] antialiased p-3">
+  <div class="bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-xl p-4 shadow-sm space-y-4 max-w-xl mx-auto">
+    
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wide">Production Certified</span>
+        </div>
+        <h2 class="text-base font-bold text-[var(--foreground)] mt-0.5">Quantum Transport Inverse Engine</h2>
+      </div>
+      <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20 font-mono">
+        BUILD-29
+      </span>
+    </div>
+
+    <!-- Core Scorecard -->
+    <div class="grid grid-cols-2 gap-2 text-xs">
+      <div class="p-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]">
+        <span class="text-[var(--muted-foreground)] block">Device Identification</span>
+        <div class="flex items-baseline gap-1.5 mt-0.5">
+          <span class="text-lg font-bold text-emerald-400">99.992%</span>
+          <span class="text-xs text-[var(--muted-foreground)]">(&ge;99.5% target)</span>
+        </div>
+        <span class="text-xs text-emerald-400 font-medium block mt-0.5">100% on all 8 new materials</span>
+      </div>
+
+      <div class="p-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]">
+        <span class="text-[var(--muted-foreground)] block">Material Separation</span>
+        <div class="flex items-baseline gap-1.5 mt-0.5">
+          <span class="text-lg font-bold text-emerald-400">100.0%</span>
+          <span class="text-xs text-[var(--muted-foreground)]">(&ge;99% target)</span>
+        </div>
+        <span class="text-xs text-emerald-400 font-medium block mt-0.5">0% cross-confusion (13 classes)</span>
+      </div>
+
+      <div class="p-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]">
+        <span class="text-[var(--muted-foreground)] block">Concentration MAE</span>
+        <div class="flex items-baseline gap-1.5 mt-0.5">
+          <span class="text-lg font-bold text-[var(--foreground)]">0.089 pp</span>
+          <span class="text-xs text-[var(--muted-foreground)]">(&le;1.98 target)</span>
+        </div>
+        <span class="text-xs text-[var(--muted-foreground)] block mt-0.5">91.1% conformal coverage</span>
+      </div>
+
+      <div class="p-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]">
+        <span class="text-[var(--muted-foreground)] block">Query Speed & Scale</span>
+        <div class="flex items-baseline gap-1.5 mt-0.5">
+          <span class="text-lg font-bold text-sky-400">26.0 ms</span>
+          <span class="text-xs text-[var(--muted-foreground)]">(&lt;50ms target)</span>
+        </div>
+        <span class="text-xs text-sky-400 block mt-0.5">103 models across 3 stores</span>
+      </div>
+    </div>
+
+    <!-- Highlights & Invariants -->
+    <div class="pt-2 border-t border-[var(--border)] text-xs space-y-1.5">
+      <div class="flex items-center justify-between text-[var(--muted-foreground)]">
+        <span>&bull; Off-grid continuous pilot ($d \le 5\%$):</span>
+        <span class="font-bold text-emerald-400">98.40% right & unflagged</span>
+      </div>
+      <div class="flex items-center justify-between text-[var(--muted-foreground)]">
+        <span>&bull; Out-of-distribution & square rejection:</span>
+        <span class="font-bold text-emerald-400">100.0% rejected</span>
+      </div>
+      <div class="flex items-center justify-between text-[var(--muted-foreground)]">
+        <span>&bull; Automated physics & store test suite:</span>
+        <span class="font-bold text-emerald-400">303 / 303 passing (100%)</span>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
