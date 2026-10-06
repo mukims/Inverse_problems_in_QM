@@ -1372,7 +1372,8 @@ Artifacts written:
     - `triangular`: Lookup 100.000% device vs today's `atlas_v4m` 100.0% width (unknown: 1.06% vs 1.02%).
   - **T2 Between-Library Routing & Concentration**:
     - Today's Shazam routes only when a spectrum is near its 4 discrete library nodes: mean routed rate over $\le 5\%$ densities is 97.40% (graphene), 96.07% (hBN), 85.80% (MoS₂), 91.60% (phosphorene), and 65.33% (triangular), dropping to 0–5% between library densities on triangular and MoS₂.
-    - Ensemble Lookup eliminates this routing gap completely: device accuracy is **99.96%** overall (graphene 100%, hBN 99.87%, MoS₂ 100%, phosphorene 99.93%, triangular 100%) with 87.43% interval coverage and 3.97% median relative error across all continuous pilot densities.
+    - Ensemble Lookup eliminates this routing gap up to 4%: device accuracy is **99.96%** overall (graphene 100%, hBN 99.87%, MoS₂ 100%, phosphorene 99.93%, triangular 100%) with 87.43% interval coverage and 3.97% median relative error across all continuous pilot densities.
+    - **Like-for-Like Comparison (Right and Unflagged)**: When counting a `no_match` flag as a failure (`device_pct - no_match_pct`), the lookup achieves **98.39%** overall right and unflagged: graphene 99.80% (vs routing's 97.40%), hBN 98.77% (vs 96.07%), MoS₂ 98.63% (vs 85.80%), phosphorene 97.83% (vs 91.60%), triangular 96.93% (vs 65.33%). Up to 4%, the lowest lookup point is 95.3% (routing drops to 0%). At 5.0% (edge of catalogue), triangular/zigzag/N9 is 68.0% because 32% of those spectra are flagged `no_match`.
   - **T4 Unknown / Out-of-Distribution Detection**:
     - Today's `atlas_v4m`: hBN 100.0%, MoS₂ 100.0%, phosphorene 99.83%, triangular 100.0%, square strip 100.0% unknown.
     - Ensemble Lookup: hBN 99.96%, MoS₂ 100.0%, phosphorene 98.96%, triangular 100.0%, square strip 100.0% `no_match`.
@@ -1590,6 +1591,7 @@ Artifacts written:
   - Total batch wall time: **11.02 h** (39,688.28 s).
   - Total worker compute time: **121.99 h** (439,159.50 s).
   - Effective concurrency: **11.07×** on 16 workers.
+  - **Projected vs Actual**: SMOKE-4 projected 7.91 h; actual batch wall time was 11.02 h (ratio **1.39×**; initial ribbons ran ~1.5×, e.g. `wse2/zigzag/N14` 793 s actual vs 533 s projected [1.49×], `ws2/armchair/N7` 934 s actual vs 593 s projected [1.57×]). While effective concurrency held at 11.07× (matching FULL-4's 10.75×), per-worker compute is ~1.5× higher under sustained full load across all 16 cores (in SMOKE-4, 50 seeds in chunks of 4 never saturated all 16 workers). Future projections should use per-spectrum compute medians from a FULL run rather than a smoke run.
 
 | Model | Compute Median (s/spec) | Batch Wall Time (s) | Worker Compute (h) |
 |---|---|---|---|
@@ -1711,14 +1713,14 @@ Artifacts written:
 * **T2 Off-Grid Interpolation Benchmark (Per Ribbon & Pooled)**:
   - Evaluated on **15,000 off-grid test spectra** ($d \le 5.0\%$, 20 densities across seeds 850–999):
 
-| Ribbon ($d \le 5.0\%$, 20 densities) | Test Spectra | Device % | Mat % | Mat+Edge % | Coverage % | No-Match % | Silent Wrong % | Med Rel Err | MAE |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| `graphene-ideal/armchair/N13` | 3,000 | 100.0% | 100.0% | 100.0% | 82.367% | 0.200% | 0.000% | 3.33% | 0.1194 pp |
-| `hbn/armchair/N9` | 3,000 | 99.900% | 100.0% | 100.0% | 89.867% | 1.100% | 0.033% | 11.18% | 0.3020 pp |
-| `mos2/zigzag/N9` | 3,000 | 100.0% | 100.0% | 100.0% | 85.433% | 1.367% | 0.000% | 3.57% | 0.1106 pp |
-| `phosphorene/armchair/N9` | 3,000 | 99.933% | 100.0% | 100.0% | 83.600% | 2.100% | 0.000% | 3.79% | 0.1166 pp |
-| `triangular/zigzag/N9` | 3,000 | 100.0% | 100.0% | 100.0% | 88.167% | 3.067% | 0.000% | 2.50% | 0.0750 pp |
-| **All Ribbons (Pooled)** | **15,000** | **99.967%** | **100.0%** | **100.0%** | **85.887%** | **1.567%** | **0.007%** | **3.97%** | **0.1447 pp** |
+| Ribbon ($d \le 5.0\%$, 20 densities) | Test Spectra | Device % | Right & Unflagged % | Mat % | Mat+Edge % | Coverage % | No-Match % | Silent Wrong % | Med Rel Err | MAE |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `graphene-ideal/armchair/N13` | 3,000 | 100.0% | **99.800%** | 100.0% | 100.0% | 82.367% | 0.200% | 0.000% | 3.33% | 0.1194 pp |
+| `hbn/armchair/N9` | 3,000 | 99.900% | **98.800%** | 100.0% | 100.0% | 89.867% | 1.100% | 0.033% | 11.18% | 0.3020 pp |
+| `mos2/zigzag/N9` | 3,000 | 100.0% | **98.633%** | 100.0% | 100.0% | 85.433% | 1.367% | 0.000% | 3.57% | 0.1106 pp |
+| `phosphorene/armchair/N9` | 3,000 | 99.933% | **97.833%** | 100.0% | 100.0% | 83.600% | 2.100% | 0.000% | 3.79% | 0.1166 pp |
+| `triangular/zigzag/N9` | 3,000 | 100.0% | **96.933%** | 100.0% | 100.0% | 88.167% | 3.067% | 0.000% | 2.50% | 0.0750 pp |
+| **All Ribbons (Pooled)** | **15,000** | **99.967%** | **98.400%** | **100.0%** | **100.0%** | **85.887%** | **1.567%** | **0.007%** | **3.97%** | **0.1447 pp** |
 
 * **T3 Spectral Window-Restricted Benchmark**:
 
