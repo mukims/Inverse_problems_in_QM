@@ -41,6 +41,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **SMOKE-4** | 2026-10-05 | **42 New-Material & Lattice Models** | **New-Material Smoke Clouds on Shared eV Axis** (WS₂, MoSe₂, WSe₂, silicene, germanene, kagome, Lieb, checkerboard) | `~/atlas_store/materials2_ev_smoke` (42 models $\times$ 4 densities $\times$ 50 seeds = 8,400 spectra) | Direct generation on InputSpec v3 eV grid; Caroli formula; lead η = 1e-4 except `wse2/zigzag/N14` at lead η = 1e-5 | **100% Validated** | N/A (Smoke data generation) | N/A | **Completed (All Store Checks PASS)**: 42/42 models pass all store invariants (`check_store.py`: CleanErr $\le 6.50\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, nested seeds). First pass: 41/42 passed; `wse2/zigzag/N14` had CleanErr 0.003854 at 0.180 eV due to 0.9 meV edge-band mini-gap. Regenerated at lead η = 1e-5, dropping CleanErr to $4.70\times 10^{-5}$ ($< 10^{-3}$). Second-largest CleanErr is `mose2/zigzag/N7` at $6.50\times 10^{-4}$. FULL-5 projection: ~7.9–9.5 h on 16 workers. |
 | **FULL-5** | 2026-10-05 | **42 New-Material & Lattice Models (FULL-5 Production Run)** | **New-Material Disorder Clouds on Shared eV Axis** (WS₂, MoSe₂, WSe₂, silicene, germanene, kagome, Lieb, checkerboard) | `~/atlas_store/materials2_ev_full/` (42 models $\times$ 4 densities $\times$ 1,000 seeds = **168,000 spectra**; seeds 0–999) | Direct generation on InputSpec v3 eV grid; Caroli formula; lead η = 1e-4 except `wse2/zigzag/N14` at lead η = 1e-5 | **100% Validated** | N/A (Production data generation) | N/A | **Completed (All Store Checks PASS)**: 42/42 models in `materials2_ev_full` passed all store invariants (`check_store.py`: CleanErr $\le 6.50\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, all clouds hold exactly seeds 0–999). Total batch wall time **11.02 h** (39,688 s, 121.99 worker-compute hours, concurrency $11.07\times$ on 16 workers). Prepares data for lookup_v3. |
 | **BUILD-29** | 2026-10-05 | **103 Ribbon Models (13 Materials/Lattices) + Pilot Ribbons + Square Strip** | **LOOKUP-2 (lookup_v3: Ensemble Lookup with New Materials and Flat-Band Lattices)** | `lookup_v3` (103 models, 61,800 T1 test, 15,000 T2 pilot test, 600 square test); global $\kappa = 4.467$; per-material interval $\kappa \in [1.0, 39.811]$ | 3-store MultiStore (`engine_v1`, `materials_ev_full`, `materials2_ev_full`); 101-point PCHIP grid; window-aware InputSpec v4 | **99.992% Mat+Edge+Width**<br>(100% Mat, 99.997% Edge, 99.992% Width) | **0.0891 pp** (T1 Catalogue MAE)<br>**0.1447 pp** (T2 Pilot MAE) | **91.100%** (T1 Catalogue Cov)<br>**85.887%** (T2 Pilot Cov) | **Completed (All 9 Pre-Registered Expectations MET)**: 103-device catalogue lookup with WS₂, MoSe₂, WSe₂, silicene, germanene, kagome, Lieb, checkerboard. T1: 99.992% device accuracy overall, 100.0% for all 8 new materials; material confusion is 100.0% diagonal across all 13 materials (0% confusion between Dirac, TMD, or flat-band cousins). Coverage 89.2–92.9% across all materials (target 85–95% MET). False no match 0.81–1.46% (target 0.5–1.5% MET). T4 hidden material rejection 100.0% on all 8 new materials. No harm to original 5 materials (within 0.021 points). Median query speed 26.0 ms (< 50 ms MET). Results in `notebooks/material_atlas/lookup_v3/results.json`. |
+| **PRISTINE-6** | 2026-10-06 | **308 Ribbon Models (12 Materials/Lattices)** | **Pristine Spectra & Device Length Invariant on Shared eV Axis** | `~/atlas_store/materials3_ev_full` (308 clean spectra) | Clean spectra on InputSpec v3 eV grid; Caroli formula; `--device-atoms 2000`; `wse2/zigzag/N14` at lead η = 1e-5, all others at default 1e-4 | **303/308 Pass (5 Failures Flagged)** | N/A (Clean spectrum verification) | N/A | **Task 3 Completed (Human Decision Required)**: 308 clean spectra generated with length invariant (~2,000 atoms per device at N=7–9). 303 ribbons pass clean check (< 1e-3). 5 clean-check failures reproduced dry-run: `wse2/armchair/N5` (0.021454 at 1.80 eV), `kagome/zigzag/N20` (0.021166 at 1.40 eV), `wse2/zigzag/N13` (0.017440 at 0.18 eV), `mos2/armchair/N12` (0.004972 at 1.22 eV), `mos2/zigzag/N8` (0.001492 at 0.18 eV). `wse2/zigzag/N14` passes at η = 1e-5 ($4.7\times 10^{-5}$). |
 
 
 ---
@@ -1785,6 +1786,40 @@ Artifacts written:
 - `notebooks/material_atlas/lookup_v3/eval.log`
 - `notebooks/material_atlas/build_lookup.py`
 - `notebooks/material_atlas/eval_lookup.py`
+
+---
+
+### [2026-10-06] PRISTINE-6: Clean Spectrum Verification Across 308 Ribbons at Realistic Device Lengths
+
+* **Overview & Goals**:
+  - Recomputed clean spectra for all 308 ribbon models across 12 non-graphene materials and lattices (hBN, phosphorene, MoS₂, triangular, WS₂, MoSe₂, WSe₂, silicene, germanene, kagome, Lieb, checkerboard) across widths $N \in \{5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 20, 27, 50\}$.
+  - Implemented `--device-atoms 2000` (`device_cells(material, edge, 2000)`), choosing one fixed device length per material and edge such that $N=7\text{--}9$ devices hold approximately 2,000 real atoms (chalcogens included for TMDs).
+  - Recorded device lengths in `meta.json` (`pristine_n_cells` and per-cloud `n_cells`), with store invariant checking in `check_store.py`. Backward compatibility maintained (older stores without length default to 100 cells).
+
+* **Device Length per Material & Edge**:
+  | Material and Edge | Device Length (Cells) | Atoms per Cell ($N=7, 9$) | Total Atoms ($N=7, 9$) |
+  | :--- | :---: | :---: | :---: |
+  | TMD armchair (`mos2`, `ws2`, `mose2`, `wse2`), kagome armchair | 42 | 42, 54 | 1,764 / 2,268 |
+  | Checkerboard strip | 62 | 28, 36 | 1,736 / 2,232 |
+  | TMD zigzag (`mos2`, `ws2`, `mose2`, `wse2`), kagome zigzag, Lieb strip | 83 | 21, 27 | 1,743 / 2,241 |
+  | hBN, phosphorene, silicene, germanene (both edges), triangular armchair | 125 | 14, 18 | 1,750 / 2,250 |
+  | Triangular zigzag | 250 | 7, 9 | 1,750 / 2,250 |
+
+* **Clean Check Results (308 Models Checked)**:
+  - **Passed**: 303 / 308 models ($\text{CleanErr} < 10^{-3}$).
+  - `wse2/zigzag/N14` generated with lead $\eta = 10^{-5}$ as approved: **PASS** ($\text{CleanErr} = 4.70 \times 10^{-5}$).
+  - **Failures (5 Ribbons Flagged for Human Decision)**:
+    1. `wse2/armchair/N5`: Clean error **0.021454** at **1.80 eV** (channel 2 vs pristine 2.021454, lead $\eta = 10^{-4}$)
+    2. `kagome/zigzag/N20`: Clean error **0.021166** at **1.40 eV** (channel 9 vs pristine 8.978834, lead $\eta = 10^{-4}$)
+    3. `wse2/zigzag/N13`: Clean error **0.017440** at **0.18 eV** (channel 2 vs pristine 1.982560, lead $\eta = 10^{-4}$)
+    4. `mos2/armchair/N12`: Clean error **0.004972** at **1.22 eV** (channel 6 vs pristine 5.995028, lead $\eta = 10^{-4}$)
+    5. `mos2/zigzag/N8`: Clean error **0.001492** at **0.18 eV** (channel 2 vs pristine 1.998508, lead $\eta = 10^{-4}$)
+
+* **Artifacts & Logs**:
+  - `notebooks/tbribbon/full6_models.txt` (308 ribbon model IDs)
+  - `notebooks/tbribbon/pristine6_report.json` (308 clean check entries)
+  - `notebooks/tbribbon/pristine6.log` (generation log)
+  - Store: `~/atlas_store/materials3_ev_full`
 
 ---
 
