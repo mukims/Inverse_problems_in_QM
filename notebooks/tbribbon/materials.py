@@ -1,4 +1,5 @@
 """Material catalogue. Real materials (D3) are appended here as new entries."""
+from functools import lru_cache
 from atlaslib.registry import RibbonModel
 
 from .bands import band_edges
@@ -66,3 +67,20 @@ def make_model(material, edge, width):
     return RibbonModel(material, edge, width, spec["t_ev"], h.H0.shape[0],
                        round(band_edges(h.H0, h.H1)[1], 3), impurity_v_t=spec.get("impurity_v_t", 0.5),
                        orbitals_per_site=spec.get("orbitals_per_site", 1), source=spec["source"])
+
+
+# The three-band TMD model keeps only the metal atoms; each carries two chalcogens in the real crystal.
+CHALCOGENS_PER_METAL = {"mos2": 2, "ws2": 2, "mose2": 2, "wse2": 2}
+
+
+def atoms_per_cell(model):
+    """Real atoms in one unit cell of the ribbon, chalcogens included."""
+    return model.sites_per_cell // model.orbitals_per_site * (1 + CHALCOGENS_PER_METAL.get(model.material, 0))
+
+
+@lru_cache(maxsize=None)
+def device_cells(material, edge, target_atoms, ref_widths=(7, 9)):
+    """One device length per material and edge: the cells that put its N = 7-9 devices near target_atoms."""
+    per_cell = sum(atoms_per_cell(make_model(material, edge, n)) for n in ref_widths) / len(ref_widths)
+    return max(1, round(target_atoms / per_cell))
+

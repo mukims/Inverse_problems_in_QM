@@ -3,6 +3,7 @@
 Set OMP_NUM_THREADS=1 before launching to avoid BLAS oversubscription."""
 import argparse
 import multiprocessing as mp
+from dataclasses import replace
 import os
 import sys
 import time
@@ -14,7 +15,7 @@ from atlaslib import CloudStore, InputSpec
 from atlaslib.energy import generation_grid_t
 from tbribbon.disorder import impurity_shifts
 from tbribbon.leads import LeadCache
-from tbribbon.materials import hamiltonian_for, make_model
+from tbribbon.materials import device_cells, hamiltonian_for, make_model
 from tbribbon.transport import spectrum
 
 REPO = Path(__file__).resolve().parents[2]
@@ -62,7 +63,7 @@ def _one_agnr(seed):
 
 
 def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", seeds=None,
-             lead_eta=DEFAULT_LEAD_ETA):
+             lead_eta=DEFAULT_LEAD_ETA, device_atoms=None):
     ctx, wrote = mp.get_context("spawn"), []
     for m in models:
         is_agnr = (m.material == "graphene-ideal" and m.edge == "armchair")
@@ -70,6 +71,8 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
         if is_agnr:
             if lead_eta != DEFAULT_LEAD_ETA:
                 raise ValueError("lead_eta does not apply to graphene armchair: agnr_lib builds its own leads")
+            if device_atoms is not None:
+                raise ValueError("device_atoms does not apply to graphene armchair: agnr_lib fixes its own device")
             if spec.unit == "eV":
                 raise ValueError("graphene armchair clouds come from agnr_lib on its own grid; "
                                  "they reach the eV axis by resampling, not regeneration")
@@ -106,8 +109,14 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
             def pad(X):
                 return np.pad(np.atleast_2d(np.asarray(X)), ((0, 0), (0, len(e_t) - n_live)))
 
+            if device_atoms is not None:
+                m = replace(m, n_cells=device_cells(m.material, m.edge, device_atoms))
             pristine_path = store._dir(m.model_id) / "pristine.npy"
             if pristine_path.exists():
+                stored_cells = store._meta(m.model_id).get("pristine_n_cells", 100)
+                if stored_cells != m.n_cells:
+                    raise ValueError(f"{m.model_id} was generated with n_cells={stored_cells}; "
+                                     f"refusing to add spectra with n_cells={m.n_cells}")
                 stored_eta = store._meta(m.model_id).get("pristine_lead_eta", DEFAULT_LEAD_ETA)
                 if not np.isclose(stored_eta, lead_eta, rtol=1e-9, atol=0):
                     raise ValueError(f"{m.model_id} was generated with lead_eta={stored_eta:g}; "
@@ -120,7 +129,7 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
                 with ctx.Pool(1, _init, (h.H0, h.H1, e_live, 1, h.H0.shape[0], 0, 0.0, model_formula, leads)) as p:
                     pris_spec, _ = p.map(_one, [0])[0]
                     store.write_pristine(m.model_id, e_t, pad(pris_spec)[0], formula=model_formula,
-                                         lead_eta=lead_eta)
+                                         lead_eta=lead_eta, n_cells=m.n_cells)
             for d in densities:
                 n_imp = m.impurities_for_density(d)
                 actual = n_imp / m.n_sites
@@ -135,7 +144,7 @@ def generate(store, models, densities, spec, n_jobs=20, formula="legacy_trace", 
                 times = np.array([r[1] for r in res])
                 median_t_spec = float(np.median(times))
                 store.write_cloud(m.model_id, actual, n_imp, pad(spectra), sd, e_t, formula=model_formula,
-                                  t_spectrum_sec=median_t_spec, lead_eta=lead_eta)
+                                  t_spectrum_sec=median_t_spec, lead_eta=lead_eta, n_cells=m.n_cells)
                 wrote.append((m.model_id, actual))
                 sec_per = dt / len(sd)
                 print(f"{m.model_id} density {actual:.4f}: {len(sd)} spectra ({model_formula}) in {dt:.2f}s (wall {sec_per:.4f} s/spec, worker compute median {median_t_spec:.4f} s/spec)", flush=True)
@@ -191,6 +200,8 @@ if __name__ == "__main__":
     ap.add_argument("--models", default="")
     ap.add_argument("--densities", default="0.005,0.01,0.02,0.04")
     ap.add_argument("--spec-version", default="v2", choices=["v2", "v3"])
+    ap.add_argument("--device-atoms", type=int, default=None,
+                    help="Set each ribbon's length so its material's N = 7-9 devices hold about this many real atoms")
     ap.add_argument("--lead-eta", type=float, default=DEFAULT_LEAD_ETA,
                     help="Sancho-Rubio lead broadening in units of t (not used for graphene armchair)")
     ap.add_argument("--armchair-widths", default="5-16", help="Armchair widths for custom grid")
@@ -221,5 +232,5 @@ if __name__ == "__main__":
               + [make_model("graphene-ideal", "zigzag", n) for n in zig_widths])
     seeds = range(a.n_seeds) if a.n_seeds is not None else None
     generate(CloudStore(a.store), ms, _parse_densities(a.densities), InputSpec(version=a.spec_version), n_jobs=a.n_jobs, formula=a.formula, seeds=seeds,
-             lead_eta=a.lead_eta)
+             lead_eta=a.lead_eta, device_atoms=a.device_atoms)
 

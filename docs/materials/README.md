@@ -41,6 +41,7 @@ material parameters ──► ribbon unit cell (H0, H1) ──► clean leads (s
 ### 1. Ribbon and device
 - **Ribbon.** A ribbon is a 1-D periodic strip of a 2-D lattice. One period (the unit cell) has Hamiltonian `H0`, and `H1` couples a cell to the next one. The block convention is `H[n, n] = H0`, `H[n, n+1] = H1`, `H[n+1, n] = H1†`.
 - **Device.** The device is **100 unit cells** of the ribbon, sitting between two semi-infinite **leads made of the same clean ribbon**.
+- `--device-atoms` sets one length per material and edge so that its N = 7–9 devices hold about that many real atoms, chalcogens included. The stores from `materials3_ev_*` on use 2,000; older stores use 100 cells.
 - **Width N.** N counts atomic rows across the ribbon: dimer lines (armchair), zigzag chains (zigzag), Mo rows (MoS₂). Atoms per unit cell are listed in each material's README.
 - **Hopping and energy units.** Hopping enters as −t on the bond. Energies are stored in **units of the material's t** (`t_ev` converts to eV), except MoS₂ (t_ev = 1, so its stored energies are already eV).
 - **E = 0** is charge neutrality, which is mid-gap for gapped materials (decision D4). **Only E ≥ 0 is computed** (decision D5), so the valence bands of MoS₂ and phosphorene are not in the data.
@@ -97,7 +98,7 @@ There are two generations of stored grid:
     cloud_d0.0050.npy           (n_seeds, n_energies) disordered T(E), one row per seed
     cloud_d0.0050_seeds.npy     the seed of each row
     ...                         one pair per density
-    meta.json                   pristine_formula, pristine_lead_eta; per cloud: density, n_impurities, n, formula, t_spectrum_sec, lead_eta
+    meta.json                   pristine_formula, pristine_lead_eta, pristine_n_cells; per cloud: density, n_impurities, n, formula, t_spectrum_sec, lead_eta, n_cells
 ```
 
 `CloudStore.write_cloud` refuses:

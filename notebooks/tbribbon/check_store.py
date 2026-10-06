@@ -2,6 +2,7 @@
 """Inspect and validate cloud store correctness, producing report.json."""
 import argparse
 import hashlib
+from dataclasses import replace
 import json
 import os
 import sys
@@ -40,7 +41,13 @@ def check_seed_excess(spec, pris, step_mask=None, tol=0.05):
     return max_seed_mean_excess, bool(max_seed_mean_excess <= tol)
 
 
+def stored_device(store, model):
+    """The model with the device length its spectra were generated with (100 cells before --device-atoms)."""
+    return replace(model, n_cells=store._meta(model.model_id).get("pristine_n_cells", 100))
+
+
 def check_model(store, model, reg):
+    model = stored_device(store, model)
     mid = model.model_id
     meta = store._meta(mid)
     formula = meta.get("pristine_formula", "unknown")
