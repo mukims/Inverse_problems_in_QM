@@ -42,6 +42,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **FULL-5** | 2026-10-05 | **42 New-Material & Lattice Models (FULL-5 Production Run)** | **New-Material Disorder Clouds on Shared eV Axis** (WS₂, MoSe₂, WSe₂, silicene, germanene, kagome, Lieb, checkerboard) | `~/atlas_store/materials2_ev_full/` (42 models $\times$ 4 densities $\times$ 1,000 seeds = **168,000 spectra**; seeds 0–999) | Direct generation on InputSpec v3 eV grid; Caroli formula; lead η = 1e-4 except `wse2/zigzag/N14` at lead η = 1e-5 | **100% Validated** | N/A (Production data generation) | N/A | **Completed (All Store Checks PASS)**: 42/42 models in `materials2_ev_full` passed all store invariants (`check_store.py`: CleanErr $\le 6.50\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, all clouds hold exactly seeds 0–999). Total batch wall time **11.02 h** (39,688 s, 121.99 worker-compute hours, concurrency $11.07\times$ on 16 workers). Prepares data for lookup_v3. |
 | **BUILD-29** | 2026-10-05 | **103 Ribbon Models (13 Materials/Lattices) + Pilot Ribbons + Square Strip** | **LOOKUP-2 (lookup_v3: Ensemble Lookup with New Materials and Flat-Band Lattices)** | `lookup_v3` (103 models, 61,800 T1 test, 15,000 T2 pilot test, 600 square test); global $\kappa = 4.467$; per-material interval $\kappa \in [1.0, 39.811]$ | 3-store MultiStore (`engine_v1`, `materials_ev_full`, `materials2_ev_full`); 101-point PCHIP grid; window-aware InputSpec v4 | **99.992% Mat+Edge+Width**<br>(100% Mat, 99.997% Edge, 99.992% Width) | **0.0891 pp** (T1 Catalogue MAE)<br>**0.1447 pp** (T2 Pilot MAE) | **91.100%** (T1 Catalogue Cov)<br>**85.887%** (T2 Pilot Cov) | **Completed (All 9 Pre-Registered Expectations MET)**: 103-device catalogue lookup with WS₂, MoSe₂, WSe₂, silicene, germanene, kagome, Lieb, checkerboard. T1: 99.992% device accuracy overall, 100.0% for all 8 new materials; material confusion is 100.0% diagonal across all 13 materials (0% confusion between Dirac, TMD, or flat-band cousins). Coverage 89.2–92.9% across all materials (target 85–95% MET). False no match 0.81–1.46% (target 0.5–1.5% MET). T4 hidden material rejection 100.0% on all 8 new materials. No harm to original 5 materials (within 0.021 points). Median query speed 26.0 ms (< 50 ms MET). Results in `notebooks/material_atlas/lookup_v3/results.json`. |
 | **PRISTINE-6** | 2026-10-06 | **308 Ribbon Models (12 Materials/Lattices)** | **Pristine Spectra & Device Length Invariant on Shared eV Axis** | `~/atlas_store/materials3_ev_full` (308 clean spectra) | Clean spectra on InputSpec v3 eV grid; Caroli formula; `--device-atoms 2000`; `--lead-eta 1.2e-5` for all 308 ribbons (PRISTINE-6b) | **308/308 Pass (100% Verified)** | N/A (Clean spectrum verification) | N/A | **PRISTINE-6b Completed (All 308 Pass)**: Human decision standardized lead broadening to $\eta = 1.2\times 10^{-5}$ across all 308 ribbons ($10^{-5}$ overflows on triangular/zigzag/N7; $2\times 10^{-5}$ fails kagome/zigzag/N20). PRISTINE-6b regenerates all 308 ribbons: 0 failures, all finite, worst error 0.000469 (`kagome/zigzag/N20`). |
+| **SMOKE-5** | 2026-10-07 | **49 Extremes Models ($N=5, 6$ and $N=50$)** | **New-Material Smoke Clouds with Realistic Device Lengths ($\eta = 1.2\times 10^{-5}$)** | `~/atlas_store/materials3_ev_smoke` (49 models $\times$ 4 densities $\times$ 50 seeds = 9,800 spectra) | Direct generation on InputSpec v3 eV grid; Caroli formula; `--device-atoms 2000`; `--lead-eta 1.2e-5` | **100% Validated (ALL PASS)** | N/A (Smoke data generation) | N/A | **Completed (All Store Checks PASS)**: 49/49 models pass all store invariants (`check_store.py`: CleanErr $\le 2.89\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, nested seeds). Measured costs: $N=5$ median 0.22 s/spec, $N=6$ median 0.27 s/spec, $N=50$ median 28.36 s/spec (triangular 8.38 s, silicene 28.36 s, germanene 26.20 s, lieb 54.14 s, checkerboard 67.88 s). Total compute 11.08 h (wall 2.47 h). |
 
 
 ---
@@ -1827,6 +1828,33 @@ Artifacts written:
   - `notebooks/tbribbon/pristine6.log`, `notebooks/tbribbon/pristine6b.log`
   - Quarantined store: `~/atlas_store/quarantine_pristine6/materials3_ev_full_eta1e-4`
   - Active store: `~/atlas_store/materials3_ev_full`
+
+---
+
+### [2026-10-07] SMOKE-5: Realistic-Length Smoke Clouds at Extremes (9,800 Spectra, ALL PASS)
+
+* **Overview & Setup**:
+  - Validated disorder cloud generation at the extremes of width ($N=5, 6$ across all 22 material/edge systems plus $N=50$ for silicene/zigzag, germanene/zigzag, triangular/zigzag, lieb/strip, checkerboard/strip = **49 models total**) under realistic device lengths (`--device-atoms 2000`) and the human-standardized lead broadening `--lead-eta 1.2e-5`.
+  - Generated into `~/atlas_store/materials3_ev_smoke/` across 4 standard densities ($0.5\%, 1\%, 2\%, 4\%$) $\times$ 50 seeds ($0\dots 49$) = **9,800 spectra total** on 16 worker processes (`--n-jobs 16`).
+  - Validation via `notebooks/tbribbon/check_store.py`: **ALL PASS** across all 49 models (`materials3_ev_smoke_report.json`). Clean channel errors $\le 2.89 \times 10^{-4}$ (worst `wse2/armchair/N5`), maximum median excess $+0.0000$, zero cross-density duplicates, and 100% nested seed invariants confirmed.
+
+* **Empirical Cost Table & Generation Statistics**:
+  - Total batch wall time across batches: **8,886.4 s (2.47 h)**. Total worker compute time: **39,871.7 s (11.08 h)**. Effective speedup on 16 workers: $\approx 4.5\times$.
+  - Cost per spectrum scaling with width:
+    - **$N=5$** (22 ribbons $\times$ 4 densities = 88 clouds): Median **0.2239 s/spec** (mean 0.2907 s/spec, min 0.1419 s, max 0.6345 s).
+    - **$N=6$** (22 ribbons $\times$ 4 densities = 88 clouds): Median **0.2702 s/spec** (mean 0.3512 s/spec, min 0.1706 s, max 0.6906 s).
+    - **$N=50$ Extremes** (5 ribbons $\times$ 4 densities = 20 clouds): Median **28.3625 s/spec** (mean 37.0471 s/spec).
+  - Breakdown for $N=50$ extreme ribbons:
+    - `triangular/zigzag/N50` (250 cells): worker median **8.3820 s/spec** (batch wall 1.3657 s/spec)
+    - `germanene/zigzag/N50` (125 cells): worker median **26.2043 s/spec** (batch wall 3.3565 s/spec)
+    - `silicene/zigzag/N50` (125 cells): worker median **28.3625 s/spec** (batch wall 3.5731 s/spec)
+    - `lieb/strip/N50` (83 cells): worker median **54.1402 s/spec** (batch wall 6.3574 s/spec)
+    - `checkerboard/strip/N50` (62 cells): worker median **67.8791 s/spec** (batch wall 7.8287 s/spec)
+
+* **Artifacts & Logs**:
+  - `notebooks/tbribbon/smoke5.log` (generation log, 49 models)
+  - `notebooks/tbribbon/materials3_ev_smoke_report.json` (store validation report: 49/49 PASS)
+  - Store: `~/atlas_store/materials3_ev_smoke/`
 
 ---
 
