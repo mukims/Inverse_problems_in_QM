@@ -758,6 +758,12 @@ Artifacts written:
 
 ---
 
+### Bare-bones GRU spectral continuation (7-AGNR, 1.50-1.60 eV)
+
+`notebooks/agnr/time_series/rnn_continuation.ipynb`: one `nn.GRU(1, 32)` plus one linear layer reads channels 0-149 and predicts channels 150-160. 7-AGNR only, c = 2..58, 1,000 configs per concentration, seed split 0-639 / 640-799 / 800-999, round-then-normalise. Test MSE 0.0136 against 0.0261 for persistence (repeat the last input channel). Validation MSE plateaus from epoch 2. The notebook also plots hidden-state activations and the error as the visible input length shrinks.
+
+---
+
 ## 4. Generated Artifacts & Visualizations
 
 ### Model Checkpoints & Serialization
