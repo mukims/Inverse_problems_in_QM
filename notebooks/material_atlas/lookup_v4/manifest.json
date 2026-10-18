@@ -1,0 +1,6462 @@
+{
+  "spec": {
+    "version": "v4",
+    "e_max_t": 8.32,
+    "step_t": 0.02,
+    "cap": 64.0,
+    "unit": "eV",
+    "despike": true
+  },
+  "models": [
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 40,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 44,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 48,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 52,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 56,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 64,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 80,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 108,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 20,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 200,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 24,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 28,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 32,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "checkerboard",
+      "edge": "strip",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 36,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised checkerboard (planar pyrochlore), flat band at +2t"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 10,
+      "t_ev": 0.991,
+      "sites_per_cell": 20,
+      "band_top_t": 2.919,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 11,
+      "t_ev": 0.991,
+      "sites_per_cell": 22,
+      "band_top_t": 2.932,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 12,
+      "t_ev": 0.991,
+      "sites_per_cell": 24,
+      "band_top_t": 2.942,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 0.991,
+      "sites_per_cell": 26,
+      "band_top_t": 2.95,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 0.991,
+      "sites_per_cell": 28,
+      "band_top_t": 2.956,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 16,
+      "t_ev": 0.991,
+      "sites_per_cell": 32,
+      "band_top_t": 2.966,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 20,
+      "t_ev": 0.991,
+      "sites_per_cell": 40,
+      "band_top_t": 2.978,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 0.991,
+      "sites_per_cell": 54,
+      "band_top_t": 2.987,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 5,
+      "t_ev": 0.991,
+      "sites_per_cell": 10,
+      "band_top_t": 2.732,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 50,
+      "t_ev": 0.991,
+      "sites_per_cell": 100,
+      "band_top_t": 2.996,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 6,
+      "t_ev": 0.991,
+      "sites_per_cell": 12,
+      "band_top_t": 2.802,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 0.991,
+      "sites_per_cell": 14,
+      "band_top_t": 2.848,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 0.991,
+      "sites_per_cell": 16,
+      "band_top_t": 2.879,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 0.991,
+      "sites_per_cell": 18,
+      "band_top_t": 2.902,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 10,
+      "t_ev": 0.991,
+      "sites_per_cell": 20,
+      "band_top_t": 2.971,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 11,
+      "t_ev": 0.991,
+      "sites_per_cell": 22,
+      "band_top_t": 2.976,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 12,
+      "t_ev": 0.991,
+      "sites_per_cell": 24,
+      "band_top_t": 2.98,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 13,
+      "t_ev": 0.991,
+      "sites_per_cell": 26,
+      "band_top_t": 2.982,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 0.991,
+      "sites_per_cell": 28,
+      "band_top_t": 2.985,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 16,
+      "t_ev": 0.991,
+      "sites_per_cell": 32,
+      "band_top_t": 2.988,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 20,
+      "t_ev": 0.991,
+      "sites_per_cell": 40,
+      "band_top_t": 2.992,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 0.991,
+      "sites_per_cell": 54,
+      "band_top_t": 2.996,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 5,
+      "t_ev": 0.991,
+      "sites_per_cell": 10,
+      "band_top_t": 2.899,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 50,
+      "t_ev": 0.991,
+      "sites_per_cell": 100,
+      "band_top_t": 2.999,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 6,
+      "t_ev": 0.991,
+      "sites_per_cell": 12,
+      "band_top_t": 2.926,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 0.991,
+      "sites_per_cell": 14,
+      "band_top_t": 2.944,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 8,
+      "t_ev": 0.991,
+      "sites_per_cell": 16,
+      "band_top_t": 2.956,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "germanene",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 0.991,
+      "sites_per_cell": 18,
+      "band_top_t": 2.965,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.24e5 m/s, a = 4.02 A (Liu 2011)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 10,
+      "t_ev": 2.7,
+      "sites_per_cell": 20,
+      "band_top_t": 2.919,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 11,
+      "t_ev": 2.7,
+      "sites_per_cell": 22,
+      "band_top_t": 2.932,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 12,
+      "t_ev": 2.7,
+      "sites_per_cell": 24,
+      "band_top_t": 2.942,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 2.7,
+      "sites_per_cell": 26,
+      "band_top_t": 2.95,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 2.7,
+      "sites_per_cell": 28,
+      "band_top_t": 2.956,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 15,
+      "t_ev": 2.7,
+      "sites_per_cell": 30,
+      "band_top_t": 2.962,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 16,
+      "t_ev": 2.7,
+      "sites_per_cell": 32,
+      "band_top_t": 2.966,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 20,
+      "t_ev": 2.7,
+      "sites_per_cell": 40,
+      "band_top_t": 2.978,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 2.7,
+      "sites_per_cell": 54,
+      "band_top_t": 2.987,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 31,
+      "t_ev": 2.7,
+      "sites_per_cell": 62,
+      "band_top_t": 2.99,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 40,
+      "t_ev": 2.7,
+      "sites_per_cell": 80,
+      "band_top_t": 2.994,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 5,
+      "t_ev": 2.7,
+      "sites_per_cell": 10,
+      "band_top_t": 2.732,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 50,
+      "t_ev": 2.7,
+      "sites_per_cell": 100,
+      "band_top_t": 2.996,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 6,
+      "t_ev": 2.7,
+      "sites_per_cell": 12,
+      "band_top_t": 2.802,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 2.7,
+      "sites_per_cell": 14,
+      "band_top_t": 2.848,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 2.7,
+      "sites_per_cell": 16,
+      "band_top_t": 2.879,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 2.7,
+      "sites_per_cell": 18,
+      "band_top_t": 2.902,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 10,
+      "t_ev": 2.7,
+      "sites_per_cell": 20,
+      "band_top_t": 2.971,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 11,
+      "t_ev": 2.7,
+      "sites_per_cell": 22,
+      "band_top_t": 2.976,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 12,
+      "t_ev": 2.7,
+      "sites_per_cell": 24,
+      "band_top_t": 2.98,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 16,
+      "t_ev": 2.7,
+      "sites_per_cell": 32,
+      "band_top_t": 2.988,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 20,
+      "t_ev": 2.7,
+      "sites_per_cell": 40,
+      "band_top_t": 2.992,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 2.7,
+      "sites_per_cell": 54,
+      "band_top_t": 2.996,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 4,
+      "t_ev": 2.7,
+      "sites_per_cell": 8,
+      "band_top_t": 2.851,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 40,
+      "t_ev": 2.7,
+      "sites_per_cell": 80,
+      "band_top_t": 2.998,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 5,
+      "t_ev": 2.7,
+      "sites_per_cell": 10,
+      "band_top_t": 2.899,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 50,
+      "t_ev": 2.7,
+      "sites_per_cell": 100,
+      "band_top_t": 2.999,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 6,
+      "t_ev": 2.7,
+      "sites_per_cell": 12,
+      "band_top_t": 2.926,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 2.7,
+      "sites_per_cell": 14,
+      "band_top_t": 2.944,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 8,
+      "t_ev": 2.7,
+      "sites_per_cell": 16,
+      "band_top_t": 2.956,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "graphene-ideal",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 2.7,
+      "sites_per_cell": 18,
+      "band_top_t": 2.965,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised nearest-neighbour, t = 2.7 eV (Castro Neto 2009)"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 10,
+      "t_ev": 2.3,
+      "sites_per_cell": 20,
+      "band_top_t": 3.317,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 11,
+      "t_ev": 2.3,
+      "sites_per_cell": 22,
+      "band_top_t": 3.329,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 12,
+      "t_ev": 2.3,
+      "sites_per_cell": 24,
+      "band_top_t": 3.337,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 2.3,
+      "sites_per_cell": 26,
+      "band_top_t": 3.345,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 2.3,
+      "sites_per_cell": 28,
+      "band_top_t": 3.35,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 16,
+      "t_ev": 2.3,
+      "sites_per_cell": 32,
+      "band_top_t": 3.359,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 20,
+      "t_ev": 2.3,
+      "sites_per_cell": 40,
+      "band_top_t": 3.369,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 2.3,
+      "sites_per_cell": 54,
+      "band_top_t": 3.378,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 5,
+      "t_ev": 2.3,
+      "sites_per_cell": 10,
+      "band_top_t": 3.154,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 50,
+      "t_ev": 2.3,
+      "sites_per_cell": 100,
+      "band_top_t": 3.385,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 6,
+      "t_ev": 2.3,
+      "sites_per_cell": 12,
+      "band_top_t": 3.215,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 2.3,
+      "sites_per_cell": 14,
+      "band_top_t": 3.255,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 2.3,
+      "sites_per_cell": 16,
+      "band_top_t": 3.283,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 2.3,
+      "sites_per_cell": 18,
+      "band_top_t": 3.302,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 10,
+      "t_ev": 2.3,
+      "sites_per_cell": 20,
+      "band_top_t": 3.363,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 11,
+      "t_ev": 2.3,
+      "sites_per_cell": 22,
+      "band_top_t": 3.367,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 12,
+      "t_ev": 2.3,
+      "sites_per_cell": 24,
+      "band_top_t": 3.371,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 13,
+      "t_ev": 2.3,
+      "sites_per_cell": 26,
+      "band_top_t": 3.373,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 2.3,
+      "sites_per_cell": 28,
+      "band_top_t": 3.375,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 16,
+      "t_ev": 2.3,
+      "sites_per_cell": 32,
+      "band_top_t": 3.378,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 20,
+      "t_ev": 2.3,
+      "sites_per_cell": 40,
+      "band_top_t": 3.382,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 2.3,
+      "sites_per_cell": 54,
+      "band_top_t": 3.385,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 5,
+      "t_ev": 2.3,
+      "sites_per_cell": 10,
+      "band_top_t": 3.299,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 50,
+      "t_ev": 2.3,
+      "sites_per_cell": 100,
+      "band_top_t": 3.388,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 6,
+      "t_ev": 2.3,
+      "sites_per_cell": 12,
+      "band_top_t": 3.324,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 2.3,
+      "sites_per_cell": 14,
+      "band_top_t": 3.34,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 8,
+      "t_ev": 2.3,
+      "sites_per_cell": 16,
+      "band_top_t": 3.35,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "hbn",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 2.3,
+      "sites_per_cell": 18,
+      "band_top_t": 3.358,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Galvani 2016 GW"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 60,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 66,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 72,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 78,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 84,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 96,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 120,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 162,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 30,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 300,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 36,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 48,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 54,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 30,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 33,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 36,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 39,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 48,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 60,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 81,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 15,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 150,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 18,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 21,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 24,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "kagome",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 27,
+      "band_top_t": 2.0,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised kagome, flat band at +2t"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 30,
+      "band_top_t": 2.813,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 33,
+      "band_top_t": 2.815,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 36,
+      "band_top_t": 2.817,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 39,
+      "band_top_t": 2.819,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 2.82,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 48,
+      "band_top_t": 2.822,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 60,
+      "band_top_t": 2.824,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 81,
+      "band_top_t": 2.826,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 15,
+      "band_top_t": 2.772,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 150,
+      "band_top_t": 2.828,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 18,
+      "band_top_t": 2.788,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 21,
+      "band_top_t": 2.798,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 24,
+      "band_top_t": 2.804,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "lieb",
+      "edge": "strip",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 27,
+      "band_top_t": 2.809,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised Lieb, flat band at 0"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 60,
+      "band_top_t": 2.714,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 66,
+      "band_top_t": 2.716,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 72,
+      "band_top_t": 2.717,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 78,
+      "band_top_t": 2.718,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 84,
+      "band_top_t": 2.718,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 96,
+      "band_top_t": 2.719,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 120,
+      "band_top_t": 2.721,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 162,
+      "band_top_t": 2.721,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 30,
+      "band_top_t": 2.684,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 300,
+      "band_top_t": 2.722,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 36,
+      "band_top_t": 2.697,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 2.704,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 48,
+      "band_top_t": 2.709,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 54,
+      "band_top_t": 2.712,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 30,
+      "band_top_t": 2.719,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 33,
+      "band_top_t": 2.719,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 36,
+      "band_top_t": 2.72,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 39,
+      "band_top_t": 2.72,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 2.721,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 48,
+      "band_top_t": 2.721,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 60,
+      "band_top_t": 2.722,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 81,
+      "band_top_t": 2.722,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 15,
+      "band_top_t": 2.703,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 150,
+      "band_top_t": 2.722,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 18,
+      "band_top_t": 2.71,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 21,
+      "band_top_t": 2.714,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 24,
+      "band_top_t": 2.716,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mos2",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 27,
+      "band_top_t": 2.718,
+      "n_cells": 100,
+      "impurity_v_t": 0.2535,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2 (0.507 eV)"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 60,
+      "band_top_t": 2.481,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 66,
+      "band_top_t": 2.483,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 72,
+      "band_top_t": 2.485,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 78,
+      "band_top_t": 2.486,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 84,
+      "band_top_t": 2.487,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 96,
+      "band_top_t": 2.488,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 120,
+      "band_top_t": 2.49,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 162,
+      "band_top_t": 2.491,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 30,
+      "band_top_t": 2.446,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 300,
+      "band_top_t": 2.492,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 36,
+      "band_top_t": 2.46,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 2.469,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 48,
+      "band_top_t": 2.474,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 54,
+      "band_top_t": 2.478,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 30,
+      "band_top_t": 2.484,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 33,
+      "band_top_t": 2.486,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 36,
+      "band_top_t": 2.487,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 39,
+      "band_top_t": 2.488,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 2.488,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 48,
+      "band_top_t": 2.489,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 60,
+      "band_top_t": 2.49,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 81,
+      "band_top_t": 2.491,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 15,
+      "band_top_t": 2.464,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 150,
+      "band_top_t": 2.492,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 18,
+      "band_top_t": 2.471,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 21,
+      "band_top_t": 2.477,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 24,
+      "band_top_t": 2.48,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "mose2",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 27,
+      "band_top_t": 2.482,
+      "n_cells": 100,
+      "impurity_v_t": 0.228,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 10,
+      "t_ev": 3.665,
+      "sites_per_cell": 20,
+      "band_top_t": 1.956,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 11,
+      "t_ev": 3.665,
+      "sites_per_cell": 22,
+      "band_top_t": 1.961,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 12,
+      "t_ev": 3.665,
+      "sites_per_cell": 24,
+      "band_top_t": 1.966,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 3.665,
+      "sites_per_cell": 26,
+      "band_top_t": 1.969,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 3.665,
+      "sites_per_cell": 28,
+      "band_top_t": 1.972,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 16,
+      "t_ev": 3.665,
+      "sites_per_cell": 32,
+      "band_top_t": 1.977,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 20,
+      "t_ev": 3.665,
+      "sites_per_cell": 40,
+      "band_top_t": 1.982,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 3.665,
+      "sites_per_cell": 54,
+      "band_top_t": 1.986,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 5,
+      "t_ev": 3.665,
+      "sites_per_cell": 10,
+      "band_top_t": 1.872,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 50,
+      "t_ev": 3.665,
+      "sites_per_cell": 100,
+      "band_top_t": 1.99,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 6,
+      "t_ev": 3.665,
+      "sites_per_cell": 12,
+      "band_top_t": 1.903,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 3.665,
+      "sites_per_cell": 14,
+      "band_top_t": 1.924,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 3.665,
+      "sites_per_cell": 16,
+      "band_top_t": 1.938,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 3.665,
+      "sites_per_cell": 18,
+      "band_top_t": 1.948,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 10,
+      "t_ev": 3.665,
+      "sites_per_cell": 20,
+      "band_top_t": 1.961,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 11,
+      "t_ev": 3.665,
+      "sites_per_cell": 22,
+      "band_top_t": 1.966,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 12,
+      "t_ev": 3.665,
+      "sites_per_cell": 24,
+      "band_top_t": 1.97,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 13,
+      "t_ev": 3.665,
+      "sites_per_cell": 26,
+      "band_top_t": 1.973,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 3.665,
+      "sites_per_cell": 28,
+      "band_top_t": 1.976,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 16,
+      "t_ev": 3.665,
+      "sites_per_cell": 32,
+      "band_top_t": 1.98,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 20,
+      "t_ev": 3.665,
+      "sites_per_cell": 40,
+      "band_top_t": 1.984,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 3.665,
+      "sites_per_cell": 54,
+      "band_top_t": 1.987,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 5,
+      "t_ev": 3.665,
+      "sites_per_cell": 10,
+      "band_top_t": 1.882,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 50,
+      "t_ev": 3.665,
+      "sites_per_cell": 100,
+      "band_top_t": 1.991,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 6,
+      "t_ev": 3.665,
+      "sites_per_cell": 12,
+      "band_top_t": 1.913,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 3.665,
+      "sites_per_cell": 14,
+      "band_top_t": 1.932,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 8,
+      "t_ev": 3.665,
+      "sites_per_cell": 16,
+      "band_top_t": 1.945,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "phosphorene",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 3.665,
+      "sites_per_cell": 18,
+      "band_top_t": 1.955,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "Rudenko 2014 5-hopping"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 10,
+      "t_ev": 1.067,
+      "sites_per_cell": 20,
+      "band_top_t": 2.919,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 11,
+      "t_ev": 1.067,
+      "sites_per_cell": 22,
+      "band_top_t": 2.932,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 12,
+      "t_ev": 1.067,
+      "sites_per_cell": 24,
+      "band_top_t": 2.942,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 1.067,
+      "sites_per_cell": 26,
+      "band_top_t": 2.95,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 1.067,
+      "sites_per_cell": 28,
+      "band_top_t": 2.956,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 16,
+      "t_ev": 1.067,
+      "sites_per_cell": 32,
+      "band_top_t": 2.966,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 20,
+      "t_ev": 1.067,
+      "sites_per_cell": 40,
+      "band_top_t": 2.978,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 1.067,
+      "sites_per_cell": 54,
+      "band_top_t": 2.987,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 5,
+      "t_ev": 1.067,
+      "sites_per_cell": 10,
+      "band_top_t": 2.732,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 50,
+      "t_ev": 1.067,
+      "sites_per_cell": 100,
+      "band_top_t": 2.996,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 6,
+      "t_ev": 1.067,
+      "sites_per_cell": 12,
+      "band_top_t": 2.802,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 1.067,
+      "sites_per_cell": 14,
+      "band_top_t": 2.848,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 1.067,
+      "sites_per_cell": 16,
+      "band_top_t": 2.879,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 1.067,
+      "sites_per_cell": 18,
+      "band_top_t": 2.902,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 10,
+      "t_ev": 1.067,
+      "sites_per_cell": 20,
+      "band_top_t": 2.971,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 11,
+      "t_ev": 1.067,
+      "sites_per_cell": 22,
+      "band_top_t": 2.976,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 12,
+      "t_ev": 1.067,
+      "sites_per_cell": 24,
+      "band_top_t": 2.98,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 13,
+      "t_ev": 1.067,
+      "sites_per_cell": 26,
+      "band_top_t": 2.982,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 1.067,
+      "sites_per_cell": 28,
+      "band_top_t": 2.985,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 16,
+      "t_ev": 1.067,
+      "sites_per_cell": 32,
+      "band_top_t": 2.988,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 20,
+      "t_ev": 1.067,
+      "sites_per_cell": 40,
+      "band_top_t": 2.992,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 1.067,
+      "sites_per_cell": 54,
+      "band_top_t": 2.996,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 5,
+      "t_ev": 1.067,
+      "sites_per_cell": 10,
+      "band_top_t": 2.899,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 50,
+      "t_ev": 1.067,
+      "sites_per_cell": 100,
+      "band_top_t": 2.999,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 6,
+      "t_ev": 1.067,
+      "sites_per_cell": 12,
+      "band_top_t": 2.926,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 1.067,
+      "sites_per_cell": 14,
+      "band_top_t": 2.944,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 8,
+      "t_ev": 1.067,
+      "sites_per_cell": 16,
+      "band_top_t": 2.956,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "silicene",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 1.067,
+      "sites_per_cell": 18,
+      "band_top_t": 2.965,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "NN pz, no SOC or buckling; t from v_F = 5.42e5 m/s, a = 3.86 A (Liu 2011)"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 20,
+      "band_top_t": 2.944,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 22,
+      "band_top_t": 2.95,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 24,
+      "band_top_t": 2.96,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 26,
+      "band_top_t": 2.965,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 28,
+      "band_top_t": 2.968,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 32,
+      "band_top_t": 2.976,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 40,
+      "band_top_t": 2.983,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 54,
+      "band_top_t": 2.991,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 10,
+      "band_top_t": 2.812,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 100,
+      "band_top_t": 2.997,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 12,
+      "band_top_t": 2.874,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 14,
+      "band_top_t": 2.899,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 16,
+      "band_top_t": 2.912,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 18,
+      "band_top_t": 2.934,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 10,
+      "band_top_t": 2.921,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 11,
+      "band_top_t": 2.933,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 12,
+      "band_top_t": 2.943,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 13,
+      "band_top_t": 2.95,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 14,
+      "band_top_t": 2.957,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 16,
+      "band_top_t": 2.966,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 20,
+      "band_top_t": 2.978,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 27,
+      "band_top_t": 2.987,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 5,
+      "band_top_t": 2.75,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 50,
+      "band_top_t": 2.996,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 6,
+      "band_top_t": 2.812,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 7,
+      "band_top_t": 2.854,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 8,
+      "band_top_t": 2.883,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "triangular",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 9,
+      "band_top_t": 2.905,
+      "n_cells": 100,
+      "impurity_v_t": 0.5,
+      "orbitals_per_site": 1,
+      "source": "idealised triangular lattice"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 60,
+      "band_top_t": 3.063,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 66,
+      "band_top_t": 3.067,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 72,
+      "band_top_t": 3.071,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 78,
+      "band_top_t": 3.073,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 84,
+      "band_top_t": 3.074,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 96,
+      "band_top_t": 3.078,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 120,
+      "band_top_t": 3.081,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 162,
+      "band_top_t": 3.084,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 30,
+      "band_top_t": 3.004,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 300,
+      "band_top_t": 3.087,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 36,
+      "band_top_t": 3.03,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 3.042,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 48,
+      "band_top_t": 3.05,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 54,
+      "band_top_t": 3.059,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 30,
+      "band_top_t": 3.056,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 33,
+      "band_top_t": 3.061,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 36,
+      "band_top_t": 3.065,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 39,
+      "band_top_t": 3.068,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 3.07,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 48,
+      "band_top_t": 3.074,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 60,
+      "band_top_t": 3.079,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 81,
+      "band_top_t": 3.083,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 15,
+      "band_top_t": 2.985,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 150,
+      "band_top_t": 3.086,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 18,
+      "band_top_t": 3.011,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 21,
+      "band_top_t": 3.028,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 24,
+      "band_top_t": 3.04,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "ws2",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 27,
+      "band_top_t": 3.049,
+      "n_cells": 100,
+      "impurity_v_t": 0.268,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 60,
+      "band_top_t": 2.64,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 66,
+      "band_top_t": 2.642,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 72,
+      "band_top_t": 2.645,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 78,
+      "band_top_t": 2.646,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 84,
+      "band_top_t": 2.648,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 96,
+      "band_top_t": 2.65,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 120,
+      "band_top_t": 2.652,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 162,
+      "band_top_t": 2.654,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 30,
+      "band_top_t": 2.606,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 300,
+      "band_top_t": 2.656,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 36,
+      "band_top_t": 2.615,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 2.626,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 48,
+      "band_top_t": 2.632,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "armchair",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 54,
+      "band_top_t": 2.636,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 10,
+      "t_ev": 1.0,
+      "sites_per_cell": 30,
+      "band_top_t": 2.643,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 11,
+      "t_ev": 1.0,
+      "sites_per_cell": 33,
+      "band_top_t": 2.644,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 12,
+      "t_ev": 1.0,
+      "sites_per_cell": 36,
+      "band_top_t": 2.647,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 13,
+      "t_ev": 1.0,
+      "sites_per_cell": 39,
+      "band_top_t": 2.648,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 14,
+      "t_ev": 1.0,
+      "sites_per_cell": 42,
+      "band_top_t": 2.649,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 16,
+      "t_ev": 1.0,
+      "sites_per_cell": 48,
+      "band_top_t": 2.65,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 20,
+      "t_ev": 1.0,
+      "sites_per_cell": 60,
+      "band_top_t": 2.653,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 27,
+      "t_ev": 1.0,
+      "sites_per_cell": 81,
+      "band_top_t": 2.654,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 5,
+      "t_ev": 1.0,
+      "sites_per_cell": 15,
+      "band_top_t": 2.618,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 50,
+      "t_ev": 1.0,
+      "sites_per_cell": 150,
+      "band_top_t": 2.656,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 6,
+      "t_ev": 1.0,
+      "sites_per_cell": 18,
+      "band_top_t": 2.624,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 7,
+      "t_ev": 1.0,
+      "sites_per_cell": 21,
+      "band_top_t": 2.632,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 8,
+      "t_ev": 1.0,
+      "sites_per_cell": 24,
+      "band_top_t": 2.637,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    },
+    {
+      "material": "wse2",
+      "edge": "zigzag",
+      "width": 9,
+      "t_ev": 1.0,
+      "sites_per_cell": 27,
+      "band_top_t": 2.639,
+      "n_cells": 100,
+      "impurity_v_t": 0.243,
+      "orbitals_per_site": 3,
+      "source": "Liu 2013 3-band GGA; V = 0.5 x t2"
+    }
+  ],
+  "stored": {
+    "checkerboard/strip/N10": [
+      0.004838709677419355,
+      0.010080645161290322,
+      0.020161290322580645,
+      0.039919354838709675
+    ],
+    "checkerboard/strip/N11": [
+      0.005131964809384164,
+      0.009897360703812317,
+      0.020161290322580645,
+      0.03995601173020528
+    ],
+    "checkerboard/strip/N12": [
+      0.005040322580645161,
+      0.010080645161290322,
+      0.020161290322580645,
+      0.039986559139784945
+    ],
+    "checkerboard/strip/N13": [
+      0.004962779156327543,
+      0.009925558312655087,
+      0.019851116625310174,
+      0.04001240694789082
+    ],
+    "checkerboard/strip/N14": [
+      0.004896313364055299,
+      0.010080645161290322,
+      0.019873271889400922,
+      0.04003456221198157
+    ],
+    "checkerboard/strip/N16": [
+      0.005040322580645161,
+      0.010080645161290322,
+      0.019909274193548387,
+      0.04007056451612903
+    ],
+    "checkerboard/strip/N20": [
+      0.005040322580645161,
+      0.010080645161290322,
+      0.019959677419354838,
+      0.039919354838709675
+    ],
+    "checkerboard/strip/N27": [
+      0.00492831541218638,
+      0.010005973715651135,
+      0.02001194743130227,
+      0.04002389486260454
+    ],
+    "checkerboard/strip/N5": [
+      0.004838709677419355,
+      0.00967741935483871,
+      0.020161290322580645,
+      0.04032258064516129
+    ],
+    "checkerboard/strip/N50": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "checkerboard/strip/N6": [
+      0.004704301075268817,
+      0.010080645161290322,
+      0.020161290322580645,
+      0.04032258064516129
+    ],
+    "checkerboard/strip/N7": [
+      0.005184331797235023,
+      0.009792626728110598,
+      0.020161290322580645,
+      0.039746543778801845
+    ],
+    "checkerboard/strip/N8": [
+      0.005040322580645161,
+      0.010080645161290322,
+      0.020161290322580645,
+      0.039818548387096774
+    ],
+    "checkerboard/strip/N9": [
+      0.00492831541218638,
+      0.00985663082437276,
+      0.020161290322580645,
+      0.039874551971326166
+    ],
+    "germanene/armchair/N10": [
+      0.0048,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/armchair/N11": [
+      0.005090909090909091,
+      0.010181818181818183,
+      0.02,
+      0.04
+    ],
+    "germanene/armchair/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/armchair/N13": [
+      0.004923076923076923,
+      0.009846153846153846,
+      0.02,
+      0.04
+    ],
+    "germanene/armchair/N14": [
+      0.005142857142857143,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/armchair/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/armchair/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/armchair/N27": [
+      0.005037037037037037,
+      0.010074074074074074,
+      0.02,
+      0.04
+    ],
+    "germanene/armchair/N5": [
+      0.0048,
+      0.0096,
+      0.02,
+      0.04
+    ],
+    "germanene/armchair/N50": [
+      0.00496,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/armchair/N6": [
+      0.005333333333333333,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/armchair/N7": [
+      0.005142857142857143,
+      0.010285714285714285,
+      0.02,
+      0.04
+    ],
+    "germanene/armchair/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/armchair/N9": [
+      0.004888888888888889,
+      0.009777777777777778,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N10": [
+      0.0048,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N11": [
+      0.005090909090909091,
+      0.010181818181818183,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N13": [
+      0.004923076923076923,
+      0.009846153846153846,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N14": [
+      0.005142857142857143,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N27": [
+      0.005037037037037037,
+      0.010074074074074074,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N5": [
+      0.0048,
+      0.0096,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N50": [
+      0.00496,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N6": [
+      0.005333333333333333,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N7": [
+      0.005142857142857143,
+      0.010285714285714285,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "germanene/zigzag/N9": [
+      0.004888888888888889,
+      0.009777777777777778,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N10": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N11": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N13": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N14": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N15": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N27": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N31": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N40": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N5": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N50": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N6": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N7": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/armchair/N9": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N10": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N11": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N27": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N4": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N40": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N5": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N50": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N6": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N7": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "graphene-ideal/zigzag/N9": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N10": [
+      0.0048,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N11": [
+      0.005090909090909091,
+      0.010181818181818183,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N13": [
+      0.004923076923076923,
+      0.009846153846153846,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N14": [
+      0.005142857142857143,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N27": [
+      0.005037037037037037,
+      0.010074074074074074,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N5": [
+      0.0048,
+      0.0096,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N50": [
+      0.00496,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N6": [
+      0.005333333333333333,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N7": [
+      0.005142857142857143,
+      0.010285714285714285,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/armchair/N9": [
+      0.004888888888888889,
+      0.009777777777777778,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N10": [
+      0.0048,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N11": [
+      0.005090909090909091,
+      0.010181818181818183,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N13": [
+      0.004923076923076923,
+      0.009846153846153846,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N14": [
+      0.005142857142857143,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N27": [
+      0.005037037037037037,
+      0.010074074074074074,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N5": [
+      0.0048,
+      0.0096,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N50": [
+      0.00496,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N6": [
+      0.005333333333333333,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N7": [
+      0.005142857142857143,
+      0.010285714285714285,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "hbn/zigzag/N9": [
+      0.004888888888888889,
+      0.009777777777777778,
+      0.02,
+      0.04
+    ],
+    "kagome/armchair/N10": [
+      0.005158730158730159,
+      0.00992063492063492,
+      0.01984126984126984,
+      0.04007936507936508
+    ],
+    "kagome/armchair/N11": [
+      0.005050505050505051,
+      0.010101010101010102,
+      0.01984126984126984,
+      0.04004329004329004
+    ],
+    "kagome/armchair/N12": [
+      0.00496031746031746,
+      0.00992063492063492,
+      0.01984126984126984,
+      0.040013227513227514
+    ],
+    "kagome/armchair/N13": [
+      0.004884004884004884,
+      0.010073260073260074,
+      0.020146520146520148,
+      0.039987789987789985
+    ],
+    "kagome/armchair/N14": [
+      0.00510204081632653,
+      0.00992063492063492,
+      0.020124716553287982,
+      0.039965986394557826
+    ],
+    "kagome/armchair/N16": [
+      0.00496031746031746,
+      0.00992063492063492,
+      0.020089285714285716,
+      0.03993055555555555
+    ],
+    "kagome/armchair/N20": [
+      0.00496031746031746,
+      0.00992063492063492,
+      0.02003968253968254,
+      0.04007936507936508
+    ],
+    "kagome/armchair/N27": [
+      0.0049970605526161085,
+      0.009994121105232217,
+      0.019988242210464434,
+      0.03997648442092887
+    ],
+    "kagome/armchair/N5": [
+      0.004761904761904762,
+      0.010317460317460317,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "kagome/armchair/N50": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "kagome/armchair/N6": [
+      0.005291005291005291,
+      0.00992063492063492,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "kagome/armchair/N7": [
+      0.00510204081632653,
+      0.01020408163265306,
+      0.01984126984126984,
+      0.040249433106575964
+    ],
+    "kagome/armchair/N8": [
+      0.00496031746031746,
+      0.00992063492063492,
+      0.01984126984126984,
+      0.04017857142857143
+    ],
+    "kagome/armchair/N9": [
+      0.0048500881834215165,
+      0.010141093474426807,
+      0.01984126984126984,
+      0.040123456790123455
+    ],
+    "kagome/zigzag/N10": [
+      0.004819277108433735,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "kagome/zigzag/N11": [
+      0.00511135450894487,
+      0.009857612267250822,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "kagome/zigzag/N12": [
+      0.0050200803212851405,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "kagome/zigzag/N13": [
+      0.004942848316342292,
+      0.009885696632684585,
+      0.020080321285140562,
+      0.03985171455050973
+    ],
+    "kagome/zigzag/N14": [
+      0.004876649454962708,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.039873780837636257
+    ],
+    "kagome/zigzag/N16": [
+      0.0050200803212851405,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.039909638554216864
+    ],
+    "kagome/zigzag/N20": [
+      0.0050200803212851405,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.03995983935742972
+    ],
+    "kagome/zigzag/N27": [
+      0.0050572661014428085,
+      0.009965789082254945,
+      0.01993157816450989,
+      0.04001189944965045
+    ],
+    "kagome/zigzag/N5": [
+      0.004819277108433735,
+      0.00963855421686747,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "kagome/zigzag/N50": [
+      0.00497991967871486,
+      0.00995983935742972,
+      0.02,
+      0.04
+    ],
+    "kagome/zigzag/N6": [
+      0.004685408299866131,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "kagome/zigzag/N7": [
+      0.0051635111876075735,
+      0.009753298909925417,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "kagome/zigzag/N8": [
+      0.0050200803212851405,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "kagome/zigzag/N9": [
+      0.0049085229808121375,
+      0.009817045961624275,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "lieb/strip/N10": [
+      0.004819277108433735,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "lieb/strip/N11": [
+      0.00511135450894487,
+      0.009857612267250822,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "lieb/strip/N12": [
+      0.0050200803212851405,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "lieb/strip/N13": [
+      0.004942848316342292,
+      0.009885696632684585,
+      0.020080321285140562,
+      0.03985171455050973
+    ],
+    "lieb/strip/N14": [
+      0.004876649454962708,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.039873780837636257
+    ],
+    "lieb/strip/N16": [
+      0.0050200803212851405,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.039909638554216864
+    ],
+    "lieb/strip/N20": [
+      0.0050200803212851405,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.03995983935742972
+    ],
+    "lieb/strip/N27": [
+      0.0050572661014428085,
+      0.009965789082254945,
+      0.01993157816450989,
+      0.04001189944965045
+    ],
+    "lieb/strip/N5": [
+      0.004819277108433735,
+      0.00963855421686747,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "lieb/strip/N50": [
+      0.00497991967871486,
+      0.00995983935742972,
+      0.02,
+      0.04
+    ],
+    "lieb/strip/N6": [
+      0.004685408299866131,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "lieb/strip/N7": [
+      0.0051635111876075735,
+      0.009753298909925417,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "lieb/strip/N8": [
+      0.0050200803212851405,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "lieb/strip/N9": [
+      0.0049085229808121375,
+      0.009817045961624275,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "mos2/armchair/N10": [
+      0.004761904761904762,
+      0.009523809523809525,
+      0.02023809523809524,
+      0.04047619047619048
+    ],
+    "mos2/armchair/N11": [
+      0.005411255411255411,
+      0.00974025974025974,
+      0.01948051948051948,
+      0.04004329004329004
+    ],
+    "mos2/armchair/N12": [
+      0.00496031746031746,
+      0.00992063492063492,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "mos2/armchair/N13": [
+      0.004578754578754579,
+      0.010073260073260074,
+      0.020146520146520148,
+      0.040293040293040296
+    ],
+    "mos2/armchair/N14": [
+      0.00510204081632653,
+      0.01020408163265306,
+      0.02040816326530612,
+      0.039965986394557826
+    ],
+    "mos2/armchair/N16": [
+      0.005208333333333333,
+      0.009672619047619048,
+      0.020089285714285716,
+      0.04017857142857143
+    ],
+    "mos2/armchair/N20": [
+      0.004761904761904762,
+      0.01011904761904762,
+      0.02023809523809524,
+      0.03988095238095238
+    ],
+    "mos2/armchair/N27": [
+      0.0048500881834215165,
+      0.010141093474426807,
+      0.01984126984126984,
+      0.040123456790123455
+    ],
+    "mos2/armchair/N5": [
+      0.004761904761904762,
+      0.009523809523809525,
+      0.01904761904761905,
+      0.04047619047619048
+    ],
+    "mos2/armchair/N50": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "mos2/armchair/N6": [
+      0.005952380952380952,
+      0.00992063492063492,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "mos2/armchair/N7": [
+      0.00510204081632653,
+      0.01020408163265306,
+      0.02040816326530612,
+      0.04081632653061224
+    ],
+    "mos2/armchair/N8": [
+      0.004464285714285714,
+      0.010416666666666666,
+      0.019345238095238096,
+      0.04017857142857143
+    ],
+    "mos2/armchair/N9": [
+      0.005291005291005291,
+      0.010582010582010581,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "mos2/zigzag/N10": [
+      0.004819277108433735,
+      0.00963855421686747,
+      0.020481927710843374,
+      0.03975903614457831
+    ],
+    "mos2/zigzag/N11": [
+      0.00547645125958379,
+      0.009857612267250822,
+      0.019715224534501644,
+      0.040525739320920046
+    ],
+    "mos2/zigzag/N12": [
+      0.0050200803212851405,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "mos2/zigzag/N13": [
+      0.004633920296570899,
+      0.010194624652455977,
+      0.020389249304911955,
+      0.03985171455050973
+    ],
+    "mos2/zigzag/N14": [
+      0.0051635111876075735,
+      0.010327022375215147,
+      0.019793459552495698,
+      0.039586919104991396
+    ],
+    "mos2/zigzag/N16": [
+      0.005271084337349397,
+      0.009789156626506024,
+      0.02033132530120482,
+      0.039909638554216864
+    ],
+    "mos2/zigzag/N20": [
+      0.004819277108433735,
+      0.010240963855421687,
+      0.019879518072289156,
+      0.03975903614457831
+    ],
+    "mos2/zigzag/N27": [
+      0.0049085229808121375,
+      0.009817045961624275,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "mos2/zigzag/N5": [
+      0.004819277108433735,
+      0.00963855421686747,
+      0.01927710843373494,
+      0.04096385542168675
+    ],
+    "mos2/zigzag/N50": [
+      0.005060240963855421,
+      0.010120481927710843,
+      0.02,
+      0.04
+    ],
+    "mos2/zigzag/N6": [
+      0.004016064257028112,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "mos2/zigzag/N7": [
+      0.0051635111876075735,
+      0.010327022375215147,
+      0.020654044750430294,
+      0.039586919104991396
+    ],
+    "mos2/zigzag/N8": [
+      0.004518072289156626,
+      0.010542168674698794,
+      0.01957831325301205,
+      0.04066265060240964
+    ],
+    "mos2/zigzag/N9": [
+      0.00535475234270415,
+      0.009370816599732263,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "mose2/armchair/N10": [
+      0.004761904761904762,
+      0.009523809523809525,
+      0.02023809523809524,
+      0.04047619047619048
+    ],
+    "mose2/armchair/N11": [
+      0.005411255411255411,
+      0.00974025974025974,
+      0.01948051948051948,
+      0.04004329004329004
+    ],
+    "mose2/armchair/N12": [
+      0.00496031746031746,
+      0.00992063492063492,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "mose2/armchair/N13": [
+      0.004578754578754579,
+      0.010073260073260074,
+      0.020146520146520148,
+      0.040293040293040296
+    ],
+    "mose2/armchair/N14": [
+      0.00510204081632653,
+      0.01020408163265306,
+      0.02040816326530612,
+      0.039965986394557826
+    ],
+    "mose2/armchair/N16": [
+      0.005208333333333333,
+      0.009672619047619048,
+      0.020089285714285716,
+      0.04017857142857143
+    ],
+    "mose2/armchair/N20": [
+      0.004761904761904762,
+      0.01011904761904762,
+      0.02023809523809524,
+      0.03988095238095238
+    ],
+    "mose2/armchair/N27": [
+      0.0048500881834215165,
+      0.010141093474426807,
+      0.01984126984126984,
+      0.040123456790123455
+    ],
+    "mose2/armchair/N5": [
+      0.004761904761904762,
+      0.009523809523809525,
+      0.01904761904761905,
+      0.04047619047619048
+    ],
+    "mose2/armchair/N50": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "mose2/armchair/N6": [
+      0.005952380952380952,
+      0.00992063492063492,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "mose2/armchair/N7": [
+      0.00510204081632653,
+      0.01020408163265306,
+      0.02040816326530612,
+      0.04081632653061224
+    ],
+    "mose2/armchair/N8": [
+      0.004464285714285714,
+      0.010416666666666666,
+      0.019345238095238096,
+      0.04017857142857143
+    ],
+    "mose2/armchair/N9": [
+      0.005291005291005291,
+      0.010582010582010581,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "mose2/zigzag/N10": [
+      0.004819277108433735,
+      0.00963855421686747,
+      0.020481927710843374,
+      0.03975903614457831
+    ],
+    "mose2/zigzag/N11": [
+      0.00547645125958379,
+      0.009857612267250822,
+      0.019715224534501644,
+      0.040525739320920046
+    ],
+    "mose2/zigzag/N12": [
+      0.0050200803212851405,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "mose2/zigzag/N13": [
+      0.004633920296570899,
+      0.010194624652455977,
+      0.020389249304911955,
+      0.03985171455050973
+    ],
+    "mose2/zigzag/N14": [
+      0.0051635111876075735,
+      0.010327022375215147,
+      0.019793459552495698,
+      0.039586919104991396
+    ],
+    "mose2/zigzag/N16": [
+      0.005271084337349397,
+      0.009789156626506024,
+      0.02033132530120482,
+      0.039909638554216864
+    ],
+    "mose2/zigzag/N20": [
+      0.004819277108433735,
+      0.010240963855421687,
+      0.019879518072289156,
+      0.03975903614457831
+    ],
+    "mose2/zigzag/N27": [
+      0.0049085229808121375,
+      0.009817045961624275,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "mose2/zigzag/N5": [
+      0.004819277108433735,
+      0.00963855421686747,
+      0.01927710843373494,
+      0.04096385542168675
+    ],
+    "mose2/zigzag/N50": [
+      0.005060240963855421,
+      0.010120481927710843,
+      0.02,
+      0.04
+    ],
+    "mose2/zigzag/N6": [
+      0.004016064257028112,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "mose2/zigzag/N7": [
+      0.0051635111876075735,
+      0.010327022375215147,
+      0.020654044750430294,
+      0.039586919104991396
+    ],
+    "mose2/zigzag/N8": [
+      0.004518072289156626,
+      0.010542168674698794,
+      0.01957831325301205,
+      0.04066265060240964
+    ],
+    "mose2/zigzag/N9": [
+      0.00535475234270415,
+      0.009370816599732263,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "phosphorene/armchair/N10": [
+      0.0048,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N11": [
+      0.005090909090909091,
+      0.010181818181818183,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N13": [
+      0.004923076923076923,
+      0.009846153846153846,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N14": [
+      0.005142857142857143,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N27": [
+      0.005037037037037037,
+      0.010074074074074074,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N5": [
+      0.0048,
+      0.0096,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N50": [
+      0.00496,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N6": [
+      0.005333333333333333,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N7": [
+      0.005142857142857143,
+      0.010285714285714285,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/armchair/N9": [
+      0.004888888888888889,
+      0.009777777777777778,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N10": [
+      0.0048,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N11": [
+      0.005090909090909091,
+      0.010181818181818183,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N13": [
+      0.004923076923076923,
+      0.009846153846153846,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N14": [
+      0.005142857142857143,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N27": [
+      0.005037037037037037,
+      0.010074074074074074,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N5": [
+      0.0048,
+      0.0096,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N50": [
+      0.00496,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N6": [
+      0.005333333333333333,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N7": [
+      0.005142857142857143,
+      0.010285714285714285,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "phosphorene/zigzag/N9": [
+      0.004888888888888889,
+      0.009777777777777778,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N10": [
+      0.0048,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N11": [
+      0.005090909090909091,
+      0.010181818181818183,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N13": [
+      0.004923076923076923,
+      0.009846153846153846,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N14": [
+      0.005142857142857143,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N27": [
+      0.005037037037037037,
+      0.010074074074074074,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N5": [
+      0.0048,
+      0.0096,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N50": [
+      0.00496,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N6": [
+      0.005333333333333333,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N7": [
+      0.005142857142857143,
+      0.010285714285714285,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/armchair/N9": [
+      0.004888888888888889,
+      0.009777777777777778,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N10": [
+      0.0048,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N11": [
+      0.005090909090909091,
+      0.010181818181818183,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N13": [
+      0.004923076923076923,
+      0.009846153846153846,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N14": [
+      0.005142857142857143,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N27": [
+      0.005037037037037037,
+      0.010074074074074074,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N5": [
+      0.0048,
+      0.0096,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N50": [
+      0.00496,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N6": [
+      0.005333333333333333,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N7": [
+      0.005142857142857143,
+      0.010285714285714285,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "silicene/zigzag/N9": [
+      0.004888888888888889,
+      0.009777777777777778,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N10": [
+      0.0048,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N11": [
+      0.005090909090909091,
+      0.010181818181818183,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N13": [
+      0.004923076923076923,
+      0.009846153846153846,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N14": [
+      0.005142857142857143,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N27": [
+      0.005037037037037037,
+      0.010074074074074074,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N5": [
+      0.0048,
+      0.0096,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N50": [
+      0.00496,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N6": [
+      0.005333333333333333,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N7": [
+      0.005142857142857143,
+      0.010285714285714285,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/armchair/N9": [
+      0.004888888888888889,
+      0.009777777777777778,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N10": [
+      0.0048,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N11": [
+      0.005090909090909091,
+      0.010181818181818183,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N12": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N13": [
+      0.004923076923076923,
+      0.009846153846153846,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N14": [
+      0.005142857142857143,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N16": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N20": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N27": [
+      0.005037037037037037,
+      0.010074074074074074,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N5": [
+      0.0048,
+      0.0096,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N50": [
+      0.00496,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N6": [
+      0.005333333333333333,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N7": [
+      0.005142857142857143,
+      0.010285714285714285,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N8": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "triangular/zigzag/N9": [
+      0.004888888888888889,
+      0.009777777777777778,
+      0.02,
+      0.04
+    ],
+    "ws2/armchair/N10": [
+      0.004761904761904762,
+      0.009523809523809525,
+      0.02023809523809524,
+      0.04047619047619048
+    ],
+    "ws2/armchair/N11": [
+      0.005411255411255411,
+      0.00974025974025974,
+      0.01948051948051948,
+      0.04004329004329004
+    ],
+    "ws2/armchair/N12": [
+      0.00496031746031746,
+      0.00992063492063492,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "ws2/armchair/N13": [
+      0.004578754578754579,
+      0.010073260073260074,
+      0.020146520146520148,
+      0.040293040293040296
+    ],
+    "ws2/armchair/N14": [
+      0.00510204081632653,
+      0.01020408163265306,
+      0.02040816326530612,
+      0.039965986394557826
+    ],
+    "ws2/armchair/N16": [
+      0.005208333333333333,
+      0.009672619047619048,
+      0.020089285714285716,
+      0.04017857142857143
+    ],
+    "ws2/armchair/N20": [
+      0.004761904761904762,
+      0.01011904761904762,
+      0.02023809523809524,
+      0.03988095238095238
+    ],
+    "ws2/armchair/N27": [
+      0.0048500881834215165,
+      0.010141093474426807,
+      0.01984126984126984,
+      0.040123456790123455
+    ],
+    "ws2/armchair/N5": [
+      0.004761904761904762,
+      0.009523809523809525,
+      0.01904761904761905,
+      0.04047619047619048
+    ],
+    "ws2/armchair/N50": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "ws2/armchair/N6": [
+      0.005952380952380952,
+      0.00992063492063492,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "ws2/armchair/N7": [
+      0.00510204081632653,
+      0.01020408163265306,
+      0.02040816326530612,
+      0.04081632653061224
+    ],
+    "ws2/armchair/N8": [
+      0.004464285714285714,
+      0.010416666666666666,
+      0.019345238095238096,
+      0.04017857142857143
+    ],
+    "ws2/armchair/N9": [
+      0.005291005291005291,
+      0.010582010582010581,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "ws2/zigzag/N10": [
+      0.004819277108433735,
+      0.00963855421686747,
+      0.020481927710843374,
+      0.03975903614457831
+    ],
+    "ws2/zigzag/N11": [
+      0.00547645125958379,
+      0.009857612267250822,
+      0.019715224534501644,
+      0.040525739320920046
+    ],
+    "ws2/zigzag/N12": [
+      0.0050200803212851405,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "ws2/zigzag/N13": [
+      0.004633920296570899,
+      0.010194624652455977,
+      0.020389249304911955,
+      0.03985171455050973
+    ],
+    "ws2/zigzag/N14": [
+      0.0051635111876075735,
+      0.010327022375215147,
+      0.019793459552495698,
+      0.039586919104991396
+    ],
+    "ws2/zigzag/N16": [
+      0.005271084337349397,
+      0.009789156626506024,
+      0.02033132530120482,
+      0.039909638554216864
+    ],
+    "ws2/zigzag/N20": [
+      0.004819277108433735,
+      0.010240963855421687,
+      0.019879518072289156,
+      0.03975903614457831
+    ],
+    "ws2/zigzag/N27": [
+      0.0049085229808121375,
+      0.009817045961624275,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "ws2/zigzag/N5": [
+      0.004819277108433735,
+      0.00963855421686747,
+      0.01927710843373494,
+      0.04096385542168675
+    ],
+    "ws2/zigzag/N50": [
+      0.005060240963855421,
+      0.010120481927710843,
+      0.02,
+      0.04
+    ],
+    "ws2/zigzag/N6": [
+      0.004016064257028112,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "ws2/zigzag/N7": [
+      0.0051635111876075735,
+      0.010327022375215147,
+      0.020654044750430294,
+      0.039586919104991396
+    ],
+    "ws2/zigzag/N8": [
+      0.004518072289156626,
+      0.010542168674698794,
+      0.01957831325301205,
+      0.04066265060240964
+    ],
+    "ws2/zigzag/N9": [
+      0.00535475234270415,
+      0.009370816599732263,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "wse2/armchair/N10": [
+      0.004761904761904762,
+      0.009523809523809525,
+      0.02023809523809524,
+      0.04047619047619048
+    ],
+    "wse2/armchair/N11": [
+      0.005411255411255411,
+      0.00974025974025974,
+      0.01948051948051948,
+      0.04004329004329004
+    ],
+    "wse2/armchair/N12": [
+      0.00496031746031746,
+      0.00992063492063492,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "wse2/armchair/N13": [
+      0.004578754578754579,
+      0.010073260073260074,
+      0.020146520146520148,
+      0.040293040293040296
+    ],
+    "wse2/armchair/N14": [
+      0.00510204081632653,
+      0.01020408163265306,
+      0.02040816326530612,
+      0.039965986394557826
+    ],
+    "wse2/armchair/N16": [
+      0.005208333333333333,
+      0.009672619047619048,
+      0.020089285714285716,
+      0.04017857142857143
+    ],
+    "wse2/armchair/N20": [
+      0.004761904761904762,
+      0.01011904761904762,
+      0.02023809523809524,
+      0.03988095238095238
+    ],
+    "wse2/armchair/N27": [
+      0.0048500881834215165,
+      0.010141093474426807,
+      0.01984126984126984,
+      0.040123456790123455
+    ],
+    "wse2/armchair/N5": [
+      0.004761904761904762,
+      0.009523809523809525,
+      0.01904761904761905,
+      0.04047619047619048
+    ],
+    "wse2/armchair/N50": [
+      0.005,
+      0.01,
+      0.02,
+      0.04
+    ],
+    "wse2/armchair/N6": [
+      0.005952380952380952,
+      0.00992063492063492,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "wse2/armchair/N7": [
+      0.00510204081632653,
+      0.01020408163265306,
+      0.02040816326530612,
+      0.04081632653061224
+    ],
+    "wse2/armchair/N8": [
+      0.004464285714285714,
+      0.010416666666666666,
+      0.019345238095238096,
+      0.04017857142857143
+    ],
+    "wse2/armchair/N9": [
+      0.005291005291005291,
+      0.010582010582010581,
+      0.01984126984126984,
+      0.03968253968253968
+    ],
+    "wse2/zigzag/N10": [
+      0.004819277108433735,
+      0.00963855421686747,
+      0.020481927710843374,
+      0.03975903614457831
+    ],
+    "wse2/zigzag/N11": [
+      0.00547645125958379,
+      0.009857612267250822,
+      0.019715224534501644,
+      0.040525739320920046
+    ],
+    "wse2/zigzag/N12": [
+      0.0050200803212851405,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "wse2/zigzag/N13": [
+      0.004633920296570899,
+      0.010194624652455977,
+      0.020389249304911955,
+      0.03985171455050973
+    ],
+    "wse2/zigzag/N14": [
+      0.0051635111876075735,
+      0.010327022375215147,
+      0.019793459552495698,
+      0.039586919104991396
+    ],
+    "wse2/zigzag/N16": [
+      0.005271084337349397,
+      0.009789156626506024,
+      0.02033132530120482,
+      0.039909638554216864
+    ],
+    "wse2/zigzag/N20": [
+      0.004819277108433735,
+      0.010240963855421687,
+      0.019879518072289156,
+      0.03975903614457831
+    ],
+    "wse2/zigzag/N27": [
+      0.0049085229808121375,
+      0.009817045961624275,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "wse2/zigzag/N5": [
+      0.004819277108433735,
+      0.00963855421686747,
+      0.01927710843373494,
+      0.04096385542168675
+    ],
+    "wse2/zigzag/N50": [
+      0.005060240963855421,
+      0.010120481927710843,
+      0.02,
+      0.04
+    ],
+    "wse2/zigzag/N6": [
+      0.004016064257028112,
+      0.010040160642570281,
+      0.020080321285140562,
+      0.040160642570281124
+    ],
+    "wse2/zigzag/N7": [
+      0.0051635111876075735,
+      0.010327022375215147,
+      0.020654044750430294,
+      0.039586919104991396
+    ],
+    "wse2/zigzag/N8": [
+      0.004518072289156626,
+      0.010542168674698794,
+      0.01957831325301205,
+      0.04066265060240964
+    ],
+    "wse2/zigzag/N9": [
+      0.00535475234270415,
+      0.009370816599732263,
+      0.020080321285140562,
+      0.040160642570281124
+    ]
+  },
+  "kappa": 3.981,
+  "kappa_material": {
+    "checkerboard": 5.623,
+    "germanene": 1.0,
+    "graphene-ideal": 3.981,
+    "hbn": 44.668,
+    "kagome": 3.981,
+    "lieb": 6.31,
+    "mos2": 1.585,
+    "mose2": 1.585,
+    "phosphorene": 3.981,
+    "silicene": 1.0,
+    "triangular": 1.0,
+    "ws2": 1.995,
+    "wse2": 1.778
+  },
+  "settings": {
+    "train_max": 699,
+    "val": [
+      700,
+      849
+    ],
+    "grid_max": 0.05,
+    "grid_step": 0.0005,
+    "s0": 0.01,
+    "calibration": {
+      "kappa": 3.981,
+      "coverage": 0.908259587020649,
+      "n": 16950,
+      "scan": [
+        [
+          1.0,
+          0.7469616519174042
+        ],
+        [
+          1.122,
+          0.7653097345132743
+        ],
+        [
+          1.259,
+          0.7803539823008849
+        ],
+        [
+          1.413,
+          0.7949262536873156
+        ],
+        [
+          1.585,
+          0.8097345132743363
+        ],
+        [
+          1.778,
+          0.8258997050147493
+        ],
+        [
+          1.995,
+          0.840353982300885
+        ],
+        [
+          2.239,
+          0.8538643067846607
+        ],
+        [
+          2.512,
+          0.8651327433628319
+        ],
+        [
+          2.818,
+          0.8775811209439528
+        ],
+        [
+          3.162,
+          0.8889085545722714
+        ],
+        [
+          3.548,
+          0.8987610619469026
+        ],
+        [
+          3.981,
+          0.908259587020649
+        ],
+        [
+          4.467,
+          0.9168141592920354
+        ],
+        [
+          5.012,
+          0.9246607669616519
+        ],
+        [
+          5.623,
+          0.9333333333333333
+        ],
+        [
+          6.31,
+          0.9407079646017699
+        ],
+        [
+          7.079,
+          0.9465486725663717
+        ],
+        [
+          7.943,
+          0.952448377581121
+        ],
+        [
+          8.913,
+          0.9577581120943953
+        ],
+        [
+          10.0,
+          0.9612389380530973
+        ],
+        [
+          11.22,
+          0.9655457227138643
+        ],
+        [
+          12.589,
+          0.9690855457227139
+        ],
+        [
+          14.125,
+          0.972212389380531
+        ],
+        [
+          15.849,
+          0.9752802359882006
+        ],
+        [
+          17.783,
+          0.9782890855457227
+        ],
+        [
+          19.953,
+          0.9804719764011799
+        ],
+        [
+          22.387,
+          0.9829498525073747
+        ],
+        [
+          25.119,
+          0.9843657817109145
+        ],
+        [
+          28.184,
+          0.9856637168141593
+        ],
+        [
+          31.623,
+          0.9865486725663717
+        ],
+        [
+          35.481,
+          0.9873746312684366
+        ],
+        [
+          39.811,
+          0.988259587020649
+        ],
+        [
+          44.668,
+          0.9892035398230089
+        ],
+        [
+          50.119,
+          0.9892625368731564
+        ],
+        [
+          56.234,
+          0.9887315634218289
+        ],
+        [
+          63.096,
+          0.9871386430678466
+        ],
+        [
+          70.795,
+          0.983952802359882
+        ],
+        [
+          79.433,
+          0.9813569321533924
+        ],
+        [
+          89.125,
+          0.9779941002949852
+        ],
+        [
+          100.0,
+          0.9722713864306785
+        ],
+        [
+          112.202,
+          0.967787610619469
+        ],
+        [
+          125.893,
+          0.9629498525073746
+        ],
+        [
+          141.254,
+          0.9569911504424778
+        ],
+        [
+          158.489,
+          0.9492035398230089
+        ],
+        [
+          177.828,
+          0.9412389380530973
+        ],
+        [
+          199.526,
+          0.9321533923303835
+        ],
+        [
+          223.872,
+          0.9228908554572272
+        ],
+        [
+          251.189,
+          0.9142182890855457
+        ],
+        [
+          281.838,
+          0.9017699115044248
+        ],
+        [
+          316.228,
+          0.8893215339233038
+        ],
+        [
+          354.813,
+          0.8794690265486725
+        ],
+        [
+          398.107,
+          0.8692625368731564
+        ],
+        [
+          446.684,
+          0.8556342182890856
+        ],
+        [
+          501.187,
+          0.8392330383480826
+        ],
+        [
+          562.341,
+          0.8187020648967551
+        ],
+        [
+          630.957,
+          0.7976991150442478
+        ],
+        [
+          707.946,
+          0.7817109144542773
+        ],
+        [
+          794.328,
+          0.7688495575221239
+        ],
+        [
+          891.251,
+          0.7568731563421829
+        ],
+        [
+          1000.0,
+          0.7487905604719765
+        ]
+      ]
+    },
+    "calibration_per_material": {
+      "checkerboard": {
+        "kappa": 5.623,
+        "coverage": 0.9114285714285715,
+        "n": 700
+      },
+      "germanene": {
+        "kappa": 1.0,
+        "coverage": 0.9307142857142857,
+        "n": 1400
+      },
+      "graphene-ideal": {
+        "kappa": 3.981,
+        "coverage": 0.9038709677419355,
+        "n": 1550
+      },
+      "hbn": {
+        "kappa": 44.668,
+        "coverage": 0.915,
+        "n": 1400
+      },
+      "kagome": {
+        "kappa": 3.981,
+        "coverage": 0.905,
+        "n": 1400
+      },
+      "lieb": {
+        "kappa": 6.31,
+        "coverage": 0.9128571428571428,
+        "n": 700
+      },
+      "mos2": {
+        "kappa": 1.585,
+        "coverage": 0.9085714285714286,
+        "n": 1400
+      },
+      "mose2": {
+        "kappa": 1.585,
+        "coverage": 0.9028571428571428,
+        "n": 1400
+      },
+      "phosphorene": {
+        "kappa": 3.981,
+        "coverage": 0.9014285714285715,
+        "n": 1400
+      },
+      "silicene": {
+        "kappa": 1.0,
+        "coverage": 0.9292857142857143,
+        "n": 1400
+      },
+      "triangular": {
+        "kappa": 1.0,
+        "coverage": 0.9178571428571428,
+        "n": 1400
+      },
+      "ws2": {
+        "kappa": 1.995,
+        "coverage": 0.9028571428571428,
+        "n": 1400
+      },
+      "wse2": {
+        "kappa": 1.778,
+        "coverage": 0.9021428571428571,
+        "n": 1400
+      }
+    }
+  },
+  "n_devices": 339,
+  "created": "2026-10-18"
+}

@@ -94,6 +94,16 @@ def confusion(recs):
     return {t: {d: round(100 * n / sum(c.values()), 3) for d, n in c.most_common()} for t, c in sorted(out.items())}
 
 
+def width_errors(recs):
+    """Spectra named as the right material and edge but the wrong width: {true device: {named device: count}}."""
+    out = {}
+    for r in recs:
+        t, d = r["true"].split("/"), r["dev"].split("/")
+        if t[:2] == d[:2] and t[2] != d[2]:
+            out.setdefault(r["true"], Counter())[r["dev"]] += 1
+    return {k: dict(v.most_common()) for k, v in sorted(out.items())}
+
+
 def shares(recs, level=1):
     c = Counter("/".join(r["dev"].split("/")[:level]) for r in recs)
     return {k: round(100 * v / len(recs), 2) for k, v in c.most_common()}
@@ -101,11 +111,11 @@ def shares(recs, level=1):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--catalogue", default=str(HERE / "lookup_v3"))
+    ap.add_argument("--catalogue", default=str(HERE / "lookup_v4"))
     ap.add_argument("--graphene-store", default="~/atlas_store/engine_v1")
-    ap.add_argument("--materials-store", default="~/atlas_store/materials_ev_full")
-    ap.add_argument("--materials2-store", default="~/atlas_store/materials2_ev_full")
-    ap.add_argument("--pilot-store", default="~/atlas_store/conc_v1")
+    ap.add_argument("--material-stores", default="~/atlas_store/materials3_ev_full",
+                    help="comma-separated non-graphene stores; lookup_v3 used materials_ev_full,materials2_ev_full")
+    ap.add_argument("--pilot-store", default="~/atlas_store/conc_v2")
     ap.add_argument("--novelty-store", default="~/atlas_store/novelty_v1")
     ap.add_argument("--today", default=str(HERE / "atlas_v4m" / "results.json"))
     ap.add_argument("--routing", default=str(HERE / "conc_v1" / "routing_by_density.json"))
@@ -114,8 +124,8 @@ def main():
     t0 = time.time()
     log = lambda s: print(f"[eval-lookup] {s} ({time.time() - t0:.0f}s)", flush=True)
     cat = Catalogue.load(a.catalogue)
-    store = MultiStore(os.path.expanduser(a.graphene_store), os.path.expanduser(a.materials_store),
-                       os.path.expanduser(a.materials2_store))
+    store = MultiStore(os.path.expanduser(a.graphene_store),
+                       *[os.path.expanduser(s) for s in a.material_stores.split(",")])
     pilot = CloudStore(os.path.expanduser(a.pilot_store))
     n1, n2, n3a, n3b, n4 = (3, 3, 2, 2, 3) if a.smoke else (150, 150, 20, 30, 150)
     res = {"settings": {"catalogue": a.catalogue, "kappa": cat.kappa, "kappa_material": cat.kappa_material,
@@ -125,7 +135,8 @@ def main():
     t1 = [(mid, d, *signatures(cat, store, mid, d, 850, n1)) for mid in cat.ids for d in cat.stored[mid]]
     r1 = run(cat, t1)
     res["t1"] = {"all": summary(r1), "per_material": by(r1, lambda r: r["true"].split("/")[0]),
-                 "material_confusion": confusion(r1)}
+                 "per_device": by(r1, lambda r: r["true"]),
+                 "material_confusion": confusion(r1), "width_errors": width_errors(r1)}
     log(f"T1 {res['t1']['all']}")
 
     t2 = [(mid, d, *signatures(cat, pilot, mid, d, 850, n2)) for mid in pilot.models() for d in pilot.densities(mid) if d <= TOP]
