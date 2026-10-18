@@ -44,6 +44,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **PRISTINE-6** | 2026-10-06 | **308 Ribbon Models (12 Materials/Lattices)** | **Pristine Spectra & Device Length Invariant on Shared eV Axis** | `~/atlas_store/materials3_ev_full` (308 clean spectra) | Clean spectra on InputSpec v3 eV grid; Caroli formula; `--device-atoms 2000`; `--lead-eta 1.2e-5` for all 308 ribbons (PRISTINE-6b) | **308/308 Pass (100% Verified)** | N/A (Clean spectrum verification) | N/A | **PRISTINE-6b Completed (All 308 Pass)**: Human decision standardized lead broadening to $\eta = 1.2\times 10^{-5}$ across all 308 ribbons ($10^{-5}$ overflows on triangular/zigzag/N7; $2\times 10^{-5}$ fails kagome/zigzag/N20). PRISTINE-6b regenerates all 308 ribbons: 0 failures, all finite, worst error 0.000469 (`kagome/zigzag/N20`). |
 | **SMOKE-5** | 2026-10-07 | **49 Extremes Models ($N=5, 6$ and $N=50$)** | **New-Material Smoke Clouds with Realistic Device Lengths ($\eta = 1.2\times 10^{-5}$)** | `~/atlas_store/materials3_ev_smoke` (49 models $\times$ 4 densities $\times$ 50 seeds = 9,800 spectra) | Direct generation on InputSpec v3 eV grid; Caroli formula; `--device-atoms 2000`; `--lead-eta 1.2e-5` | **100% Validated (ALL PASS)** | N/A (Smoke data generation) | N/A | **Completed (All Store Checks PASS)**: 49/49 models pass all store invariants (`check_store.py`: CleanErr $\le 2.89\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, nested seeds). Measured costs: $N=5$ median 0.22 s/spec, $N=6$ median 0.27 s/spec, $N=50$ median 28.36 s/spec (triangular 8.38 s, silicene 28.36 s, germanene 26.20 s, lieb 54.14 s, checkerboard 67.88 s). Total compute 11.08 h (wall 2.47 h). |
 | **FULL-6** | 2026-10-18 | **308 Ribbon Models (12 Materials/Lattices $\times$ 14 Widths $N=5\dots 50$)** | **Wide Materials Atlas with Realistic Device Lengths ($\eta = 1.2\times 10^{-5}$)** | `~/atlas_store/materials3_ev_full` (308 models $\times$ 4 densities $\times$ 1,000 seeds = **1,232,000 spectra**) | Direct generation on InputSpec v3 eV grid; Caroli formula; `--device-atoms 2000`; `--lead-eta 1.2e-5` | **100% Validated (ALL PASS)** | N/A (Production data generation) | N/A | **Completed (All Store Checks PASS)**: 308/308 models pass all store invariants (`check_store.py`: CleanErr $\le 2.89\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, 100% nested seeds, formula `caroli`, $n=1000$, `lead_eta` 1.2e-5, `n_cells` equal to `pristine_n_cells`). Total batch wall time 252.58 h (compute 2,798.8 h on 16 workers, concurrency 11.08×). Run paused from 09:23 to 14:10 on 2026-10-08 due to main repo branch switch (resumed from 585 clouds in worktree) and brief server reboot on 2026-10-16. |
+| **PILOT-2** | 2026-10-18 | **5 Pilot Ribbons (Graphene + 4 Non-Graphene at Realistic Lengths)** | **PILOT-2 (Pilot Clouds at Realistic Lengths, 24 Densities $\times$ 1,000 Seeds)** | `~/atlas_store/conc_v2` (5 models $\times$ 24 densities $\times$ 1,000 seeds = **120,000 spectra**) | 24-density grid ($0.25\%\text{--}6.0\%$); 4 non-graphene models regenerated with `--device-atoms 2000`, `--lead-eta 1.2e-5`, Caroli formula; graphene symlinked from `conc_v1` | **100% Validated (ALL PASS)** | N/A (Pilot data generation for lookup evaluation) | N/A | **Completed (All Store Checks PASS)**: 5/5 models pass all store invariants (`check_store.py`: CleanErr $\le 6.00\times 10^{-5}$, MaxExcess $\le +0.0008$, zero duplicates, 100% nested seeds, exact lengths). 4 non-graphene ribbons generated in batch wall time 3.02 h (compute 28.36 h on 16 workers, concurrency 9.40×). Graphene-ideal armchair N13 symlinked from `conc_v1`. Prepares `conc_v2` for lookup_v4 evaluation. |
 
 
 ---
@@ -1932,6 +1933,47 @@ Artifacts written:
   - `notebooks/tbribbon/full6.log` (complete generation log across 308 models)
   - `notebooks/tbribbon/materials3_ev_full_report.json` (validation report: 308/308 PASS)
   - Store: `~/atlas_store/materials3_ev_full/`
+
+---
+
+### [2026-10-18] PILOT-2: Four Non-Graphene Ribbons at Realistic Lengths (24 Densities, 120,000 Spectra in conc_v2, ALL PASS)
+
+* **Overview & Scope**:
+  - Dense-density pilot cloud production across the 4 non-graphene pilot ribbons at realistic device lengths (`--device-atoms 2000`) and universal lead broadening `--lead-eta 1.2e-5`:
+    - `hbn/armchair/N9`: 125 cells (2,250 real atoms), Caroli transport, 24 densities $\times$ 1,000 seeds = 24,000 spectra
+    - `mos2/zigzag/N9`: 83 cells (2,241 real atoms), multi-orbital whole-atom disorder, Caroli transport, 24 densities $\times$ 1,000 seeds = 24,000 spectra
+    - `phosphorene/armchair/N9`: 125 cells (2,250 real atoms), Caroli transport, 24 densities $\times$ 1,000 seeds = 24,000 spectra
+    - `triangular/zigzag/N9`: 250 cells (2,250 real atoms), Caroli transport, 24 densities $\times$ 1,000 seeds = 24,000 spectra
+  - Unchanged graphene pilot ribbon (`graphene-ideal/armchair/N13`, 100 cells, 2,600 atoms) linked from `~/atlas_store/conc_v1/graphene-ideal/armchair/N13` with individual file symlinks for Python `Path.rglob` compatibility.
+  - Total store contents: 5 models $\times$ 24 densities $\times$ 1,000 seeds = **120,000 spectra total** in `~/atlas_store/conc_v2`.
+  - Grid: 24 density levels from $0.25\%$ to $6.00\%$ ($d = 0.0025 \times k$, $k=1,\dots,24$).
+
+* **Validation via `notebooks/tbribbon/check_store.py` (`notebooks/tbribbon/conc_v2_report.json`)**:
+  - **Overall status: ALL PASS** across all 5 models.
+  | Ribbon | Spec Version | Transport Formula | Clean Channels Max Err | Max Median Excess | Status |
+  |:---|:---:|:---:|:---:|:---:|:---:|
+  | `graphene-ideal/armchair/N13` | v2 | `agnr_lib_IL_1e-5` | 0.00e+00 | +0.0008 | PASS |
+  | `hbn/armchair/N9` | v3 | `caroli` | 4.40e-05 | +0.0000 | PASS |
+  | `mos2/zigzag/N9` | v3 | `caroli` | 1.10e-05 | +0.0000 | PASS |
+  | `phosphorene/armchair/N9` | v3 | `caroli` | 6.00e-05 | +0.0000 | PASS |
+  | `triangular/zigzag/N9` | v3 | `caroli` | 1.40e-05 | +0.0000 | PASS |
+
+* **Cloud Generation Performance Summary (`~/atlas_store/conc_v2`)**:
+  - Total parallel batch execution time across the 4 regenerated models: **3.02 h** (10,859.0 s) on 16 worker cores.
+  - Total worker compute time: **28.36 h** (102,096 s). Effective speedup on 16 workers: **$9.40\times$**.
+  - Breakdown by ribbon:
+    | Ribbon | Densities | Total Spectra | Total Wall Time (s) | Avg Time / Cloud (s) | Worker Compute Time (h) |
+    |:---|:---:|:---:|:---:|:---:|:---:|
+    | `hbn/armchair/N9` | 24 | 24,000 | 3,610.5 s (60.2 min) | 150.4 s | 9.91 h |
+    | `mos2/zigzag/N9` | 24 | 24,000 | 1,948.2 s (32.5 min) | 81.2 s | 4.77 h |
+    | `phosphorene/armchair/N9` | 24 | 24,000 | 3,451.9 s (57.5 min) | 143.8 s | 9.40 h |
+    | `triangular/zigzag/N9` | 24 | 24,000 | 1,848.3 s (30.8 min) | 77.0 s | 4.28 h |
+    | **Total (4 generated)** | **96** | **96,000** | **10,859.0 s (3.02 h)** | **113.1 s** | **28.36 h** |
+
+* **Artifacts & Logs**:
+  - Generation log: `notebooks/tbribbon/pilot2.log`
+  - Validation report: `notebooks/tbribbon/conc_v2_report.json` (5/5 PASS)
+  - Cloud Store: `~/atlas_store/conc_v2/`
 
 ---
 

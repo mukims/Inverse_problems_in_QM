@@ -142,6 +142,7 @@ There are two generations of stored grid:
 | `materials2_ev_full` | **FULL-5 (2026-10-05):** 42 ribbons (WS₂, MoSe₂, WSe₂, silicene, germanene × armchair/zigzag; kagome × armchair/zigzag; Lieb, checkerboard × strip) × N7/9/14 × 4 densities × 1,000 seeds (168,000 spectra) on the eV grid | new materials for lookup_v3 (ALL PASS); `wse2/zigzag/N14` at lead η 1e-5 (SMOKE-4) |
 | `materials3_ev_full` | **FULL-6 (2026-10-18):** 308 ribbons (12 materials/lattices × 14 widths N=5–50) × 4 densities × 1,000 seeds (1,232,000 spectra) on the eV grid with realistic device lengths (`--device-atoms 2000`) and universal lead broadening $\eta = 1.2\times 10^{-5}$ | Production for wide materials atlas (ALL PASS) |
 | `conc_v1` | **CONC-1 (2026-10-04):** 5 models (graphene armchair N13 on v2 grid, hBN/phosphorene/MoS₂/triangular N9 on v3 grid) × 24 densities (0.25%–6.0%) × 1,000 seeds (120,000 spectra) | Dense-density concentration pilot (ALL PASS) |
+| `conc_v2` | **PILOT-2 (2026-10-18):** 5 models (graphene armchair N13 on v2 grid, hBN/phosphorene/MoS₂/triangular N9 on v3 grid) × 24 densities (0.25%–6.0%) × 1,000 seeds (120,000 spectra) with realistic device lengths (`--device-atoms 2000`) and universal lead broadening $\eta = 1.2\times 10^{-5}$ | Dense-density concentration pilot at realistic lengths (ALL PASS) |
 | `leads/agnr_cell_v2/` | Recomputed armchair leads for even widths and widths > 31 (Bug #9) | Used by agnr_lib |
 
 ## Decisions on record
