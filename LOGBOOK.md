@@ -43,6 +43,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **BUILD-29** | 2026-10-05 | **103 Ribbon Models (13 Materials/Lattices) + Pilot Ribbons + Square Strip** | **LOOKUP-2 (lookup_v3: Ensemble Lookup with New Materials and Flat-Band Lattices)** | `lookup_v3` (103 models, 61,800 T1 test, 15,000 T2 pilot test, 600 square test); global $\kappa = 4.467$; per-material interval $\kappa \in [1.0, 39.811]$ | 3-store MultiStore (`engine_v1`, `materials_ev_full`, `materials2_ev_full`); 101-point PCHIP grid; window-aware InputSpec v4 | **99.992% Mat+Edge+Width**<br>(100% Mat, 99.997% Edge, 99.992% Width) | **0.0891 pp** (T1 Catalogue MAE)<br>**0.1447 pp** (T2 Pilot MAE) | **91.100%** (T1 Catalogue Cov)<br>**85.887%** (T2 Pilot Cov) | **Completed (All 9 Pre-Registered Expectations MET)**: 103-device catalogue lookup with WS₂, MoSe₂, WSe₂, silicene, germanene, kagome, Lieb, checkerboard. T1: 99.992% device accuracy overall, 100.0% for all 8 new materials; material confusion is 100.0% diagonal across all 13 materials (0% confusion between Dirac, TMD, or flat-band cousins). Coverage 89.2–92.9% across all materials (target 85–95% MET). False no match 0.81–1.46% (target 0.5–1.5% MET). T4 hidden material rejection 100.0% on all 8 new materials. No harm to original 5 materials (within 0.021 points). Median query speed 26.0 ms (< 50 ms MET). Results in `notebooks/material_atlas/lookup_v3/results.json`. |
 | **PRISTINE-6** | 2026-10-06 | **308 Ribbon Models (12 Materials/Lattices)** | **Pristine Spectra & Device Length Invariant on Shared eV Axis** | `~/atlas_store/materials3_ev_full` (308 clean spectra) | Clean spectra on InputSpec v3 eV grid; Caroli formula; `--device-atoms 2000`; `--lead-eta 1.2e-5` for all 308 ribbons (PRISTINE-6b) | **308/308 Pass (100% Verified)** | N/A (Clean spectrum verification) | N/A | **PRISTINE-6b Completed (All 308 Pass)**: Human decision standardized lead broadening to $\eta = 1.2\times 10^{-5}$ across all 308 ribbons ($10^{-5}$ overflows on triangular/zigzag/N7; $2\times 10^{-5}$ fails kagome/zigzag/N20). PRISTINE-6b regenerates all 308 ribbons: 0 failures, all finite, worst error 0.000469 (`kagome/zigzag/N20`). |
 | **SMOKE-5** | 2026-10-07 | **49 Extremes Models ($N=5, 6$ and $N=50$)** | **New-Material Smoke Clouds with Realistic Device Lengths ($\eta = 1.2\times 10^{-5}$)** | `~/atlas_store/materials3_ev_smoke` (49 models $\times$ 4 densities $\times$ 50 seeds = 9,800 spectra) | Direct generation on InputSpec v3 eV grid; Caroli formula; `--device-atoms 2000`; `--lead-eta 1.2e-5` | **100% Validated (ALL PASS)** | N/A (Smoke data generation) | N/A | **Completed (All Store Checks PASS)**: 49/49 models pass all store invariants (`check_store.py`: CleanErr $\le 2.89\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, nested seeds). Measured costs: $N=5$ median 0.22 s/spec, $N=6$ median 0.27 s/spec, $N=50$ median 28.36 s/spec (triangular 8.38 s, silicene 28.36 s, germanene 26.20 s, lieb 54.14 s, checkerboard 67.88 s). Total compute 11.08 h (wall 2.47 h). |
+| **FULL-6** | 2026-10-18 | **308 Ribbon Models (12 Materials/Lattices $\times$ 14 Widths $N=5\dots 50$)** | **Wide Materials Atlas with Realistic Device Lengths ($\eta = 1.2\times 10^{-5}$)** | `~/atlas_store/materials3_ev_full` (308 models $\times$ 4 densities $\times$ 1,000 seeds = **1,232,000 spectra**) | Direct generation on InputSpec v3 eV grid; Caroli formula; `--device-atoms 2000`; `--lead-eta 1.2e-5` | **100% Validated (ALL PASS)** | N/A (Production data generation) | N/A | **Completed (All Store Checks PASS)**: 308/308 models pass all store invariants (`check_store.py`: CleanErr $\le 2.89\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, 100% nested seeds, formula `caroli`, $n=1000$, `lead_eta` 1.2e-5, `n_cells` equal to `pristine_n_cells`). Total batch wall time 252.58 h (compute 2,798.8 h on 16 workers, concurrency 11.08×). Run paused from 09:23 to 14:10 on 2026-10-08 due to main repo branch switch (resumed from 585 clouds in worktree) and brief server reboot on 2026-10-16. |
 
 
 ---
@@ -1855,6 +1856,82 @@ Artifacts written:
   - `notebooks/tbribbon/smoke5.log` (generation log, 49 models)
   - `notebooks/tbribbon/materials3_ev_smoke_report.json` (store validation report: 49/49 PASS)
   - Store: `~/atlas_store/materials3_ev_smoke/`
+
+---
+
+### [2026-10-18] FULL-6: Realistic-Length 308-Ribbon Atlas Production (1,232,000 Spectra, ALL PASS)
+
+* **Overview & Scope**:
+  - Full-scale disorder cloud production across all 308 ribbon configurations (12 non-graphene materials/lattices $\times$ 14 widths $N \in \{5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 20, 27, 50\}$) with realistic device lengths (`--device-atoms 2000`) and the human-standardized lead broadening `--lead-eta 1.2e-5`.
+  - Generated into `~/atlas_store/materials3_ev_full/` across 4 standard densities ($0.5\%, 1.0\%, 2.0\%, 4.0\%$) $\times$ 1,000 seeds ($0\dots 999$) = **1,232,000 spectra total** on 16 worker processes (`--n-jobs 16`).
+  - Validation via `notebooks/tbribbon/check_store.py`: **ALL PASS** across all 308 models (`notebooks/tbribbon/materials3_ev_full_report.json`). Clean channel errors $\le 2.89 \times 10^{-4}$ (worst `wse2/armchair/N5`), maximum median excess $+0.0000$, zero cross-density duplicates, 100% nested seeds, exact formula `caroli`, $n=1000$, and exact device cell length invariant confirmed.
+  - *Note on run continuity*: The run paused from 09:23 to 14:10 on 2026-10-08 because of a checkout change in the main repo, and resumed from 585 clouds in the worktree. It had a brief server restart pause on 2026-10-16 from 10:11 to 10:24.
+
+* **Device Length Invariant Table (`--device-atoms 2000`)**:
+  | Material | Edge | Device Cells ($L$) | Real Atoms in $N=7$ | Real Atoms in $N=9$ |
+  |:---|:---:|:---:|:---:|:---:|
+  | **hBN** | armchair | 125 cells | 1,750 | 2,250 |
+  | **hBN** | zigzag | 125 cells | 1,750 | 2,250 |
+  | **phosphorene** | armchair | 125 cells | 1,750 | 2,250 |
+  | **phosphorene** | zigzag | 125 cells | 1,750 | 2,250 |
+  | **mos2** | armchair | 42 cells | 1,764 | 2,268 |
+  | **mos2** | zigzag | 83 cells | 1,743 | 2,241 |
+  | **triangular** | armchair | 125 cells | 1,750 | 2,250 |
+  | **triangular** | zigzag | 250 cells | 1,750 | 2,250 |
+  | **ws2** | armchair | 42 cells | 1,764 | 2,268 |
+  | **ws2** | zigzag | 83 cells | 1,743 | 2,241 |
+  | **mose2** | armchair | 42 cells | 1,764 | 2,268 |
+  | **mose2** | zigzag | 83 cells | 1,743 | 2,241 |
+  | **wse2** | armchair | 42 cells | 1,764 | 2,268 |
+  | **wse2** | zigzag | 83 cells | 1,743 | 2,241 |
+  | **silicene** | armchair | 125 cells | 1,750 | 2,250 |
+  | **silicene** | zigzag | 125 cells | 1,750 | 2,250 |
+  | **germanene** | armchair | 125 cells | 1,750 | 2,250 |
+  | **germanene** | zigzag | 125 cells | 1,750 | 2,250 |
+  | **kagome** | armchair | 42 cells | 1,764 | 2,268 |
+  | **kagome** | zigzag | 83 cells | 1,743 | 2,241 |
+  | **lieb** | strip | 83 cells | 1,743 | 2,241 |
+  | **checkerboard** | strip | 62 cells | 1,736 | 2,232 |
+
+* **Empirical Cost Table & Generation Statistics**:
+  - Total batch wall time across all 1,232 clouds: **252.58 h** (909,288 s).
+  - Total worker compute time: **2,798.77 h** (10,075,572 s). Effective speedup on 16 workers: **$11.08\times$**.
+  - Total time vs 162 h projection: actual wall time is $1.56\times$ the initial 162 h estimate, driven primarily by $N=50$ armchair TMD and Kagome $300 \times 300$ block decimation inversions (scaling as $O(L \cdot M^3)$).
+  - Breakdown by width:
+    | Width | Clouds | Wall Time | Worker Compute | Wall / Cloud (Avg) | Worker Compute / Spec (Median) |
+    |:---:|:---:|:---:|:---:|:---:|:---:|
+    | **N5** | 88 | 1.52 h | 11.71 h | 62.3 s | 0.133 s |
+    | **N6** | 88 | 1.71 h | 13.83 h | 69.8 s | 0.157 s |
+    | **N7** | 88 | 1.93 h | 16.49 h | 78.8 s | 0.187 s |
+    | **N8** | 88 | 2.23 h | 19.93 h | 91.0 s | 0.226 s |
+    | **N9** | 88 | 2.64 h | 24.84 h | 107.8 s | 0.282 s |
+    | **N10** | 88 | 3.08 h | 29.99 h | 126.1 s | 0.341 s |
+    | **N11** | 88 | 3.71 h | 37.23 h | 151.6 s | 0.423 s |
+    | **N12** | 88 | 4.38 h | 44.55 h | 179.2 s | 0.506 s |
+    | **N13** | 88 | 5.17 h | 53.93 h | 211.5 s | 0.613 s |
+    | **N14** | 88 | 5.93 h | 62.56 h | 242.4 s | 0.711 s |
+    | **N16** | 88 | 8.05 h | 86.42 h | 329.2 s | 0.982 s |
+    | **N20** | 88 | 13.78 h | 151.08 h | 563.8 s | 1.717 s |
+    | **N27** | 88 | 30.48 h | 341.29 h | 1,246.9 s | 3.878 s |
+    | **N50** | 88 | 167.99 h | 1,904.91 h | 6,872.2 s | 21.647 s |
+  - Breakdown by material:
+    - `triangular`: 112 clouds, wall 6.87 h, compute 71.22 h
+    - `lieb`: 56 clouds, wall 7.86 h, compute 85.41 h
+    - `germanene`: 112 clouds, wall 8.80 h, compute 92.94 h
+    - `checkerboard`: 56 clouds, wall 9.40 h, compute 102.66 h
+    - `silicene`: 112 clouds, wall 9.45 h, compute 100.29 h
+    - `phosphorene`: 112 clouds, wall 21.53 h, compute 242.20 h
+    - `hbn`: 112 clouds, wall 22.60 h, compute 250.47 h
+    - `kagome`: 112 clouds, wall 25.17 h, compute 276.36 h
+    - `mose2`: 112 clouds, wall 32.05 h, compute 359.31 h
+    - `wse2`: 112 clouds, wall 34.17 h, compute 388.01 h
+    - `mos2`: 112 clouds, wall 35.16 h, compute 390.12 h
+    - `ws2`: 112 clouds, wall 39.52 h, compute 439.79 h
+
+* **Artifacts & Logs**:
+  - `notebooks/tbribbon/full6.log` (complete generation log across 308 models)
+  - `notebooks/tbribbon/materials3_ev_full_report.json` (validation report: 308/308 PASS)
+  - Store: `~/atlas_store/materials3_ev_full/`
 
 ---
 
