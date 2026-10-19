@@ -45,6 +45,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **SMOKE-5** | 2026-10-07 | **49 Extremes Models ($N=5, 6$ and $N=50$)** | **New-Material Smoke Clouds with Realistic Device Lengths ($\eta = 1.2\times 10^{-5}$)** | `~/atlas_store/materials3_ev_smoke` (49 models $\times$ 4 densities $\times$ 50 seeds = 9,800 spectra) | Direct generation on InputSpec v3 eV grid; Caroli formula; `--device-atoms 2000`; `--lead-eta 1.2e-5` | **100% Validated (ALL PASS)** | N/A (Smoke data generation) | N/A | **Completed (All Store Checks PASS)**: 49/49 models pass all store invariants (`check_store.py`: CleanErr $\le 2.89\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, nested seeds). Measured costs: $N=5$ median 0.22 s/spec, $N=6$ median 0.27 s/spec, $N=50$ median 28.36 s/spec (triangular 8.38 s, silicene 28.36 s, germanene 26.20 s, lieb 54.14 s, checkerboard 67.88 s). Total compute 11.08 h (wall 2.47 h). |
 | **FULL-6** | 2026-10-18 | **308 Ribbon Models (12 Materials/Lattices $\times$ 14 Widths $N=5\dots 50$)** | **Wide Materials Atlas with Realistic Device Lengths ($\eta = 1.2\times 10^{-5}$)** | `~/atlas_store/materials3_ev_full` (308 models $\times$ 4 densities $\times$ 1,000 seeds = **1,232,000 spectra**) | Direct generation on InputSpec v3 eV grid; Caroli formula; `--device-atoms 2000`; `--lead-eta 1.2e-5` | **100% Validated (ALL PASS)** | N/A (Production data generation) | N/A | **Completed (All Store Checks PASS)**: 308/308 models pass all store invariants (`check_store.py`: CleanErr $\le 2.89\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, 100% nested seeds, formula `caroli`, $n=1000$, `lead_eta` 1.2e-5, `n_cells` equal to `pristine_n_cells`). Total batch wall time 252.58 h (compute 2,798.8 h on 16 workers, concurrency 11.08×). Run paused from 09:23 to 14:10 on 2026-10-08 due to main repo branch switch (resumed from 585 clouds in worktree) and brief server reboot on 2026-10-16. |
 | **PILOT-2** | 2026-10-18 | **5 Pilot Ribbons (Graphene + 4 Non-Graphene at Realistic Lengths)** | **PILOT-2 (Pilot Clouds at Realistic Lengths, 24 Densities $\times$ 1,000 Seeds)** | `~/atlas_store/conc_v2` (5 models $\times$ 24 densities $\times$ 1,000 seeds = **120,000 spectra**) | 24-density grid ($0.25\%\text{--}6.0\%$); 4 non-graphene models regenerated with `--device-atoms 2000`, `--lead-eta 1.2e-5`, Caroli formula; graphene symlinked from `conc_v1` | **100% Validated (ALL PASS)** | N/A (Pilot data generation for lookup evaluation) | N/A | **Completed (All Store Checks PASS)**: 5/5 models pass all store invariants (`check_store.py`: CleanErr $\le 6.00\times 10^{-5}$, MaxExcess $\le +0.0008$, zero duplicates, 100% nested seeds, exact lengths). 4 non-graphene ribbons generated in batch wall time 3.02 h (compute 28.36 h on 16 workers, concurrency 9.40×). Graphene-ideal armchair N13 symlinked from `conc_v1`. Prepares `conc_v2` for lookup_v4 evaluation. |
+| **BUILD-30** | 2026-10-19 | **339 Ribbon Models (13 Materials/Lattices, Realistic Lengths ~2,000 Atoms)** | **LOOKUP-3 (lookup_v4: 339 Devices with Realistic Lengths and Widths 5–50)** | `lookup_v4` (339 models, 203,400 T1 test, 15,000 T2 pilot test, 600 square test); global $\kappa = 3.981$; per-material interval $\kappa \in [1.0, 44.668]$ | 2-store MultiStore (`engine_v1` 31 models, `materials3_ev_full` 308 models); 101-point PCHIP grid; InputSpec v4; realistic lengths ~2,000 atoms; lead $\eta = 1.2\times 10^{-5}$ | **99.966% Mat+Edge+Width**<br>(100% Mat, 99.986% Edge, 99.966% Width) | **0.0961 pp** (T1 Catalogue MAE)<br>**0.1416 pp** (T2 Pilot MAE) | **90.886%** (T1 Catalogue Cov)<br>**86.653%** (T2 Pilot Cov) | **Completed (All 8 Pre-Registered Expectations MET)**: 339-device catalogue lookup with realistic device lengths (~2,000 atoms, $N=5\dots 50$ across 12 wide materials + 31 graphene ribbons). T1: 99.966% device accuracy overall ($\ge 99.5\%$ MET), $\ge 99.613\%$ for every material ($\ge 99\%$ MET); material confusion diagonal $\ge 99.994\%$ across all 13 materials (MET). Conformal coverage 88.9–92.5% across all materials (85–95% MET). False no-match 0.86–1.24% across all materials (0.5–1.5% MET). T4 hidden material rejection 98.3–100.0% ($\ge 95\%$ MET). BUILD-29 103 device ids pooled accuracy 99.987% (within 0.005 pp of 99.992%, MET). Total width errors 41 / 203,400 spectra (24.4% adjacent $\pm 1$ neighbor). Median query speed 101.5 ms across 339 devices. Results in `notebooks/material_atlas/lookup_v4/results.json`. |
 
 
 ---
@@ -1974,6 +1975,139 @@ Artifacts written:
   - Generation log: `notebooks/tbribbon/pilot2.log`
   - Validation report: `notebooks/tbribbon/conc_v2_report.json` (5/5 PASS)
   - Cloud Store: `~/atlas_store/conc_v2/`
+
+---
+
+### [2026-10-19] BUILD-30: LOOKUP-3 lookup_v4 Ensemble Lookup Across 339 Devices with Realistic Lengths (~2,000 Atoms, Widths 5–50)
+
+* **Overview & Setup**:
+  - Built and evaluated `lookup_v4` across **339 registered devices** covering 13 materials and lattices:
+    - 31 graphene ribbons ($N=4\dots 50$) from `~/atlas_store/engine_v1`;
+    - 308 non-graphene ribbons ($N=5\dots 50$ across 14 widths for 12 materials/lattices: hBN, MoS₂, phosphorene, triangular, WS₂, MoSe₂, WSe₂, silicene, germanene, kagome, Lieb, checkerboard) from `~/atlas_store/materials3_ev_full` generated with realistic device lengths ($\sim 2,000$ atoms, $L \in [83, 500]$ cells) and universal lead broadening $\eta = 1.2\times 10^{-5}$ (Caroli transport formula).
+  - **Catalogue & Calibration**: 339 models $\times$ 101 PCHIP grid points ($0.0\%\text{--}5.0\%$ in steps of $0.05\%$, despiked InputSpec v4). Configuration seeds 0–699 train/catalogue, 700–849 calibration (16,950 spectra), 850–999 test (**203,400 spectra in T1 alone**).
+  - **Global & Per-Material $\kappa$**: Global $\kappa = 3.981$ (coverage 90.8% on 16,950 validation spectra) governs candidate selection, posterior probabilities, and match rejection ($p$-value). Credible intervals use per-material $\kappa$ calibrated on validation spectra:
+    - `germanene`: 1.000 (92.5% val cov)
+    - `silicene`: 1.000 (91.8% val cov)
+    - `triangular`: 1.000 (91.9% val cov)
+    - `mos2`: 1.585 (90.5% val cov)
+    - `mose2`: 1.585 (89.0% val cov)
+    - `wse2`: 1.778 (88.9% val cov)
+    - `ws2`: 1.995 (90.1% val cov)
+    - `graphene-ideal`: 3.981 (91.4% val cov)
+    - `kagome`: 3.981 (91.5% val cov)
+    - `phosphorene`: 3.981 (90.6% val cov)
+    - `checkerboard`: 5.623 (90.3% val cov)
+    - `lieb`: 6.310 (91.3% val cov)
+    - `hbn`: 44.668 (91.8% val cov)
+
+* **Pre-Registered Expectations Checklist (All 8 MET or MEASURED)**:
+  1. **T1 Device Accuracy**: $\ge 99.5\%$ overall and $\ge 99\%$ for every material $\implies$ **MET** (overall: **99.966%**; lowest: hBN **99.613%**; 8 materials 100.000%).
+  2. **Material Confusion**: `material_confusion[m][m] >= 99%` for every material $\implies$ **MET** (100.000% across 12 materials, 99.994% for silicene [only 1 spectrum out of 16,800 confused with germanene]).
+  3. **Interval Coverage**: 85–95% for every material $\implies$ **MET** (range 88.875%–92.458% across all 13 materials; overall 90.886%).
+  4. **False No-Match**: 0.5–1.5% for every material $\implies$ **MET** (range 0.857%–1.238% across all 13 materials; overall 1.025%).
+  5. **T4 Hidden Material Rejection**: Every hidden material answered no match $\ge 95\%$ $\implies$ **MET** (range 98.262%–100.000% across all 12 hidden materials; square strip 100.000%).
+  6. **BUILD-29 103 Device IDs Pooled Accuracy**: Within 0.5 percentage points of 99.992% $\implies$ **MET** (pooled device accuracy **99.987%** on 61,800 spectra; $|99.987\% - 99.992\%| = 0.005\text{ pp} \le 0.5\text{ pp}$). Note that the 72 non-graphene device IDs were tested with regenerated spectra at the new ~2,000 atom lengths.
+  7. **Width Errors**: Measurement of 10 largest entries and share landing on adjacent stored width $\implies$ **MEASURED** (41 total width errors out of 203,400 spectra; 10 / 41 = 24.4% landed on adjacent stored width $\pm 1$ neighbor).
+  8. **Speed**: Median query latency $\implies$ **MEASURED** (median **101.5 ms**, p90 116.3 ms across 100 queries against the 339-device catalogue).
+
+* **T1 Catalogue Benchmark (Per Material)**:
+  - Evaluated on **203,400 held-out test spectra** (seeds 850–999 $\times$ 4 densities $\times$ 339 models):
+
+| Material | Ribbons | Test Spectra | Device % | Mat % | Mat+Edge % | Coverage % | No-Match % | Silent Wrong % | Med Rel Err | MAE |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `checkerboard` | 14 | 8,400 | 100.000% | 100.000% | 100.000% | 90.298% | 1.131% | 0.000% | 14.08% | 0.2820 pp |
+| `germanene` | 28 | 16,800 | 100.000% | 100.000% | 100.000% | 92.458% | 1.238% | 0.000% | 2.27% | 0.0556 pp |
+| `graphene-ideal` | 31 | 18,600 | 99.995% | 100.000% | 100.000% | 91.360% | 1.129% | 0.000% | 1.25% | 0.0626 pp |
+| `hbn` | 28 | 16,800 | 99.613% | 100.000% | 99.839% | 91.804% | 0.923% | 0.327% | 10.00% | 0.1795 pp |
+| `kagome` | 28 | 16,800 | 99.994% | 100.000% | 100.000% | 91.536% | 0.970% | 0.000% | 5.84% | 0.1164 pp |
+| `lieb` | 14 | 8,400 | 99.988% | 100.000% | 100.000% | 91.333% | 0.857% | 0.000% | 5.38% | 0.1099 pp |
+| `mos2` | 28 | 16,800 | 100.000% | 100.000% | 100.000% | 90.458% | 1.060% | 0.000% | 3.17% | 0.0816 pp |
+| `mose2` | 28 | 16,800 | 100.000% | 100.000% | 100.000% | 88.964% | 1.131% | 0.000% | 3.65% | 0.0898 pp |
+| `phosphorene` | 28 | 16,800 | 100.000% | 100.000% | 100.000% | 90.571% | 1.030% | 0.000% | 3.12% | 0.0911 pp |
+| `silicene` | 28 | 16,800 | 99.994% | 99.994% | 99.994% | 91.821% | 0.976% | 0.000% | 2.27% | 0.0542 pp |
+| `triangular` | 28 | 16,800 | 100.000% | 100.000% | 100.000% | 91.863% | 0.917% | 0.000% | 1.79% | 0.0428 pp |
+| `ws2` | 28 | 16,800 | 100.000% | 100.000% | 100.000% | 90.054% | 0.958% | 0.000% | 3.17% | 0.0909 pp |
+| `wse2` | 28 | 16,800 | 100.000% | 100.000% | 100.000% | 88.875% | 0.958% | 0.000% | 3.75% | 0.0961 pp |
+| **All Models (Pooled)** | **339** | **203,400** | **99.966%** | **100.000%** | **99.986%** | **90.886%** | **1.025%** | **0.027%** | **3.17%** | **0.0961 pp** |
+
+* **Material Confusion Matrix ($13 \times 13$)**:
+  - Across all 203,400 test spectra, material classification is **100.0% diagonal** for 12 materials, and **99.994%** for silicene:
+    - 12 materials: 100.000% diagonal, 0.000% off-diagonal confusion.
+    - `silicene`: 99.994% diagonal, 0.006% to `germanene` (1 spectrum out of 16,800).
+  - No confusion observed between TMD cousins (MoS₂, WS₂, MoSe₂, WSe₂), flat-band cousins (kagome, Lieb, checkerboard), or other Dirac materials.
+
+* **Width Errors Analysis**:
+  - Total width errors: **41** out of 203,400 spectra (error rate $0.020\%$).
+  - Top 10 width errors:
+    1. `hbn/armchair/N5` $\to$ `hbn/armchair/N8`: 3
+    2. `hbn/armchair/N6` $\to$ `hbn/armchair/N13`: 3
+    3. `hbn/armchair/N11` $\to$ `hbn/armchair/N20`: 2
+    4. `hbn/zigzag/N16` $\to$ `hbn/zigzag/N14`: 2
+    5. `graphene-ideal/armchair/N11` $\to$ `graphene-ideal/armchair/N14`: 1
+    6. `hbn/armchair/N11` $\to$ `hbn/armchair/N14`: 1
+    7. `hbn/armchair/N12` $\to$ `hbn/armchair/N20`: 1
+    8. `hbn/armchair/N12` $\to$ `hbn/armchair/N14`: 1
+    9. `hbn/armchair/N14` $\to$ `hbn/armchair/N12`: 1
+    10. `hbn/armchair/N20` $\to$ `hbn/armchair/N16`: 1
+  - Adjacent stored width ($\pm 1$ neighbor) share: **24.4%** (10 / 41).
+  - hBN accounts for 32 of the 41 width errors (78.0%) because its wide band gap ($> 4.5\text{ eV}$) leaves narrow ribbons with few active channels within the measurement window.
+
+* **T2 Off-Grid Interpolation Benchmark (Per Ribbon & Pooled)**:
+  - Evaluated on **15,000 off-grid test spectra** ($d \le 5.0\%$, 20 densities $\times$ 150 seeds 850–999) from `~/atlas_store/conc_v2`:
+
+| Ribbon ($d \le 5.0\%$, 20 densities) | Test Spectra | Device % | Right & Unflagged % | Mat % | Mat+Edge % | Coverage % | No-Match % | Silent Wrong % | Med Rel Err | MAE |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `graphene-ideal/armchair/N13` | 3,000 | 100.000% | **99.800%** | 100.000% | 100.000% | 82.367% | 0.200% | 0.000% | 3.33% | 0.1194 pp |
+| `hbn/armchair/N9` | 3,000 | 99.167% | **96.721%** | 100.000% | 99.867% | 91.000% | 2.467% | 0.633% | 10.94% | 0.2968 pp |
+| `mos2/zigzag/N9` | 3,000 | 100.000% | **99.900%** | 100.000% | 100.000% | 89.100% | 0.100% | 0.000% | 3.56% | 0.1032 pp |
+| `phosphorene/armchair/N9` | 3,000 | 99.833% | **98.535%** | 100.000% | 100.000% | 83.367% | 1.300% | 0.067% | 3.96% | 0.1254 pp |
+| `triangular/zigzag/N9` | 3,000 | 100.000% | **98.867%** | 100.000% | 100.000% | 87.433% | 1.133% | 0.000% | 2.27% | 0.0648 pp |
+| **All Ribbons (Pooled)** | **15,000** | **99.800%** | **98.762%** | **100.000%** | **99.973%** | **86.653%** | **1.040%** | **0.140%** | **3.85%** | **0.1416 pp** |
+
+* **T3 Spectral Window-Restricted Benchmark**:
+
+| Spectral Window | Catalogue Device % | Catalogue Mat % | Catalogue Cov % | Catalogue MAE | Pilot Device % | Pilot Mat % | Pilot Cov % | Pilot MAE |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `0.0–0.5 eV` | 45.656% | 69.639% | 40.796% | 0.2616 pp | 28.033% | 72.200% | 26.267% | 0.2119 pp |
+| `0.0–1.0 eV` | 79.133% | 97.858% | 63.072% | 0.2925 pp | 61.000% | 92.900% | 49.167% | 0.3688 pp |
+| `1.0–3.0 eV` | 91.685% | 99.897% | 84.926% | 0.1079 pp | 79.967% | 100.000% | 74.067% | 0.1139 pp |
+| `3.0–8.3 eV` | 30.240% | 43.857% | 27.515% | 0.1906 pp | 59.533% | 60.000% | 52.800% | 0.1754 pp |
+
+* **T4 Leave-One-Material-Out & Unknown Rejection**:
+
+| Hidden Material / System | Test Spectra | No-Match Rejection % | Nearest Material (Shares %) | Nearest Device Top 1 |
+| :--- | :---: | :---: | :--- | :--- |
+| `checkerboard` | 8,400 | **100.000%** | `kagome` (100.0%) | `kagome/zigzag/N16` (1,532) |
+| `germanene` | 16,800 | **98.262%** | `silicene` (100.0%) | `silicene/armchair/N12` (1,268) |
+| `hbn` | 16,800 | **98.405%** | `graphene-ideal` (84.78%), `phosphorene` (15.22%) | `graphene-ideal/armchair/N15` (5,764) |
+| `kagome` | 16,800 | **100.000%** | `checkerboard` (60.87%), `triangular` (30.32%), `germanene` (8.02%) | `triangular/zigzag/N5` (1,795) |
+| `lieb` | 8,400 | **100.000%** | `germanene` (58.08%), `silicene` (41.92%) | `germanene/zigzag/N20` (955) |
+| `mos2` | 16,800 | **100.000%** | `wse2` (68.61%), `lieb` (15.64%), `silicene` (6.29%) | `wse2/zigzag/N12` (1,395) |
+| `mose2` | 16,800 | **100.000%** | `germanene` (36.37%), `lieb` (33.32%), `silicene` (13.28%) | `germanene/armchair/N20` (3,670) |
+| `phosphorene` | 16,800 | **99.696%** | `graphene-ideal` (99.17%), `hbn` (0.83%) | `graphene-ideal/armchair/N6` (4,345) |
+| `silicene` | 16,800 | **99.994%** | `germanene` (100.0%) | `germanene/zigzag/N10` (3,064) |
+| `square` | 600 | **100.000%** | `graphene-ideal` (100.0%) | `graphene-ideal/armchair/N8` (416) |
+| `triangular` | 16,800 | **100.000%** | `germanene` (95.98%), `silicene` (4.02%) | `germanene/armchair/N20` (4,847) |
+| `ws2` | 16,800 | **100.000%** | `silicene` (57.82%), `graphene-ideal` (42.18%) | `silicene/armchair/N20` (5,007) |
+| `wse2` | 16,800 | **100.000%** | `mos2` (76.64%), `lieb` (20.88%), `germanene` (2.26%) | `mos2/zigzag/N14` (1,311) |
+
+* **T5 Pilot Novelty & High Concentration ($c \in (5.0\%, 6.0\%]$)**:
+  - 600 test spectra per ribbon ($d \in \{0.0525, 0.0550, 0.0575, 0.0600\}$, seeds 850–999):
+    - `graphene-ideal/armchair/N13`: 100.0% device, 0.0% silent wrong, 2.17% no-match, median conc 4.85% (capped near boundary)
+    - `mos2/zigzag/N9`: 100.0% device, 0.0% silent wrong, 9.33% no-match, median conc 4.95%
+    - `triangular/zigzag/N9`: 95.0% device, 0.0% silent wrong, 87.5% no-match, median conc 5.00%
+    - `hbn/armchair/N9`: 88.83% device, 11.0% silent wrong, 0.33% no-match, median conc 4.25%
+    - `phosphorene/armchair/N9`: 84.17% device, 13.83% silent wrong, 6.67% no-match, median conc 4.65%
+
+* **Query Speed & Evaluation Execution**:
+  - Evaluation runtime: **12.23 h** (44,050 s) covering 203,400 T1 spectra + 15,000 T2 spectra + 108,480 T3 spectra + 180,600 T4 spectra + 3,000 T5 spectra.
+  - Query latency across 339-device catalogue ($N=100$ random test queries): median **101.5 ms**, 90th percentile **116.3 ms**.
+
+* **Artifacts & Serialization**:
+  - Catalogue manifest: `notebooks/material_atlas/lookup_v4/manifest.json` (339 devices, 148 KB)
+  - Catalogue arrays: `notebooks/material_atlas/lookup_v4/catalogue.npz` (455.7 MB)
+  - Full evaluation results: `notebooks/material_atlas/lookup_v4/results.json` (174 KB)
+  - Full evaluation log: `notebooks/material_atlas/lookup_v4/eval.log` (44,050 s)
 
 ---
 
