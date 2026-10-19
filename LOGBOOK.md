@@ -2181,6 +2181,7 @@ Artifacts written:
 
 * **Novelty Detection (Unseen Square-10 Strip)**:
   - 600 unseen square strip spectra tested against known validation 99th-percentile threshold:
+  - At the 99th-percentile threshold the autoencoder flags only 38.8% of the unseen square strip at L64 and 2.7% at L128, against 100% for the raw spectrum and 100% for the autoencoder at L32. The AUROC alone hides this.
 
 | Latent Size | Representation | Square Strip AUROC | Square Flagged % | Known Test Flagged % |
 | :---: | :--- | :---: | :---: | :---: |
@@ -2205,9 +2206,9 @@ Artifacts written:
      - AE L64 square AUROC is **0.9885** (threshold $\ge 0.9900$). By contrast, AE L32 achieved **0.9995** and raw achieved **0.9998**.
   5. **Measurement: How much does latent size matter?**: **MEASURED**.
      - Test reconstruction MSE decreases monotonically with latent size: L32 (0.000297) $\to$ L64 (0.000209) $\to$ L128 (0.000105).
-     - Device accuracy peaks at L64 (**99.873%**), closely followed by L32 (**99.867%**), but degrades at L128 (**98.841%**) due to metric concentration in higher-dimensional Euclidean space.
+     - Device accuracy and novelty both fall at L128 (98.841%; AUROC 0.9689). A likely cause is that standardising the latent weights all 128 dimensions equally, including low-variance ones; this was not tested.
   6. **Measurement: Median relative density error**: **MEASURED**.
-     - **0.0%** across all spaces and latent sizes; nearest neighbours with 200 reference seeds per cloud consistently match true cloud density.
+     - **0.0% by construction**: queries and references share the four stored densities, so this measures nothing about density resolution. A real test needs queries at the pilot's off-grid densities (`conc_v2`, 24 densities) against the four-density references.
 
 * **Artifacts & Serialization**:
   - Data cache: `~/atlas_store/ae_v1_cache/` (2.4 GB, `train` 1,091,639 spectra, `val` 233,850 spectra)
