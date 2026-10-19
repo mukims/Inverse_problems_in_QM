@@ -22,30 +22,34 @@ Ribbons are built from geometry with a tight-binding engine. Transmission is com
 | Triangular lattice | toy model, one orbital | [triangular](docs/materials/triangular/README.md) |
 | Square strip | toy model, one orbital | [square](docs/materials/square/README.md) |
 
+Eight further materials have no page of their own yet: WS₂, MoSe₂, WSe₂ (3-band model, Liu et al. 2013), silicene and germanene (Dirac), and the kagome, Lieb and checkerboard lattices (flat bands). The 12 non-graphene materials are simulated at widths N = 5–50, with devices of about 2,000 atoms.
+
 The shared pipeline (transport, disorder, data stores) is described in [`docs/materials/README.md`](docs/materials/README.md).
 
 ## Shazam: identifying a spectrum
 
-Shazam is a label-free lookup:
-1. It maps every spectrum to the same input: a shared 0–8.3 eV axis, spike removal, and a log scale.
-2. It embeds the input with an autoencoder.
-3. It finds the 15 nearest reference spectra, which vote for the material, edge and width.
-4. A calibrated distance threshold flags spectra it has never seen as **unknown**.
-5. For identified spectra, a per-ribbon regressor estimates the impurity concentration, with 90% intervals.
+Shazam takes one transmission spectrum, on any energy window, and returns the closest known device: its material, edge and width, its impurity density with a 90% interval, or "no match" when the spectrum is unlike anything known. Its input is label-free: a shared 0–8.3 eV axis, spike removal and a log scale. It has two versions:
 
-| Held-out test (graphene, 31 ribbons) | Result |
+- **Fingerprint library** (`atlas_v4m`, production). A convolutional autoencoder embeds the input, the 15 nearest reference spectra vote, and a calibrated distance flags unseen spectra.
+- **Ensemble lookup** (`lookup_v4`, candidate). No trained model: each device is stored as the median and spread of its disordered spectra, interpolated over 0–5% impurity density, and a spectrum is matched by a Bayesian posterior over device and density.
+
+| Ensemble lookup, held-out configurations (339 devices, 13 materials) | Result |
 |---|---|
-| Material / edge / width identified | 100% / 100% / 99.93% |
-| False alarms on known ribbons | about 1% |
-| Unseen square lattice flagged as unknown | 100% |
-| Concentration on 7/9-AGNR (37,350 spectra) | MAE about 2 impurities, 90% interval coverage 90.0% |
+| Right device (203,400 spectra) | 99.966% |
+| Each material named as itself | 99.994–100% |
+| Impurity density | median relative error 3.2%; 90% interval holds 88.9–92.5% per material |
+| A whole material hidden from the catalogue | answered "no match" 98.3–100% |
+| Unseen square lattice | answered "no match" 100% |
+| Time per lookup | about 100 ms |
 
-Code: [`notebooks/material_atlas/`](notebooks/material_atlas/).
+The lookup is weakest above 5% impurity density and in narrow energy windows, where many devices share the same zeros. For 7- and 9-AGNR, a per-width regressor gives the impurity count with MAE about 2 and 90% intervals. Code: [`notebooks/material_atlas/`](notebooks/material_atlas/).
 
 ## Key findings
 
 - **Concentration is recoverable to about 4–5%** of the impurity count from one spectrum, and using the whole spectrum helps more than changing the model.
 - **Identification works without label leakage.** Earlier 100% results were circular, because they normalised by the true material's spectrum (Bug #8). Shazam's input is the same for every spectrum.
+- **A larger catalogue costs only where information is missing.** With 339 devices and widths 5–50, the lookup still names 99.97% correctly and confuses a width 41 times in 203,400 spectra.
+- **An autoencoder over all 339 devices** reconstructs spectra about 40% better than PCA at the same size and identifies devices as well as the full spectrum (99.87%). It does not read concentration better, and larger latent sizes (128) identify worse than 32 or 64.
 - **The exact impurity arrangement is not recoverable** from one spectrum, only the count.
 - **Checking T against the channel count is not enough.** New ribbon builders must also match the bulk band structure, which caught misplaced MoS₂ bonds (Bug #10).
 
@@ -64,6 +68,7 @@ notebooks/material_atlas/   Shazam: atlaslib, builds, unknown flag, concentratio
 notebooks/agnr/             earlier 7/9-AGNR models, physics library (agnr_lib.py), agent
 notebooks/square_lattice/   square-lattice generator (ca_sq.py) and studies
 docs/materials/             one README per material, with figures
+docs/report/                interactive report and its figure scripts
 tests/                      pytest suite
 LOGBOOK.md                  every build, result and bug (source of truth)
 ```
@@ -77,11 +82,17 @@ export PYTHONPATH=notebooks/material_atlas:notebooks
 python -m pytest -q                                   # run the tests
 python notebooks/tbribbon/generate_clouds.py --help   # generate transmission data
 python docs/materials/make_figures.py                 # redraw the material figures
+python notebooks/material_atlas/build_lookup.py       # build the ensemble lookup catalogue
+python notebooks/material_atlas/eval_lookup.py        # evaluate it
+python notebooks/material_atlas/train_ae.py --latent 64   # train the all-ribbons autoencoder
 ```
+
+Generated data lives outside the repository, under `~/atlas_store/` (about 10 GB; the stores are listed in [`docs/materials/README.md`](docs/materials/README.md)).
 
 ## More
 
 - [`LOGBOOK.md`](LOGBOOK.md): all builds, numbers and bug fixes.
+- [`docs/report/`](docs/report/): the interactive report and its figure scripts.
 - [`docs/agnr-models.md`](docs/agnr-models.md): the earlier 7/9-AGNR models (PINN, transformer, XGBoost), defect reconstruction, the inference agent and the benchmark tables.
 - [`README_COMBINED.md`](README_COMBINED.md): the legacy dataset catalogue.
 
