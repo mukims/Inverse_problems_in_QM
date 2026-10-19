@@ -1,0 +1,130 @@
+{
+  "latent": 64,
+  "n_test": 233850,
+  "reconstruction_mse": {
+    "autoencoder": 0.00020929169841110706,
+    "pca": 0.0003576658491510898,
+    "autoencoder_by_source": {
+      "catalogue": 0.00015573028940707445,
+      "legacy": 0.0007390078390017152,
+      "pilot": 0.00044814866851083934
+    },
+    "pca_by_source": {
+      "catalogue": 0.0002783653326332569,
+      "legacy": 0.0011710146209225059,
+      "pilot": 0.0006911956588737667
+    },
+    "autoencoder_by_material": {
+      "checkerboard": 9.114523891184945e-06,
+      "germanene": 8.995417738333344e-05,
+      "graphene-ideal": 0.0006774298381060362,
+      "hbn": 0.0003012504894286394,
+      "kagome": 3.261393794673495e-05,
+      "lieb": 4.367627843748778e-05,
+      "mos2": 2.8534759621834382e-05,
+      "mose2": 2.275445694976952e-05,
+      "phosphorene": 0.000610514369327575,
+      "silicene": 0.00010500428470550105,
+      "triangular": 3.657062552520074e-05,
+      "ws2": 3.128971002297476e-05,
+      "wse2": 2.1855179511476308e-05
+    },
+    "pca_by_material": {
+      "checkerboard": 2.5027205992955714e-05,
+      "germanene": 0.00019327747577335685,
+      "graphene-ideal": 0.0010484327794983983,
+      "hbn": 0.0005219643353484571,
+      "kagome": 0.00010408768139313906,
+      "lieb": 0.00012674978643190116,
+      "mos2": 0.00014088394527789205,
+      "mose2": 0.00011906395229743794,
+      "phosphorene": 0.0007383664487861097,
+      "silicene": 0.00020851526642218232,
+      "triangular": 0.00012499472359195352,
+      "ws2": 0.00014573939552064985,
+      "wse2": 0.00011636155977612361
+    }
+  },
+  "identification": {
+    "autoencoder": {
+      "device_pct": 99.8731563421829,
+      "material_pct": 100.0,
+      "material_edge_pct": 99.97345132743362,
+      "median_rel_density_err_pct": 0.0,
+      "by_material_device_pct": {
+        "checkerboard": 100.0,
+        "germanene": 100.0,
+        "graphene-ideal": 99.87096774193547,
+        "hbn": 99.21428571428571,
+        "kagome": 100.0,
+        "lieb": 99.0,
+        "mos2": 100.0,
+        "mose2": 100.0,
+        "phosphorene": 100.0,
+        "silicene": 99.92857142857143,
+        "triangular": 99.96428571428572,
+        "ws2": 100.0,
+        "wse2": 100.0
+      }
+    },
+    "pca": {
+      "device_pct": 99.32153392330385,
+      "material_pct": 99.6165191740413,
+      "material_edge_pct": 99.58407079646018,
+      "median_rel_density_err_pct": 0.0,
+      "by_material_device_pct": {
+        "checkerboard": 100.0,
+        "germanene": 99.89285714285714,
+        "graphene-ideal": 96.25806451612902,
+        "hbn": 98.57142857142858,
+        "kagome": 99.92857142857143,
+        "lieb": 96.85714285714285,
+        "mos2": 99.92857142857143,
+        "mose2": 100.0,
+        "phosphorene": 99.32142857142857,
+        "silicene": 99.89285714285714,
+        "triangular": 99.96428571428572,
+        "ws2": 100.0,
+        "wse2": 100.0
+      }
+    },
+    "raw": {
+      "device_pct": 99.79941002949853,
+      "material_pct": 99.99705014749263,
+      "material_edge_pct": 99.97935103244838,
+      "median_rel_density_err_pct": 0.0,
+      "by_material_device_pct": {
+        "checkerboard": 100.0,
+        "germanene": 100.0,
+        "graphene-ideal": 98.64516129032258,
+        "hbn": 99.10714285714286,
+        "kagome": 99.96428571428572,
+        "lieb": 100.0,
+        "mos2": 100.0,
+        "mose2": 100.0,
+        "phosphorene": 100.0,
+        "silicene": 100.0,
+        "triangular": 100.0,
+        "ws2": 100.0,
+        "wse2": 100.0
+      }
+    }
+  },
+  "novelty_square": {
+    "autoencoder": {
+      "auroc": 0.9885189282202557,
+      "square_flagged_pct": 38.83333333333333,
+      "known_flagged_pct": 0.9970501474926254
+    },
+    "pca": {
+      "auroc": 0.9748675024582104,
+      "square_flagged_pct": 13.166666666666666,
+      "known_flagged_pct": 1.0147492625368733
+    },
+    "raw": {
+      "auroc": 0.999789872173058,
+      "square_flagged_pct": 100.0,
+      "known_flagged_pct": 0.9705014749262537
+    }
+  }
+}

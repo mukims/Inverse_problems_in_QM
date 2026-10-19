@@ -1,0 +1,4 @@
+[eval-ae] test 233,850; references 271,200; queries 33,900; square 600 (14s)
+[eval-ae] notebooks/material_atlas/ae_v1/L32: L32 mse ae 0.000297 pca 0.000524; device autoencoder 99.87%, pca 98.49%, raw 99.80%; square AUROC autoencoder 0.9995, pca 0.9866, raw 0.9998 (283s)
+[eval-ae] notebooks/material_atlas/ae_v1/L64: L64 mse ae 0.000209 pca 0.000358; device autoencoder 99.87%, pca 99.32%, raw 99.80%; square AUROC autoencoder 0.9885, pca 0.9749, raw 0.9998 (565s)
+[eval-ae] notebooks/material_atlas/ae_v1/L128: L128 mse ae 0.000105 pca 0.000207; device autoencoder 98.84%, pca 96.54%, raw 99.80%; square AUROC autoencoder 0.9689, pca 0.9640, raw 0.9998 (854s)

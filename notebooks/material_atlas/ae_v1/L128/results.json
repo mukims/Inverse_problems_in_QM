@@ -1,0 +1,130 @@
+{
+  "latent": 128,
+  "n_test": 233850,
+  "reconstruction_mse": {
+    "autoencoder": 0.00010492091678315774,
+    "pca": 0.00020709486852865666,
+    "autoencoder_by_source": {
+      "catalogue": 7.600679964525625e-05,
+      "legacy": 0.0003786118177231401,
+      "pilot": 0.00024234768352471292
+    },
+    "pca_by_source": {
+      "catalogue": 0.0001588445738889277,
+      "legacy": 0.0006615074235014617,
+      "pilot": 0.0004380209429655224
+    },
+    "autoencoder_by_material": {
+      "checkerboard": 3.528411298248102e-06,
+      "germanene": 1.743726897984743e-05,
+      "graphene-ideal": 0.00034763835719786584,
+      "hbn": 0.00012973375851288438,
+      "kagome": 9.727530596137512e-06,
+      "lieb": 8.734627954254393e-06,
+      "mos2": 5.840892299602274e-06,
+      "mose2": 4.8630595301801804e-06,
+      "phosphorene": 0.0004064701497554779,
+      "silicene": 2.663662780832965e-05,
+      "triangular": 7.232627922348911e-06,
+      "ws2": 7.255739092215663e-06,
+      "wse2": 4.426195573614677e-06
+    },
+    "pca_by_material": {
+      "checkerboard": 1.210845493915258e-05,
+      "germanene": 8.975750097306445e-05,
+      "graphene-ideal": 0.0005802704254165292,
+      "hbn": 0.0004125646373722702,
+      "kagome": 5.573526141233742e-05,
+      "lieb": 5.702286580344662e-05,
+      "mos2": 4.6088647650321946e-05,
+      "mose2": 4.534077015705407e-05,
+      "phosphorene": 0.0005445784772746265,
+      "silicene": 0.00010280147398589179,
+      "triangular": 4.4655102101387456e-05,
+      "ws2": 4.791836181539111e-05,
+      "wse2": 3.7325738958315924e-05
+    }
+  },
+  "identification": {
+    "autoencoder": {
+      "device_pct": 98.84070796460178,
+      "material_pct": 99.86430678466077,
+      "material_edge_pct": 99.69026548672566,
+      "median_rel_density_err_pct": 0.0,
+      "by_material_device_pct": {
+        "checkerboard": 100.0,
+        "germanene": 99.57142857142857,
+        "graphene-ideal": 98.51612903225806,
+        "hbn": 90.28571428571428,
+        "kagome": 100.0,
+        "lieb": 98.57142857142858,
+        "mos2": 100.0,
+        "mose2": 100.0,
+        "phosphorene": 99.92857142857143,
+        "silicene": 98.57142857142858,
+        "triangular": 99.96428571428572,
+        "ws2": 100.0,
+        "wse2": 100.0
+      }
+    },
+    "pca": {
+      "device_pct": 96.53982300884955,
+      "material_pct": 97.03244837758113,
+      "material_edge_pct": 96.90560471976401,
+      "median_rel_density_err_pct": 0.0,
+      "by_material_device_pct": {
+        "checkerboard": 100.0,
+        "germanene": 97.0,
+        "graphene-ideal": 88.51612903225806,
+        "hbn": 98.5,
+        "kagome": 100.0,
+        "lieb": 97.07142857142857,
+        "mos2": 100.0,
+        "mose2": 100.0,
+        "phosphorene": 83.57142857142857,
+        "silicene": 94.35714285714286,
+        "triangular": 98.85714285714286,
+        "ws2": 100.0,
+        "wse2": 100.0
+      }
+    },
+    "raw": {
+      "device_pct": 99.79941002949853,
+      "material_pct": 99.99705014749263,
+      "material_edge_pct": 99.97935103244838,
+      "median_rel_density_err_pct": 0.0,
+      "by_material_device_pct": {
+        "checkerboard": 100.0,
+        "germanene": 100.0,
+        "graphene-ideal": 98.64516129032258,
+        "hbn": 99.10714285714286,
+        "kagome": 99.96428571428572,
+        "lieb": 100.0,
+        "mos2": 100.0,
+        "mose2": 100.0,
+        "phosphorene": 100.0,
+        "silicene": 100.0,
+        "triangular": 100.0,
+        "ws2": 100.0,
+        "wse2": 100.0
+      }
+    }
+  },
+  "novelty_square": {
+    "autoencoder": {
+      "auroc": 0.9688524090462145,
+      "square_flagged_pct": 2.666666666666667,
+      "known_flagged_pct": 1.0855457227138643
+    },
+    "pca": {
+      "auroc": 0.9639799901671582,
+      "square_flagged_pct": 16.5,
+      "known_flagged_pct": 1.0147492625368733
+    },
+    "raw": {
+      "auroc": 0.999789872173058,
+      "square_flagged_pct": 100.0,
+      "known_flagged_pct": 0.9705014749262537
+    }
+  }
+}

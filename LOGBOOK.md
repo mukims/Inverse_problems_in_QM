@@ -46,6 +46,7 @@ Welcome to the project **Logbook**. This document serves as the single source of
 | **FULL-6** | 2026-10-18 | **308 Ribbon Models (12 Materials/Lattices $\times$ 14 Widths $N=5\dots 50$)** | **Wide Materials Atlas with Realistic Device Lengths ($\eta = 1.2\times 10^{-5}$)** | `~/atlas_store/materials3_ev_full` (308 models $\times$ 4 densities $\times$ 1,000 seeds = **1,232,000 spectra**) | Direct generation on InputSpec v3 eV grid; Caroli formula; `--device-atoms 2000`; `--lead-eta 1.2e-5` | **100% Validated (ALL PASS)** | N/A (Production data generation) | N/A | **Completed (All Store Checks PASS)**: 308/308 models pass all store invariants (`check_store.py`: CleanErr $\le 2.89\times 10^{-4}$, MaxExcess $= +0.0000$, zero duplicates, 100% nested seeds, formula `caroli`, $n=1000$, `lead_eta` 1.2e-5, `n_cells` equal to `pristine_n_cells`). Total batch wall time 252.58 h (compute 2,798.8 h on 16 workers, concurrency 11.08×). Run paused from 09:23 to 14:10 on 2026-10-08 due to main repo branch switch (resumed from 585 clouds in worktree) and brief server reboot on 2026-10-16. |
 | **PILOT-2** | 2026-10-18 | **5 Pilot Ribbons (Graphene + 4 Non-Graphene at Realistic Lengths)** | **PILOT-2 (Pilot Clouds at Realistic Lengths, 24 Densities $\times$ 1,000 Seeds)** | `~/atlas_store/conc_v2` (5 models $\times$ 24 densities $\times$ 1,000 seeds = **120,000 spectra**) | 24-density grid ($0.25\%\text{--}6.0\%$); 4 non-graphene models regenerated with `--device-atoms 2000`, `--lead-eta 1.2e-5`, Caroli formula; graphene symlinked from `conc_v1` | **100% Validated (ALL PASS)** | N/A (Pilot data generation for lookup evaluation) | N/A | **Completed (All Store Checks PASS)**: 5/5 models pass all store invariants (`check_store.py`: CleanErr $\le 6.00\times 10^{-5}$, MaxExcess $\le +0.0008$, zero duplicates, 100% nested seeds, exact lengths). 4 non-graphene ribbons generated in batch wall time 3.02 h (compute 28.36 h on 16 workers, concurrency 9.40×). Graphene-ideal armchair N13 symlinked from `conc_v1`. Prepares `conc_v2` for lookup_v4 evaluation. |
 | **BUILD-30** | 2026-10-19 | **339 Ribbon Models (13 Materials/Lattices, Realistic Lengths ~2,000 Atoms)** | **LOOKUP-3 (lookup_v4: 339 Devices with Realistic Lengths and Widths 5–50)** | `lookup_v4` (339 models, 203,400 T1 test, 15,000 T2 pilot test, 600 square test); global $\kappa = 3.981$; per-material interval $\kappa \in [1.0, 44.668]$ | 2-store MultiStore (`engine_v1` 31 models, `materials3_ev_full` 308 models); 101-point PCHIP grid; InputSpec v4; realistic lengths ~2,000 atoms; lead $\eta = 1.2\times 10^{-5}$ | **99.966% Mat+Edge+Width**<br>(100% Mat, 99.986% Edge, 99.966% Width) | **0.0961 pp** (T1 Catalogue MAE)<br>**0.1416 pp** (T2 Pilot MAE) | **90.886%** (T1 Catalogue Cov)<br>**86.653%** (T2 Pilot Cov) | **Completed (All 8 Pre-Registered Expectations MET)**: 339-device catalogue lookup with realistic device lengths (~2,000 atoms, $N=5\dots 50$ across 12 wide materials + 31 graphene ribbons). T1: 99.966% device accuracy overall ($\ge 99.5\%$ MET), $\ge 99.613\%$ for every material ($\ge 99\%$ MET); material confusion diagonal $\ge 99.994\%$ across all 13 materials (MET). Conformal coverage 88.9–92.5% across all materials (85–95% MET). False no-match 0.86–1.24% across all materials (0.5–1.5% MET). T4 hidden material rejection 98.3–100.0% ($\ge 95\%$ MET). BUILD-29 103 device ids pooled accuracy 99.987% (within 0.005 pp of 99.992%, MET). Total width errors 41 / 203,400 spectra (24.4% adjacent $\pm 1$ neighbor). Median query speed 101.5 ms across 339 devices. Results in `notebooks/material_atlas/lookup_v4/results.json`. |
+| **BUILD-31** | 2026-10-19 | **339 Ribbon Models (13 Materials/Lattices) + Pilot Ribbons + Legacy 7/9-AGNR** | **AE-1 (All-Ribbons Autoencoder: Conv1dAE at Latent 32, 64, 128 vs PCA and Raw)** | `ae_v1` (1,091,639 train spectra across 339 devices; 233,850 test spectra on seeds 850–999; 33,900 eval queries against 271,200 refs) | InputSpec v4 (416-ch eV grid, despike=True); Conv1dAE (3 conv layers, GroupNorm, linear latent); seed split 0–699 train / 700–849 val / 850–999 test | **99.873% (L64 AE)<br>99.867% (L32 AE)<br>98.841% (L128 AE)** | N/A (Stage 1–2 representation & Shazam k-NN vote) | N/A | **Completed (E1, E2, E3, E5, E6 MET/MEASURED; E4 MISSED)**: Trained unsupervised Conv1dAE on 1.09M spectra across all 339 catalogue devices, pilot clouds, and legacy 7/9-AGNR sets. Test reconstruction MSE beats PCA across all latent sizes (L32: 0.000297 vs 0.000524; L64: 0.000209 vs 0.000358; L128: 0.000105 vs 0.000207). L64 achieves 99.873% device accuracy (exceeding raw's 99.799% and PCA's 99.322%) and 100% material accuracy. Novelty AUROC: L32 0.9995, L64 0.9885 (MISSED $\ge 0.99$), raw 0.9998. Evaluated on 33,900 queries against 271,200 references. Results in `notebooks/material_atlas/ae_v1/`. |
 
 
 ---
@@ -2113,6 +2114,109 @@ Artifacts written:
   - Catalogue arrays: `notebooks/material_atlas/lookup_v4/catalogue.npz` (455.7 MB)
   - Full evaluation results: `notebooks/material_atlas/lookup_v4/results.json` (174 KB)
   - Full evaluation log: `notebooks/material_atlas/lookup_v4/eval.log` (44,050 s)
+
+---
+
+### [2026-10-19] BUILD-31: AE-1 All-Ribbons Autoencoder (Conv1dAE at Latent 32, 64, 128 vs PCA and Raw)
+
+* **Overview & Setup**:
+  - Trained an unsupervised 1D convolutional autoencoder (`atlaslib.encoder.Conv1dAE`: 3 strided conv layers with GroupNorm and ReLU, linear bottleneck, mirrored transpose-convolution decoder) on the shared label-free `InputSpec v4` grid (416 channels, $0\text{--}8.32\text{ eV}$, despiked).
+  - Evaluated three latent dimensions: **$L \in \{32, 64, 128\}$**, compared directly against PCA (same latent dimensions fit on 200,000 reference spectra) and the raw 416-channel spectrum.
+  - **Dataset & Sources**: 1,091,639 training spectra across all 339 catalogue devices, pilot clouds, and legacy 7/9-AGNR sets:
+    | Source | Stores | Spectra |
+    | :--- | :--- | :---: |
+    | `catalogue` | `engine_v1` (31 graphene ribbons) + `materials3_ev_full` (308 wide ribbons): 4 densities $\times$ 700 seeds, plus each device's clean spectrum once at density 0 | 949,539 (949,200 + 339) |
+    | `pilot` | `conc_v2` (5 ribbons $\times$ 24 densities $\times$ 700 seeds) | 84,000 |
+    | `legacy` | `size_7.npy` (34 concentrations $\times$ 700 seeds) + `size_9.npy` (49 concentrations $\times$ 700 seeds) | 58,100 |
+    | **Total Training** | **All 339 Devices across 13 materials/lattices** | **1,091,639** |
+  - **Splits & Seeds**: Configuration seeds 0–699 train; early stopping on a random 30,000 sample of seeds 700–849 (from 233,850 validation spectra); evaluation on seeds 850–999 only (233,850 test spectra). Unseen square strip (`novelty_v1`, 600 spectra) held out exclusively for novelty testing.
+  - **Training Execution (16 threads)**:
+    - **L32**: 30 epochs, 5,606 s (~1.56 h), best val MSE **0.000300**.
+    - **L64**: 30 epochs, 5,990 s (~1.66 h), best val MSE **0.000211**.
+    - **L128**: 30 epochs, 6,239 s (~1.73 h), best val MSE **0.000106**.
+    - Total training runtime: **17,835 s** (~4.95 h).
+
+* **Context & Benchmark Setup**:
+  > The ensemble lookup (BUILD-30) names 99.966% of devices on its own test; this test uses 200 reference seeds per cloud (271,200 references) and 25 query seeds per cloud (33,900 queries across the 339 catalogue devices), so the numbers are not directly comparable.
+
+* **Reconstruction Benchmark (Autoencoder vs PCA)**:
+  - Evaluated on **233,850 held-out test spectra** (seeds 850–999 across all sources):
+
+| Latent Size | Model / Space | Overall Test MSE | Catalogue MSE | Pilot MSE | Legacy MSE |
+| :---: | :--- | :---: | :---: | :---: | :---: |
+| **L32** | **Autoencoder** | **0.000297** | **0.000227** | **0.000605** | **0.000995** |
+| | PCA | 0.000524 | 0.000411 | 0.000965 | 0.001731 |
+| **L64** | **Autoencoder** | **0.000209** | **0.000156** | **0.000448** | **0.000739** |
+| | PCA | 0.000358 | 0.000278 | 0.000691 | 0.001171 |
+| **L128** | **Autoencoder** | **0.000105** | **0.000076** | **0.000242** | **0.000379** |
+| | PCA | 0.000207 | 0.000159 | 0.000438 | 0.000662 |
+
+* **Identification Benchmark (15-Nearest Shazam Vote)**:
+  - Evaluated on **33,900 query spectra** against **271,200 reference spectra** across 339 catalogue devices:
+
+| Latent Size | Representation | Device % | Material % | Material+Edge % | Median Rel Density Err % |
+| :---: | :--- | :---: | :---: | :---: | :---: |
+| — | **Raw (416-ch)** | 99.799% | 99.997% | 99.979% | 0.0% |
+| **L32** | **Autoencoder** | **99.867%** | 99.997% | 99.988% | 0.0% |
+| | PCA | 98.490% | 99.729% | 99.649% | 0.0% |
+| **L64** | **Autoencoder** | **99.873%** | **100.000%** | **99.973%** | 0.0% |
+| | PCA | 99.322% | 99.617% | 99.584% | 0.0% |
+| **L128** | **Autoencoder** | 98.841% | 99.864% | 99.690% | 0.0% |
+| | PCA | 96.540% | 97.032% | 96.906% | 0.0% |
+
+* **L64 Autoencoder Per-Material Device Accuracy**:
+  - `checkerboard`: **100.0%**
+  - `germanene`: **100.0%**
+  - `graphene-ideal`: **99.871%**
+  - `hbn`: **99.214%**
+  - `kagome`: **100.0%**
+  - `lieb`: **99.000%**
+  - `mos2`: **100.0%**
+  - `mose2`: **100.0%**
+  - `phosphorene`: **100.0%**
+  - `silicene`: **99.929%**
+  - `triangular`: **99.964%**
+  - `ws2`: **100.0%**
+  - `wse2`: **100.0%**
+
+* **Novelty Detection (Unseen Square-10 Strip)**:
+  - 600 unseen square strip spectra tested against known validation 99th-percentile threshold:
+
+| Latent Size | Representation | Square Strip AUROC | Square Flagged % | Known Test Flagged % |
+| :---: | :--- | :---: | :---: | :---: |
+| — | **Raw (416-ch)** | **0.9998** | 100.0% | 0.971% |
+| **L32** | **Autoencoder** | **0.9995** | 100.0% | 1.018% |
+| | PCA | 0.9866 | 26.8% | 1.015% |
+| **L64** | **Autoencoder** | **0.9885** | 38.8% | 0.997% |
+| | PCA | 0.9749 | 13.2% | 1.015% |
+| **L128** | **Autoencoder** | 0.9689 | 2.7% | 1.086% |
+| | PCA | 0.9640 | 16.5% | 1.015% |
+
+* **Pre-Registered Expectations Checklist**:
+  1. **AE Test Reconstruction MSE < PCA at each latent size**: **MET**.
+     - L32: 0.000297 vs 0.000524 (-43.3% lower MSE)
+     - L64: 0.000209 vs 0.000358 (-41.5% lower MSE)
+     - L128: 0.000105 vs 0.000207 (-49.3% lower MSE)
+  2. **At L64, device accuracy $\ge 99.0\%$ and $\ge$ raw**: **MET**.
+     - AE L64 device accuracy is **99.873%**, surpassing the 99.0% threshold and exceeding raw spectrum accuracy (**99.799%**).
+  3. **At L64, material and edge accuracy $\ge 99.9\%$**: **MET**.
+     - Material accuracy: **100.000%**; Material+Edge accuracy: **99.973%** ($\ge 99.9\%$).
+  4. **At L64, unseen square strip AUROC $\ge 0.99$**: **MISSED**.
+     - AE L64 square AUROC is **0.9885** (threshold $\ge 0.9900$). By contrast, AE L32 achieved **0.9995** and raw achieved **0.9998**.
+  5. **Measurement: How much does latent size matter?**: **MEASURED**.
+     - Test reconstruction MSE decreases monotonically with latent size: L32 (0.000297) $\to$ L64 (0.000209) $\to$ L128 (0.000105).
+     - Device accuracy peaks at L64 (**99.873%**), closely followed by L32 (**99.867%**), but degrades at L128 (**98.841%**) due to metric concentration in higher-dimensional Euclidean space.
+  6. **Measurement: Median relative density error**: **MEASURED**.
+     - **0.0%** across all spaces and latent sizes; nearest neighbours with 200 reference seeds per cloud consistently match true cloud density.
+
+* **Artifacts & Serialization**:
+  - Data cache: `~/atlas_store/ae_v1_cache/` (2.4 GB, `train` 1,091,639 spectra, `val` 233,850 spectra)
+  - Trained models & results:
+    - `notebooks/material_atlas/ae_v1/L32/` (`encoder.pt`, `manifest.json`, `results.json`)
+    - `notebooks/material_atlas/ae_v1/L64/` (`encoder.pt`, `manifest.json`, `results.json`)
+    - `notebooks/material_atlas/ae_v1/L128/` (`encoder.pt`, `manifest.json`, `results.json`)
+  - Training logs: `ae_v1/train_L32.log`, `ae_v1/train_L64.log`, `ae_v1/train_L128.log`
+  - Evaluation log: `ae_v1/eval.log`
 
 ---
 
