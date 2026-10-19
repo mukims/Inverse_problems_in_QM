@@ -1983,22 +1983,22 @@ Artifacts written:
 * **Overview & Setup**:
   - Built and evaluated `lookup_v4` across **339 registered devices** covering 13 materials and lattices:
     - 31 graphene ribbons ($N=4\dots 50$) from `~/atlas_store/engine_v1`;
-    - 308 non-graphene ribbons ($N=5\dots 50$ across 14 widths for 12 materials/lattices: hBN, MoS₂, phosphorene, triangular, WS₂, MoSe₂, WSe₂, silicene, germanene, kagome, Lieb, checkerboard) from `~/atlas_store/materials3_ev_full` generated with realistic device lengths ($\sim 2,000$ atoms, $L \in [83, 500]$ cells) and universal lead broadening $\eta = 1.2\times 10^{-5}$ (Caroli transport formula).
+    - 308 non-graphene ribbons ($N=5\dots 50$ across 14 widths for 12 materials/lattices: hBN, MoS₂, phosphorene, triangular, WS₂, MoSe₂, WSe₂, silicene, germanene, kagome, Lieb, checkerboard) from `~/atlas_store/materials3_ev_full` generated with realistic device lengths ($\sim 2,000$ atoms, 42–250 cells: 42 for TMD and kagome armchair; 62 for checkerboard; 83 for TMD and kagome zigzag, Lieb; 125 for hBN, phosphorene, silicene, germanene, triangular armchair; 250 for triangular zigzag) and universal lead broadening $\eta = 1.2\times 10^{-5}$ (Caroli transport formula).
   - **Catalogue & Calibration**: 339 models $\times$ 101 PCHIP grid points ($0.0\%\text{--}5.0\%$ in steps of $0.05\%$, despiked InputSpec v4). Configuration seeds 0–699 train/catalogue, 700–849 calibration (16,950 spectra), 850–999 test (**203,400 spectra in T1 alone**).
   - **Global & Per-Material $\kappa$**: Global $\kappa = 3.981$ (coverage 90.8% on 16,950 validation spectra) governs candidate selection, posterior probabilities, and match rejection ($p$-value). Credible intervals use per-material $\kappa$ calibrated on validation spectra:
-    - `germanene`: 1.000 (92.5% val cov)
-    - `silicene`: 1.000 (91.8% val cov)
-    - `triangular`: 1.000 (91.9% val cov)
-    - `mos2`: 1.585 (90.5% val cov)
-    - `mose2`: 1.585 (89.0% val cov)
-    - `wse2`: 1.778 (88.9% val cov)
-    - `ws2`: 1.995 (90.1% val cov)
-    - `graphene-ideal`: 3.981 (91.4% val cov)
-    - `kagome`: 3.981 (91.5% val cov)
-    - `phosphorene`: 3.981 (90.6% val cov)
-    - `checkerboard`: 5.623 (90.3% val cov)
+    - `germanene`: 1.000 (93.1% val cov)
+    - `silicene`: 1.000 (92.9% val cov)
+    - `triangular`: 1.000 (91.8% val cov)
+    - `mos2`: 1.585 (90.9% val cov)
+    - `mose2`: 1.585 (90.3% val cov)
+    - `wse2`: 1.778 (90.2% val cov)
+    - `ws2`: 1.995 (90.3% val cov)
+    - `graphene-ideal`: 3.981 (90.4% val cov)
+    - `kagome`: 3.981 (90.5% val cov)
+    - `phosphorene`: 3.981 (90.1% val cov)
+    - `checkerboard`: 5.623 (91.1% val cov)
     - `lieb`: 6.310 (91.3% val cov)
-    - `hbn`: 44.668 (91.8% val cov)
+    - `hbn`: 44.668 (91.5% val cov)
 
 * **Pre-Registered Expectations Checklist (All 8 MET or MEASURED)**:
   1. **T1 Device Accuracy**: $\ge 99.5\%$ overall and $\ge 99\%$ for every material $\implies$ **MET** (overall: **99.966%**; lowest: hBN **99.613%**; 8 materials 100.000%).
@@ -2050,7 +2050,7 @@ Artifacts written:
     9. `hbn/armchair/N14` $\to$ `hbn/armchair/N12`: 1
     10. `hbn/armchair/N20` $\to$ `hbn/armchair/N16`: 1
   - Adjacent stored width ($\pm 1$ neighbor) share: **24.4%** (10 / 41).
-  - hBN accounts for 32 of the 41 width errors (78.0%) because its wide band gap ($> 4.5\text{ eV}$) leaves narrow ribbons with few active channels within the measurement window.
+  - hBN accounts for **38 of 41 (92.7%)**: hBN armchair 24, hBN zigzag 14. The other 3 are graphene, kagome and Lieb, one each. hBN conducts only above its **3.63 eV** gap edge (Report 3.10, FULL-4), leaving narrow ribbons with few active channels within the measurement window.
 
 * **T2 Off-Grid Interpolation Benchmark (Per Ribbon & Pooled)**:
   - Evaluated on **15,000 off-grid test spectra** ($d \le 5.0\%$, 20 densities $\times$ 150 seeds 850–999) from `~/atlas_store/conc_v2`:
@@ -2100,8 +2100,13 @@ Artifacts written:
     - `phosphorene/armchair/N9`: 84.17% device, 13.83% silent wrong, 6.67% no-match, median conc 4.65%
 
 * **Query Speed & Evaluation Execution**:
-  - Evaluation runtime: **12.23 h** (44,050 s) covering 203,400 T1 spectra + 15,000 T2 spectra + 108,480 T3 spectra + 180,600 T4 spectra + 3,000 T5 spectra.
+  - Evaluation runtime: **12.23 h** (44,050 s) covering 203,400 T1 spectra + 15,000 T2 spectra + 120,480 T3 spectra (108,480 catalogue + 12,000 pilot) + 185,400 T4 spectra (184,800 hidden-material + 600 square strip) + 3,000 T5 spectra.
   - Query latency across 339-device catalogue ($N=100$ random test queries): median **101.5 ms**, 90th percentile **116.3 ms**.
+
+> **Compared with BUILD-29.** The comparison changes two things at once, 339 instead of 103 devices and the new device lengths, so it does not separate them.
+> - Silent misreads above 5%: hBN 11.0% (5.833%), phosphorene 13.833% (8.167%).
+> - The 3.0–8.3 eV window: right device 30.240% (52.112%); many more devices have T = 0 there.
+> - Median relative density error 3.17% (2.50%); checkerboard 14.08% is the weakest.
 
 * **Artifacts & Serialization**:
   - Catalogue manifest: `notebooks/material_atlas/lookup_v4/manifest.json` (339 devices, 148 KB)
