@@ -12,6 +12,7 @@ import argparse
 import csv
 import json
 import os
+import shutil
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -101,6 +102,7 @@ def plan_atlas_store(root, add):
             new = sorted(set(read_meta(src).get("clouds", {})) - have)
             if ok and new:
                 add("MERGE", src, data / mid, f"conc_v2: add {len(new)} densities to {chosen[mid]} copy", tree_size(src))
+                add("ARCHIVE", src, arch / MERGE_RUN / mid, "conc_v2 source, kept after its new densities were merged", tree_size(src))
             else:
                 add("ARCHIVE", src, arch / MERGE_RUN / mid, f"conc_v2 not merged: {why or 'no new densities'}", tree_size(src))
         else:
@@ -161,11 +163,142 @@ def plan_other(root, home, add):
     add("COPY", home / "atlas_store_old", arch / "home_atlas_store_old", "older copy of atlas_store runs", tree_size(home / "atlas_store_old"))
 
 
+class PlanError(Exception):
+    """The plan cannot be applied safely; nothing has been touched."""
+
+
+ORDER = {"MOVE": 0, "COPY": 1, "MERGE": 2, "ARCHIVE": 3, "LEAVE": 4}
+
+
+def _file_count(path):
+    p = Path(path)
+    return 1 if p.is_file() else sum(1 for f in p.rglob("*") if f.is_file())
+
+
+def _same_drive(src, dst):
+    probe = Path(dst)
+    while not probe.exists():
+        probe = probe.parent
+    return os.stat(src).st_dev == os.stat(probe).st_dev
+
+
+def _merge_pending(src, dst):
+    """Cloud keys in src that dst does not have yet."""
+    return sorted(set(read_meta(Path(src)).get("clouds", {})) - set(read_meta(Path(dst)).get("clouds", {})))
+
+
+def preflight(rows):
+    """Every reason the plan cannot be applied, without touching anything."""
+    problems = []
+    archived = {r["source"]: r["destination"] for r in rows if r["action"] == "ARCHIVE"}
+    produced = {r["destination"] for r in rows if r["action"] in ("MOVE", "COPY")}
+    claimed = Counter(r["destination"] for r in rows if r["action"] in ("MOVE", "COPY", "ARCHIVE"))
+    problems += [f"destination claimed more than once: {d}" for d, n in claimed.items() if n > 1]
+    for r in rows:
+        a, src, dst = r["action"], Path(r["source"]), Path(r["destination"])
+        if a == "LEAVE":
+            continue
+        if a in ("MOVE", "ARCHIVE"):
+            if src.exists() and dst.exists():
+                problems.append(f"destination already exists: {dst}")
+            elif not src.exists() and not dst.exists():
+                problems.append(f"source missing: {src}")
+            elif src.exists() and not _same_drive(src, dst):
+                problems.append(f"{src} and {dst} are on different drives: use COPY, not {a}")
+        elif a == "COPY":
+            if not src.exists():
+                problems.append(f"source missing: {src}")
+            elif dst.exists() and (tree_size(src) != tree_size(dst) or _file_count(src) != _file_count(dst)):
+                problems.append(f"destination already exists and differs from its source: {dst}")
+        elif a == "MERGE":
+            if not src.exists():
+                if not (src_arch := archived.get(r["source"])) or not Path(src_arch).exists():
+                    problems.append(f"source missing: {src}")
+            elif not dst.exists() and r["destination"] not in produced:
+                problems.append(f"merge target missing: {dst}")
+    return problems
+
+
+def merge_clouds(src, dst):
+    """Copy the density clouds dst lacks from src into dst; a density both have keeps dst's spectra."""
+    src, dst = Path(src), Path(dst)
+    ok, why = compatible(dst, src)
+    if not ok:
+        raise PlanError(f"cannot merge {src} into {dst}: {why}")
+    src_meta, dst_meta = read_meta(src), read_meta(dst)
+    new = _merge_pending(src, dst)
+    for key in new:
+        for f in [*src.glob(f"cloud_{key}.*"), *src.glob(f"cloud_{key}_*")]:
+            shutil.copy2(f, dst / f.name)
+        dst_meta["clouds"][key] = src_meta["clouds"][key]
+    (dst / "meta.json").write_text(json.dumps(dst_meta, indent=2))
+    return len(new)
+
+
+def _copy_verified(src, dst):
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if src.is_dir():
+        shutil.copytree(src, dst)
+    else:
+        shutil.copy2(src, dst)
+    if tree_size(src) != tree_size(dst) or _file_count(src) != _file_count(dst):
+        raise PlanError(f"copy of {src} is incomplete at {dst}")
+
+
+def execute(rows, log_path):
+    """Apply the plan in dependency order (MOVE, COPY, MERGE, ARCHIVE), logging each item to log_path.
+
+    Safe to repeat: items already done are skipped. If preflight finds any problem, nothing is touched.
+    """
+    problems = preflight(rows)
+    if problems:
+        raise PlanError("\n".join(problems))
+    log_path = Path(log_path)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    new_log = not log_path.exists()
+    with open(log_path, "a", newline="") as fh:
+        w = csv.writer(fh)
+        if new_log:
+            w.writerow(["action", "source", "destination", "bytes", "status"])
+        for r in sorted(rows, key=lambda r: ORDER[r["action"]]):
+            a, src, dst = r["action"], Path(r["source"]), Path(r["destination"])
+            if a == "LEAVE":
+                continue
+            status = "done"
+            if a in ("MOVE", "ARCHIVE"):
+                if dst.exists():
+                    status = "skipped"
+                else:
+                    dst.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.move(str(src), str(dst))
+            elif a == "COPY":
+                if dst.exists():
+                    status = "skipped"
+                else:
+                    _copy_verified(src, dst)
+            elif a == "MERGE":
+                if not src.exists() or not _merge_pending(src, dst):
+                    status = "skipped"
+                else:
+                    merge_clouds(src, dst)
+            w.writerow([a, src, dst, r["bytes"], status])
+            fh.flush()
+
+
+def prune_empty(root):
+    """Remove directories left empty under root (never root itself, never a directory with files in it)."""
+    for dp, dn, fn in os.walk(root, topdown=False):
+        if Path(dp) != Path(root) and not os.path.islink(dp) and not os.listdir(dp):
+            os.rmdir(dp)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--root", type=Path, default=ROOT_DEFAULT)
     ap.add_argument("--home", type=Path, default=Path.home())
     ap.add_argument("--out", type=Path, default=Path("data_move_plan.csv"))
+    ap.add_argument("--execute", action="store_true", help="apply the plan (default: only write the plan CSV)")
+    ap.add_argument("--log", type=Path, default=None, help="move log, default <root>/data/MOVES.csv")
     args = ap.parse_args()
     rows = []
 
@@ -194,6 +327,12 @@ def main():
     print(f"total canonical ribbons: {len(chosen)}")
     if dups:
         print(f"\nWARNING: {len(dups)} destinations are claimed more than once, e.g. {dups[:3]}")
+    if args.execute:
+        log = args.log or args.root / "data" / "MOVES.csv"
+        execute(rows, log)
+        for leftover in ("atlas_store", "transmission_data"):
+            prune_empty(args.root / leftover)
+        print(f"\nexecuted; every item is logged in {log}")
 
 
 if __name__ == "__main__":
