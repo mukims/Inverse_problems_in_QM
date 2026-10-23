@@ -11,8 +11,8 @@ from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import cdist
 
-from .lattice2d import HONEYCOMB, TOL, _cell_points
-from .lattices import RibbonHamiltonian
+from .lattice2d import HONEYCOMB, KAGOME, TOL, _cell_points, lattice_ribbon
+from .lattices import RibbonHamiltonian, hbn_ribbon, honeycomb_ribbon, triangular_ribbon
 
 TYPES = ("C", "H", "K")
 NAMED = ("graphene-ideal", "silicene", "germanene", "hbn", "triangular", "kagome")
@@ -128,11 +128,23 @@ HOPPINGS = ((("C", "C"), S3, "t_CC"),
 EDGE_VECTORS = {e.name: (e.T, e.W) for e in HONEYCOMB.edges}
 # Per-basis termination offsets: an integer (m, n) lattice shift for each basis site in BASIS order (C, A, B, K1, K2,
 # K3). They choose which period image of each site belongs to the cell, and so how each edge is terminated. A and B
-# follow HONEYCOMB; C and K are tuned against the existing builders (Task 3).
+# follow HONEYCOMB. Sites are then folded along T (below), so an offset's part along T only matters for unfolded
+# hosts; its part along W sets the termination. On zigzag C sits one row on (offset a1), which makes the folded
+# triangular cell a translate of triangular_ribbon's at every width; K needs none (Task 3).
 OFFSETS = {
     "armchair": ((0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)),
-    "zigzag": ((0, 0), (0, 0), (0, -1), (0, 0), (0, 0), (0, 0)),
+    "zigzag": ((1, 0), (0, 0), (0, -1), (0, 0), (0, 0), (0, 0)),
 }
+# Period images. Which image of a site along T joins the cell is a gauge choice: it changes no physics, only which
+# atoms a finite device holds, and that alone moves computed clean spectra by 1e-7 to 1e-5 (finite broadening and
+# lead Green's function convergence). The parent follows the existing builders so that its special cases reproduce
+# them exactly: honeycomb_ribbon and triangular_ribbon fold every site into one period strip along T, while
+# lattice_ribbon (kagome) stacks rows by W unfolded, a cell sheared by half a period per row. A host uses one rule for
+# all of its sites: mixing them would put bonded sites more than one period apart, beyond H1.
+UNFOLDED_HOSTS = (("K",),)          # active types of the hosts that keep the sheared cell
+# Where each edge's fold strip starts along T, in periods: chosen so that the folded cells are translates of the
+# builders' cells (on zigzag a strip from 0 gives the mirror image, matched only by swapping A and B).
+FOLD_FROM = {"armchair": 0.0, "zigzag": -0.5}
 
 
 def _vec(mn):
@@ -182,6 +194,12 @@ def _hop(params, pos, kind, shift):
     return H
 
 
+def _fold(pos, period, start):
+    """Move each site by whole periods into the strip start <= (along-period coordinate) / |period| < start + 1."""
+    L = np.linalg.norm(period)
+    return pos - np.floor((pos @ period / L + TOL) / L - start)[:, None] * period
+
+
 def _edge(edge):
     if edge not in EDGE_VECTORS:
         raise ValueError(f"edge must be one of {sorted(EDGE_VECTORS)}, got {edge!r}")
@@ -204,6 +222,8 @@ def parent_ribbon(params, edge, width):
                 pos.append(_vec(p) + _vec(offsets[i]) + k * _vec(W) + np.asarray(BASIS[i], float))
                 sub.append(i)
     pos, sub = np.array(pos), np.array(sub)
+    if params.active_types not in UNFOLDED_HOSTS:
+        pos = _fold(pos, _vec(T), FOLD_FROM[edge])
     kind = np.array(SITE_KIND)[sub]
     eps = _onsite(params)
     H0 = _hop(params, pos, kind, np.zeros(2)) + np.diag([eps[k] for k in kind]).astype(complex)
@@ -243,6 +263,46 @@ def device_cells_for(params, edge, target_atoms=2000, ref_widths=(7, 9)):
     """Device length: the cells that put the w = 7 and w = 9 devices near target_atoms (formula of materials.device_cells)."""
     per_cell = sum(active_atoms_per_cell(params, edge, w) for w in ref_widths) / len(ref_widths)
     return max(1, round(target_atoms / per_cell))
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Special cases: (named material, parent edge) -> (existing builder, its edge), each reproducing that builder exactly
+# (same sites up to a similarity, same clean and disordered spectra). Kagome and triangular have one counterpart each:
+# on the parent armchair edge they are ribbons the existing builders do not make (their armchair cells are different
+# Bravais cells: kagome 6 sites per row against the parent's 3, triangular 2 against 1).
+COUNTERPARTS = {
+    ("graphene-ideal", "armchair"): ("honeycomb", "armchair"),
+    ("graphene-ideal", "zigzag"): ("honeycomb", "zigzag"),
+    ("hbn", "armchair"): ("hbn", "armchair"),
+    ("hbn", "zigzag"): ("hbn", "zigzag"),
+    ("kagome", "zigzag"): ("kagome", "zigzag"),
+    ("triangular", "zigzag"): ("triangular", "zigzag"),       # one site per row
+}
+
+
+def reference_ribbon(key, edge, width):
+    """The existing builder's ribbon (energies in units of its hopping, as the parent's)."""
+    if key == "honeycomb":
+        return honeycomb_ribbon(width, edge)
+    if key == "hbn":
+        return hbn_ribbon(width, edge)
+    if key == "triangular":
+        return triangular_ribbon(width, edge)
+    if key == "kagome":
+        return lattice_ribbon(KAGOME, width, edge)
+    raise ValueError(f"unknown builder {key!r}; choose from honeycomb, hbn, triangular, kagome")
+
+
+def reference_period(key, edge):
+    """The existing builder's period: its H1 couples each cell to the one displaced by this vector."""
+    if key in ("honeycomb", "hbn"):                 # lattices.honeycomb_ribbon: period 3 along x, sqrt3 along y
+        return {"armchair": np.array([3.0, 0.0]), "zigzag": np.array([0.0, S3])}[edge]
+    if key == "triangular":                         # lattices.triangular_ribbon: period 1 along x, sqrt3 along y
+        return {"zigzag": np.array([1.0, 0.0]), "armchair": np.array([0.0, S3])}[edge]
+    if key == "kagome":
+        T = KAGOME.edge(edge).T
+        return T[0] * np.asarray(KAGOME.a1, float) + T[1] * np.asarray(KAGOME.a2, float)
+    raise ValueError(f"unknown builder {key!r}; choose from honeycomb, hbn, triangular, kagome")
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -332,22 +392,32 @@ def _periodic_residual(X, ref, q):
     return tree.query(Rw)[0].mean()
 
 
-def _match_periodic(pos, ref, period, n_candidates=6):
-    p = np.asarray(period, float)
-    phat = p / np.linalg.norm(p)
+def _orientations(pos, ref, phat, ref_period, n_candidates):
+    """Candidate (reflection, rotation in degrees) carrying the period direction phat onto the reference's."""
+    if ref_period is not None:                       # known: one rotation per reflection
+        q = np.asarray(ref_period, float)
+        return [(refl, np.rad2deg(np.arctan2(q[1], q[0]) - np.arctan2(*(F @ phat)[::-1])))
+                for refl, F in enumerate(_FLIP)]
     cands = []
     for refl, F in enumerate(_FLIP):
         sc = np.array([_transverse_score(pos, ref, _rot(d) @ F, phat) for d in range(360)])
         for d in range(360):                                     # local minima on the circle
             if sc[d] <= sc[d - 1] and sc[d] <= sc[(d + 1) % 360]:
                 cands.append((sc[d], refl, d))
-    scale = max(np.sqrt(((ref - ref.mean(0)) ** 2).sum(1).mean()), 1e-300)
-    best = None                     # ties (symmetric ribbons): prefer no reflection, then the smallest rotation
+    out = []
     for _, refl, d in sorted(cands)[:n_candidates]:
-        F = _FLIP[refl]
         fine = np.arange(d - 1, d + 1.0001, 0.01)
-        deg = fine[np.argmin([_transverse_score(pos, ref, _rot(x) @ F, phat) for x in fine])]
-        M = _rot(deg) @ F
+        out.append((refl, fine[np.argmin([_transverse_score(pos, ref, _rot(x) @ _FLIP[refl], phat) for x in fine])]))
+    return out
+
+
+def _match_periodic(pos, ref, period, ref_period=None, n_candidates=6):
+    p = np.asarray(period, float)
+    phat = p / np.linalg.norm(p)
+    scale = max(np.sqrt(((ref - ref.mean(0)) ** 2).sum(1).mean()), 1e-300)
+    fits = []
+    for refl, deg in _orientations(pos, ref, phat, ref_period, n_candidates):
+        M = _rot(deg) @ _FLIP[refl]
         q_hat, n, _ = _frame(M @ phat)
         vp, vr = pos @ (M.T @ n), ref @ n
         s = vr.std() / vp.std() if vp.std() > 0 else 1.0
@@ -359,11 +429,26 @@ def _match_periodic(pos, ref, period, n_candidates=6):
         for i in (near if len(near) else range(len(pos))):
             t = (ref[j0] @ q_hat - X0[i] @ q_hat) * q_hat + tv * n
             r = _periodic_residual(X0 + t, ref, s * M @ p)
-            key = (round(r / scale, 9), refl, round(min(deg % 360, 360 - deg % 360), 6))
+            fits.append((round(r / scale, 9), refl, round(min(deg % 360, 360 - deg % 360), 6), s * M, t))
+    # Ties (symmetric ribbons): prefer the fit under which whole cells correspond (the smallest spread of period
+    # shifts, so that two devices of the same cells hold the same atoms), then no reflection, then the smallest
+    # rotation.
+    r_min = min(f[0] for f in fits)
+    best = None
+    for r, refl, rot, A, t in fits:
+        if r == r_min:
+            perm, shift = _refine_periodic(pos, ref, p, refl, A, t)
+            key = (np.ptp(shift), refl, rot)
             if best is None or key < best[0]:
-                best = (key, refl, s * M, t)
-    _, refl, A, t = best
-    for _ in range(2):                                           # assign, then refine the transform exactly
+                best = (key, perm, shift)
+    _, perm, shift = best
+    # A whole-period translation is undetermined; fix it so that the most common shift is 0 (smallest on a tie).
+    return perm, shift - (np.argmax(np.bincount(shift - shift.min())) + shift.min())
+
+
+def _refine_periodic(pos, ref, p, refl, A, t):
+    """Assign sites under x -> A @ x + t modulo the period p, refine the transform exactly, assign again."""
+    for _ in range(2):
         X, q = pos @ A.T + t, A @ p
         cost, k = _periodic_cost(X, ref, q)
         perm = _assign(cost)
@@ -373,19 +458,20 @@ def _match_periodic(pos, ref, period, n_candidates=6):
     X, q = pos @ A.T + t, A @ p
     cost, k = _periodic_cost(X, ref, q)
     perm = _assign(cost)
-    shift = k[np.arange(len(ref)), perm].astype(int)
-    # A whole-period translation is undetermined; fix it so that the most common shift is 0 (smallest on a tie).
-    return perm, shift - (np.argmax(np.bincount(shift - shift.min())) + shift.min())
+    return perm, k[np.arange(len(ref)), perm].astype(int)
 
 
-def match_sites(pos, ref, period=None):
+def match_sites(pos, ref, period=None, ref_period=None):
     """Match two site sets that are the same up to translation, rotation, reflection and scale.
 
     Without `period`, returns `perm` with pos[perm] matching ref. With `period` (the ribbon period in pos's frame),
     sites are compared modulo the period and the result is (perm, shift): pos[perm[j]] + shift[j] * period lands on
     ref[j] (after the transform); the common whole-period offset is fixed so that the most frequent shift is 0.
-    When the sets are symmetric, transforms that fit equally well are tied; the one without reflection and with
-    the smallest rotation wins.
+    `ref_period` (the reference's period in ref's frame) makes the transform carry `period` onto it, so that cell c
+    of one ribbon is cell c of the other: one cell can fit several strips of the same lattice (a sheared kagome cell
+    does), and only the periods say which. When the sets are symmetric, transforms that fit equally well are tied;
+    the one under which whole cells correspond (smallest spread of `shift`) wins, then the one without reflection,
+    then the smallest rotation.
     """
     pos, ref = np.asarray(pos, float), np.asarray(ref, float)
     if pos.shape != ref.shape or pos.ndim != 2 or pos.shape[1] != 2:
@@ -393,4 +479,20 @@ def match_sites(pos, ref, period=None):
     if len(pos) < 2:
         perm = np.arange(len(pos))
         return perm if period is None else (perm, np.zeros(len(pos), int))
-    return _match_free(pos, ref) if period is None else _match_periodic(pos, ref, period)
+    return _match_free(pos, ref) if period is None else _match_periodic(pos, ref, period, ref_period)
+
+
+def match_fit(pos, ref, perm, shift=None, period=None):
+    """The similarity x -> A @ x + t that best carries the matched sites pos[perm] (each moved shift[j] periods) onto
+    ref, and the match residual: the largest distance left between a matched site and its reference site."""
+    pos, ref = np.asarray(pos, float), np.asarray(ref, float)
+    X = pos[perm] + (0.0 if shift is None else np.asarray(shift)[:, None] * np.asarray(period, float))
+    if len(X) < 2:
+        return np.eye(2), (ref - X).sum(0), 0.0
+    best = None
+    for reflect in (False, True):
+        s, R, t = _similarity(X, ref, reflect)
+        r = np.linalg.norm(X @ (s * R).T + t - ref, axis=1).max()
+        if best is None or r < best[2]:
+            best = (s * R, t, r)
+    return best
