@@ -22,7 +22,7 @@ Left: bands of N = 9, for E ≥ 0. Right: clean transmission for N = 7, 9, 14 an
 
 Armchair and zigzag N = 9 at 0.5–4% impurities (`engine_v1`, 1,000 configurations per density): the median and 10–90% band, against the clean spectrum. Armchair comes from the legacy trace formula, whose spikes at subband edges (the vertical streaks) are clipped by the axis. Zigzag uses Caroli and has none.
 
-The figures are made by `docs/materials/make_figures.py` from the code and the stores.
+The figures are made by `scripts/report/make_material_figures.py` from the code and the stores.
 
 ## Physical model
 
@@ -52,7 +52,7 @@ The figures are made by `docs/materials/make_figures.py` from the code and the s
 
 `honeycomb_ribbon` builds the cell from geometry: sites of a honeycomb lattice with bond length 1, kept inside one period, with bonds wherever two sites are at distance 1.
 
-**Bug #9.** The old `agnr_lib` cell was wrong for even armchair widths: a chain bond made a 4-ring on the last row, and the inter-cell hopping missed a row. It was fixed with a corrected "cell v2". Even widths (and widths > 31) now use recomputed leads in `~/atlas_store/leads/agnr_cell_v2/`. Odd widths are byte-identical to the historical code. Clouds made before the fix are quarantined in `~/atlas_store/quarantine_b4/` and must never be used.
+**Bug #9.** The old `agnr_lib` cell was wrong for even armchair widths: a chain bond made a 4-ring on the last row, and the inter-cell hopping missed a row. It was fixed with a corrected "cell v2". Even widths (and widths > 31) now use recomputed leads in `data/graphene-ideal/leads/agnr_cell_v2/`. Odd widths are byte-identical to the historical code. Clouds made before the fix are quarantined in `archives/atlas_store_runs/quarantine_b4/` and must never be used.
 
 ## Transport
 
@@ -61,7 +61,7 @@ The figures are made by `docs/materials/make_figures.py` from the code and the s
 | Code | `agnr_lib.device_transmission` (via `generate_clouds._one_agnr`) | `tbribbon.transport.spectrum` |
 | Formula | **legacy trace**, `nonlocal_mode="IL"`: `T = \|Tr[G̃_dd ρ G̃_rr ρ − ρ G̃nl ρ G̃nl]\|` | **Caroli**, `T = Tr[Γ_R G_N1 Γ_L G_N1†]` |
 | Broadening | d = 1e-5 (device and leads) | η = 1e-6 (device), η = 1e-4 (leads) |
-| Leads | precomputed Sancho–Rubio surface GFs, shape (300, 2N, 2N): odd N ≤ 31 from `~/Desktop/backup/agnr/size_N/leads_N.npy`; even N and N > 31 from `~/atlas_store/leads/agnr_cell_v2/` | computed per ribbon (`LeadCache`) |
+| Leads | precomputed Sancho–Rubio surface GFs, shape (300, 2N, 2N): odd N ≤ 31 from `data/graphene-ideal/leads/agnr_v1_backup/size_N/leads_N.npy`; even N and N > 31 from `data/graphene-ideal/leads/agnr_cell_v2/` | computed per ribbon (`LeadCache`) |
 | Stored energy grid | **0–2.99 t, step 0.01 t (300 points) = 0–8.07 eV** | **0–3.99 t, step 0.01 t (400 points) = 0–10.77 eV** |
 | `meta.json` formula | `agnr_lib_IL_1e-5` | `caroli` |
 | Clean-spectrum check | T = open channels (error 0.00) | T = open channels (error ≤ 4.3e-5) |
@@ -91,9 +91,9 @@ Zigzag uses Caroli and has no spikes.
 
 | Store or dataset | Contents | Build |
 |---|---|---|
-| `~/atlas_store/engine_v1/graphene-ideal/` | **31 ribbons:** armchair N 5–16, 20, 27, 31, 40, 50 (17); zigzag N 4–12, 16, 20, 27, 40, 50 (14). × 4 densities × 1,000 seeds = **124,000 spectra**. `check_store.py` ALL PASS (`engine_v1/report.json`). Generated on 16 workers in about 24.5 h. | FULL-1 / BUILD-15 |
-| `~/atlas_store/smoke_v1/graphene-ideal/` | the same 31 ribbons × 4 densities × 50 seeds | SMOKE-2 |
-| `~/atlas_store/reference_v1/graphene-ideal/armchair/N7, N9` | legacy 7/9-AGNR clouds imported into the atlas format | Phase 1 |
+| `data/graphene-ideal/` | **31 ribbons:** armchair N 5–16, 20, 27, 31, 40, 50 (17); zigzag N 4–12, 16, 20, 27, 40, 50 (14). × 4 densities × 1,000 seeds = **124,000 spectra**. `check_store.py` ALL PASS (`engine_v1/report.json`). Generated on 16 workers in about 24.5 h. | FULL-1 / BUILD-15 |
+| `archives/atlas_store_runs/smoke_v1/graphene-ideal/` | the same 31 ribbons × 4 densities × 50 seeds | SMOKE-2 |
+| `archives/atlas_store_runs/reference_v1/graphene-ideal/armchair/N7, N9` | legacy 7/9-AGNR clouds imported into the atlas format | Phase 1 |
 | `.../transmission_results/consolidated_data/size_7.npy` | **legacy 7-AGNR:** shape (34, 10000, 300). Concentrations c = 2, 4 … 68 impurities (index i ↔ c = 2(i+1)); row = configuration seed; E = 0–2.99 t. Density = c / 1,400. | `ca_agnr.py` (agnr_lib "IL", d = 1e-5) |
 | `.../consolidated_data/size_9.npy` | **legacy 9-AGNR:** shape (49, 10000, 300); c = 2 … 98; density = c / 1,800 | same |
 | repo root `7_agnr_pris.npy`, `9_agnr_pris.npy` | clean references, 300 points (git-ignored; copy in `data/raw/transmission_results/`) | Bug #3 regeneration |
@@ -108,10 +108,10 @@ Stage 3 uses seeds 0–2099 to train, 2100–2549 to calibrate and 2550–2999 t
 ## Reproduce
 
 ```bash
-export PYTHONPATH=notebooks/material_atlas:notebooks OMP_NUM_THREADS=1
-~/miniconda3/envs/ml/bin/python -u notebooks/tbribbon/generate_clouds.py --store ~/atlas_store/engine_v1 \
+export PYTHONPATH=src OMP_NUM_THREADS=1
+~/miniconda3/envs/ml/bin/python -u scripts/generate/generate_clouds.py --store data \
     --grid sparse31 --spec-version v2 --n-seeds 1000 --n-jobs 16
-~/miniconda3/envs/ml/bin/python notebooks/tbribbon/check_store.py --store ~/atlas_store/engine_v1
+~/miniconda3/envs/ml/bin/python scripts/generate/check_store.py --store data
 ```
 
 The generator refuses to put graphene armchair on an eV spec on purpose. Armchair data reaches the eV axis by rescaling, never by regeneration.

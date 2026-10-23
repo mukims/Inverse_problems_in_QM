@@ -14,9 +14,10 @@ def _key(density: float) -> str:
 class CloudStore:
     """extra=False hides clouds merged in from another run (their meta entry has a "source"), so a catalogue built
     from the store sees the densities it was defined with. extra=True shows every density."""
-    def __init__(self, root, extra=False):
+    def __init__(self, root, extra=False, only=None):
         self.root = Path(root).expanduser()
         self.extra = extra
+        self.only = tuple(only) if only else None      # model-id prefixes that models() lists, e.g. ("graphene-ideal/",)
 
     def _dir(self, model_id):
         return self.root / model_id
@@ -131,8 +132,12 @@ class CloudStore:
     def densities(self, model_id):
         return sorted(v["density"] for v in self._shown(model_id).values())
 
-    def models(self):
-        return sorted(str(p.parent.relative_to(self.root)) for p in self.root.rglob("energies_t.npy"))
+    def models(self, with_clouds=False):
+        """Every ribbon with a stored energy axis; with_clouds=True keeps those that have at least one density."""
+        ids = sorted(str(p.parent.relative_to(self.root)) for p in self.root.rglob("energies_t.npy"))
+        if self.only:
+            ids = [m for m in ids if m.startswith(self.only)]
+        return [m for m in ids if self.densities(m)] if with_clouds else ids
 
     def spike_fraction(self, model_id, density) -> float:
         _, pris = self.read_pristine(model_id)

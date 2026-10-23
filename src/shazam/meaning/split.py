@@ -1,4 +1,4 @@
-# notebooks/material_atlas/meaning/split.py
+# src/shazam/meaning/split.py
 """Configuration-seed split (LOGBOOK Bug #7) and a guard that compared encoders saw the same ribbons."""
 import numpy as np
 

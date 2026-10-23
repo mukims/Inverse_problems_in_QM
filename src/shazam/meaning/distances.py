@@ -1,4 +1,4 @@
-# notebooks/material_atlas/meaning/distances.py
+# src/shazam/meaning/distances.py
 """Physical distance between ribbons, from their clean spectra under the label-free input transform."""
 import numpy as np
 

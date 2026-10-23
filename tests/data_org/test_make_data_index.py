@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-SPEC = importlib.util.spec_from_file_location("make_data_index", Path(__file__).resolve().parents[2] / "scripts" / "make_data_index.py")
+SPEC = importlib.util.spec_from_file_location("make_data_index", Path(__file__).resolve().parents[2] / "scripts" / "data" / "make_data_index.py")
 mdi = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(mdi)
 

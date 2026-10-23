@@ -35,6 +35,22 @@ def archive_run(name: str) -> Path:
     return archives_root() / "atlas_store_runs" / name
 
 
+def raw_root() -> Path:
+    """Raw per-concentration simulation output (the generation scripts write here, the old output is already here)."""
+    env = os.environ.get("TRANSMISSION_RAW")
+    return Path(env).expanduser() if env else archives_root() / "raw_simulations"
+
+
+# Runs whose ribbons became the data tree. Every other old run lives on in the archive.
+_BECAME_DATA = ("engine_v1", "materials3_ev_full", "novelty_v1")
+
+
+def store_root(name: str) -> Path:
+    """Where the store that used to be atlas_store/<name> is now. For engine_v1, materials3_ev_full and novelty_v1 that
+    is the data tree, which also holds the other runs' ribbons: select by model id (graphene-ideal/..., square/...)."""
+    return data_root() if name in _BECAME_DATA else archive_run(name)
+
+
 def ribbon_dir(material: str, edge: str, width: int) -> Path:
     return data_root() / material / edge / f"N{width}"
 
@@ -53,9 +69,19 @@ def agnr_consolidated(width: int) -> Path:
     return ribbon_dir("graphene-ideal", "armchair", width) / "legacy" / f"size_{width}.npy"
 
 
+def agnr_consolidated_dir() -> Path:
+    """One folder with size_7.npy and size_9.npy side by side (symlinks to the legacy/ copies), for scripts that join
+    a data directory with size_<w>.npy."""
+    return data_root() / "graphene-ideal" / "armchair" / "consolidated"
+
+
 def square_combined(width: int) -> Path:
     """The clean square-lattice set from ca_sq.py: conc_<c>.npy + conc_<c>_meta.csv per concentration."""
     return ribbon_dir("square", "strip", width) / "legacy" / f"size_{width}_combined"
+
+
+def square_pristine(width: int) -> Path:
+    return ribbon_dir("square", "strip", width) / "legacy" / f"pristine_{width}.npy"
 
 
 def results_dir(*parts, create: bool = False) -> Path:

@@ -106,7 +106,7 @@ def rho_matrix(t, m):
 def leads_sancho_rubio(w_vals, d, t, e, m, tol=1e-10, max_iter=200):
     """AGNR lead surface GF for all energies at once, via decimation.
 
-    Same scheme as notebooks/square_lattice/compute_leads_sq.py, but with the
+    Same scheme as scripts/generate/compute_leads_sq.py, but with the
     AGNR unit cell and the AGNR inter-cell hopping T1 (which is *not* the
     identity, so the left/right renormalised hoppings genuinely differ).
     """

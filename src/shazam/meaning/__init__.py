@@ -1,1 +1,1 @@
-# notebooks/material_atlas/meaning/__init__.py
+# src/shazam/meaning/__init__.py

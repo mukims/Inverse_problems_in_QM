@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-SPEC = importlib.util.spec_from_file_location("organise_data", Path(__file__).resolve().parents[2] / "scripts" / "organise_data.py")
+SPEC = importlib.util.spec_from_file_location("organise_data", Path(__file__).resolve().parents[2] / "scripts" / "data" / "organise_data.py")
 od = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(od)
 

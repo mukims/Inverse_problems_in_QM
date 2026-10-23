@@ -4,11 +4,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+import paths
 from atlaslib.conformal import coverage, fit_relative, intervals
 
-REPO = Path(__file__).resolve().parents[2]
-METRICS_PATH = REPO / "notebooks/material_atlas/stage3_7_9/metrics.json"
-PREDS_PATH = REPO / "notebooks/material_atlas/stage3_7_9/predictions_test.npz"
+METRICS_PATH = paths.results_dir("material_atlas", "stage3_7_9") / "metrics.json"
+PREDS_PATH = paths.results_dir("material_atlas", "stage3_7_9") / "predictions_test.npz"
 
 
 def test_toy_interval_coverage():

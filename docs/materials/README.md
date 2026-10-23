@@ -14,11 +14,11 @@ This folder documents every material in the dataset: its physical model, how its
 Each README has three figures: the ribbon structure, the bands beside the clean transmission, and transmission with impurities. They are regenerated from the code and the stores with:
 
 ```bash
-PYTHONPATH=notebooks/material_atlas:notebooks ~/miniconda3/envs/ml/bin/python docs/materials/make_figures.py
+PYTHONPATH=src ~/miniconda3/envs/ml/bin/python scripts/report/make_material_figures.py
 ```
 
 Sources of truth:
-- **Code:** `notebooks/tbribbon/` (lattices, transport, leads, disorder, generator) and `notebooks/agnr/physics/agnr_lib.py` (graphene armchair).
+- **Code:** `src/tbribbon/` (lattices, transport, leads, disorder, generator) and `src/agnr/agnr_lib.py` (graphene armchair).
 - **Results:** `LOGBOOK.md` (builds, bugs).
 - **Literature parameters:** `docs/superpowers/handoff/material-atlas/MATERIALS.md` and `PHYSICS.md`.
 
@@ -46,7 +46,7 @@ material parameters ──► ribbon unit cell (H0, H1) ──► clean leads (s
 - **Hopping and energy units.** Hopping enters as −t on the bond. Energies are stored in **units of the material's t** (`t_ev` converts to eV), except MoS₂ (t_ev = 1, so its stored energies are already eV).
 - **E = 0** is charge neutrality, which is mid-gap for gapped materials (decision D4). **Only E ≥ 0 is computed** (decision D5), so the valence bands of MoS₂ and phosphorene are not in the data.
 
-### 2. Leads (`notebooks/tbribbon/leads.py`)
+### 2. Leads (`src/tbribbon/leads.py`)
 - **Method.** Sancho–Rubio decimation gives the surface Green's function of each semi-infinite clean lead, with broadening **η_lead = 1e-4** by default, tolerance 1e-10 and at most 300 iterations. `generate_clouds.py --lead-eta` overrides η_lead for a run. `meta.json` records it, and the generator refuses to mix two values within one ribbon. Only `wse2/zigzag/N14` in the `materials2_ev_*` stores uses 1e-5: its 0.9 meV edge-band mini-gap sits 0.07 meV from a grid point (SMOKE-4).
 - **Right lead** (extends to +∞ through `H1`): `g_R = surface_gf(E, H0, H1)`.
 - **Left lead** (through `H1†`): `g_L = surface_gf(E, H0, H1†)`.
@@ -54,13 +54,13 @@ material parameters ──► ribbon unit cell (H0, H1) ──► clean leads (s
 - **Broadening:** `Γ = i(Σ − Σ†)`.
 - **Caching.** Leads are computed once per ribbon and energy grid (`LeadCache`) and shared by all disorder configurations.
 
-### 3. Transmission formulas (`notebooks/tbribbon/transport.py`)
+### 3. Transmission formulas (`src/tbribbon/transport.py`)
 
 | Formula | Used for | Device broadening η | Notes |
 |---|---|---|---|
 | **Caroli** `T = Tr[Γ_R G_N1 Γ_L G_N1†]` | all new materials, graphene zigzag | **1e-6** | Recursive Green's function over the 100 cells. Bounded by the number of open channels. Clean T equals the channel count except within about half a grid step of a subband edge. |
-| **Legacy trace** `T = \|Tr[G̃_LL H1 G̃_RR H1 − H1 G̃nl H1 G̃nl]\|`, with `G̃ = G − G†` | square strip | **1e-3** | Reproduces `notebooks/square_lattice/ca_sq.py`. It requires a symmetric `H1`. It is not bounded: it spikes above the channel count at subband edges. |
-| **agnr_lib legacy trace** (`nonlocal_mode="IL"`) | graphene armchair | **1e-5** (device and leads) | `notebooks/agnr/physics/agnr_lib.py`, its own precomputed leads and 0–2.99 t grid. Same spike behaviour. See the [graphene README](graphene/README.md). |
+| **Legacy trace** `T = \|Tr[G̃_LL H1 G̃_RR H1 − H1 G̃nl H1 G̃nl]\|`, with `G̃ = G − G†` | square strip | **1e-3** | Reproduces `scripts/generate/ca_sq.py`. It requires a symmetric `H1`. It is not bounded: it spikes above the channel count at subband edges. |
+| **agnr_lib legacy trace** (`nonlocal_mode="IL"`) | graphene armchair | **1e-5** (device and leads) | `src/agnr/agnr_lib.py`, its own precomputed leads and 0–2.99 t grid. Same spike behaviour. See the [graphene README](graphene/README.md). |
 
 The generator routes automatically (`generate_clouds.py`):
 - graphene armchair goes to agnr_lib;
@@ -81,7 +81,7 @@ There are two generations of stored grid:
 - **Band-top truncation.** On the eV grid only channels up to `band_top + 0.01 t` are computed; the rest are written as **exact zeros**.
 - **Why zeros are exact.** Above the top of the clean band there are no propagating lead states, so T = 0. This saves 3× on MoS₂ and the triangular lattice, whose bands end below 3 eV.
 
-### 5. Disorder (`notebooks/tbribbon/disorder.py`; `agnr_lib` for graphene armchair)
+### 5. Disorder (`src/tbribbon/disorder.py`; `agnr_lib` for graphene armchair)
 - **Impurity:** an on-site energy shift **+V** on a randomly chosen atom. V = 0.5 t for every material except MoS₂ (V = 0.5 × t₂ = 0.2535 eV). The values in eV are in each README.
 - **Multi-orbital atoms** (MoS₂): the impurity shifts **all orbitals of the chosen atom** (Bug #11).
 - **Density d:** impurities per atom. The count is `n_imp = max(1, round(d × n_atoms))` with `n_atoms = 100 cells × atoms per cell`. The stored density key is the actual `n_imp / n_atoms`.
@@ -89,10 +89,10 @@ There are two generations of stored grid:
 - **Densities:** 0.5%, 1%, 2%, 4% (decision F3; a 6% level may be appended later).
 - **Configurations:** seeds 0–999 per (ribbon, density) for training-grade data. The split is **0–699 train, 700–849 validation, 850–999 test** (AGENTS.md).
 
-### 6. Store layout (`notebooks/material_atlas/atlaslib/store.py`)
+### 6. Store layout (`src/atlaslib/store.py`)
 
 ```
-~/atlas_store/<store>/<material>/<edge>/N<width>/
+data/<store>/<material>/<edge>/N<width>/
     energies_t.npy              stored energy grid (units of the material's t)
     pristine.npy                clean T(E)
     cloud_d0.0050.npy           (n_seeds, n_energies) disordered T(E), one row per seed
@@ -108,7 +108,7 @@ There are two generations of stored grid:
 - identical spectra at two densities (a generator bug);
 - a formula that differs from the ribbon's clean spectrum.
 
-`notebooks/tbribbon/check_store.py` validates a whole store (report written next to the logs):
+`scripts/generate/check_store.py` validates a whole store (report written next to the logs):
 - clean T equals the open-channel count from the band structure;
 - medians stay at or below pristine away from steps;
 - spike-robust per-seed means;
@@ -156,4 +156,4 @@ There are two generations of stored grid:
 | F1–F3: widths, configurations, densities | N7/9/14 for all + N27 for hBN, phosphorene, triangular; 1,000 configurations; 0.5–4% | same |
 
 ## Reproducing a store
-Set `OMP_NUM_THREADS=1`, use `--n-jobs 16` when the machine is otherwise idle, and run from the repo root with `PYTHONPATH=notebooks/material_atlas:notebooks`. The exact command for each material is in its README. Always validate afterwards with `check_store.py`.
+Set `OMP_NUM_THREADS=1`, use `--n-jobs 16` when the machine is otherwise idle, and run from the repo root with `PYTHONPATH=src`. The exact command for each material is in its README. Always validate afterwards with `check_store.py`.

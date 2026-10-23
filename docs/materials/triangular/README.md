@@ -22,7 +22,7 @@ Left: bands of N = 9 (E ≥ 0). Right: clean transmission for N = 7, 9, 14 and 2
 
 N = 9 at 0.5–4% impurities: the median and 10–90% band, against the clean spectrum. 1,000 configurations per density (`materials_ev_full`). For zigzag N9, 0.5% rounds to 4 impurities of 900, i.e. 0.44%.
 
-The figures are made by `docs/materials/make_figures.py` from the code and the stores.
+The figures are made by `scripts/report/make_material_figures.py` from the code and the stores.
 
 ## Physical model
 
@@ -73,10 +73,10 @@ The figures are made by `docs/materials/make_figures.py` from the code and the s
 
 | Store | Contents | Build |
 |---|---|---|
-| `~/atlas_store/materials_v1/triangular/` | clean spectra only, N4/6/8/10/12 × both edges | BUILD-20 |
-| `~/atlas_store/materials_ev_v1/triangular/` | N7/9/14/27 × both edges × 4 densities × 50 seeds; ALL PASS | SMOKE-3 |
-| `~/atlas_store/materials_ev_probe/triangular/` | N50 × both edges × 4 × 2 seeds | SMOKE-3 probe |
-| `~/atlas_store/materials_ev_full/triangular/` | **N7/9/14/27 × both edges × 4 densities × 1,000 seeds** | FULL-4 |
+| `archives/atlas_store_runs/materials_v1/triangular/` | clean spectra only, N4/6/8/10/12 × both edges | BUILD-20 |
+| `archives/atlas_store_runs/materials_ev_v1/triangular/` | N7/9/14/27 × both edges × 4 densities × 50 seeds; ALL PASS | SMOKE-3 |
+| `archives/atlas_store_runs/materials_ev_probe/triangular/` | N50 × both edges × 4 × 2 seeds | SMOKE-3 probe |
+| `archives/atlas_store_runs/materials_ev_full/triangular/` | **N7/9/14/27 × both edges × 4 densities × 1,000 seeds** | FULL-4 |
 
 **Cost:** single-core seconds per spectrum (SMOKE-3):
 
@@ -88,8 +88,8 @@ The figures are made by `docs/materials/make_figures.py` from the code and the s
 ## Reproduce
 
 ```bash
-export PYTHONPATH=notebooks/material_atlas:notebooks OMP_NUM_THREADS=1
-~/miniconda3/envs/ml/bin/python -u notebooks/tbribbon/generate_clouds.py --store ~/atlas_store/materials_ev_full --grid materials \
+export PYTHONPATH=src OMP_NUM_THREADS=1
+~/miniconda3/envs/ml/bin/python -u scripts/generate/generate_clouds.py --store archives/atlas_store_runs/materials_ev_full --grid materials \
     --materials triangular --widths 7,9,14,27 --spec-version v3 --n-seeds 1000 --n-jobs 16
 ```
 

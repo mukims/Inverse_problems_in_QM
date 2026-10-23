@@ -22,7 +22,7 @@ Left: bands of N = 9 (E ≥ 0; mid-gap at E = 0). Right: clean transmission for 
 
 N = 9 at 0.5–4% impurities on whole Mo atoms (V = 0.2535 eV): the median and 10–90% band, against the clean spectrum. 1,000 configurations per density (`materials_ev_full`).
 
-The figures are made by `docs/materials/make_figures.py` from the code and the stores.
+The figures are made by `scripts/report/make_material_figures.py` from the code and the stores.
 
 ## Physical model
 
@@ -86,10 +86,10 @@ Before Bug #11 was fixed, impurities landed on single orbitals with V = 0.5 eV. 
 
 | Store | Contents | Build |
 |---|---|---|
-| `~/atlas_store/materials_v1/mos2/` | clean spectra only, N7/9/14/27 × both edges (regenerated after Bug #10) | BUILD-19 / Bug #10 |
-| `~/atlas_store/materials_ev_v1/mos2/` | N7/9/14/27 × both edges × 4 densities × 50 seeds; ALL PASS | SMOKE-3 |
-| `~/atlas_store/materials_ev_probe/mos2/` | N50 × both edges × 4 × 2 seeds | SMOKE-3 probe |
-| `~/atlas_store/materials_ev_full/mos2/` | **N7/9/14 × both edges × 4 densities × 1,000 seeds**. N27 is **not** in the full run (decision F1). | FULL-4 |
+| `archives/atlas_store_runs/materials_v1/mos2/` | clean spectra only, N7/9/14/27 × both edges (regenerated after Bug #10) | BUILD-19 / Bug #10 |
+| `archives/atlas_store_runs/materials_ev_v1/mos2/` | N7/9/14/27 × both edges × 4 densities × 50 seeds; ALL PASS | SMOKE-3 |
+| `archives/atlas_store_runs/materials_ev_probe/mos2/` | N50 × both edges × 4 × 2 seeds | SMOKE-3 probe |
+| `archives/atlas_store_runs/materials_ev_full/mos2/` | **N7/9/14 × both edges × 4 densities × 1,000 seeds**. N27 is **not** in the full run (decision F1). | FULL-4 |
 
 **Cost:** single-core seconds per spectrum (SMOKE-3). Armchair carries twice the atoms of zigzag at the same N, and 3 orbitals each.
 
@@ -103,8 +103,8 @@ A full armchair N27 ribbon would take 10–14 h, and armchair N50 about 41 h. Th
 ## Reproduce
 
 ```bash
-export PYTHONPATH=notebooks/material_atlas:notebooks OMP_NUM_THREADS=1
-~/miniconda3/envs/ml/bin/python -u notebooks/tbribbon/generate_clouds.py --store ~/atlas_store/materials_ev_full --grid materials \
+export PYTHONPATH=src OMP_NUM_THREADS=1
+~/miniconda3/envs/ml/bin/python -u scripts/generate/generate_clouds.py --store archives/atlas_store_runs/materials_ev_full --grid materials \
     --materials mos2 --widths 7,9,14 --spec-version v3 --n-seeds 1000 --n-jobs 16
 ```
 

@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 from atlaslib import CloudStore, InputSpec, Registry, RibbonModel
-from notebooks.material_atlas.build_atlas_v2 import HELD_OUT, TRAIN
+from build_atlas_v2 import HELD_OUT, TRAIN
 
 
 def test_held_out_partition():

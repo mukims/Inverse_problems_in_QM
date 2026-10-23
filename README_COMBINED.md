@@ -10,11 +10,11 @@ For primary project overview, model architectures, and benchmark analysis, see [
 
 | Dataset | Location | Shape / grid | Status |
 |---|---|---|---|
-| 7-AGNR | `transmission_data/transmission_results/consolidated_data/size_7.npy` | `(34, 10000, 300)`, c = 2, 4 … 68 | **In use** (all current models) |
+| 7-AGNR | `data/graphene-ideal/armchair/consolidated/size_7.npy` | `(34, 10000, 300)`, c = 2, 4 … 68 | **In use** (all current models) |
 | 9-AGNR | `…/consolidated_data/size_9.npy` | `(49, 10000, 300)`, c = 2, 4 … 98 | **In use** |
-| Square lattice, width 10 (clean, `ca_sq.py`) | `~/transmissions_sq/size_10_combined/conc_{c}.npy` + `conc_{c}_meta.csv` | `(10000, 400)` per c, c = 5, 10 … 90; pristine `~/transmissions_sq/pristine_10.npy` | **In use** |
-| Square lattice, widths 15 and 20 (clean, `ca_sq.py`) | `~/transmissions_sq/size_{15,20}_combined/` | `(10000, 400)` per c, c = 5, 10 … 60 | Reserved for a separate project |
-| Square lattice, width 10 (`CA.ipynb` CSVs), section 1 below | `transmission_data/size_10/` | 48 concentrations | **Corrupt, do not use** |
+| Square lattice, width 10 (clean, `ca_sq.py`) | `data/square/strip/N10/legacy/size_10_combined/conc_{c}.npy` + `conc_{c}_meta.csv` | `(10000, 400)` per c, c = 5, 10 … 90; pristine `data/square/strip/N10/legacy/pristine_10.npy` | **In use** |
+| Square lattice, widths 15 and 20 (clean, `ca_sq.py`) | `data/square/strip/N{15,20}/legacy/` | `(10000, 400)` per c, c = 5, 10 … 60 | Reserved for a separate project |
+| Square lattice, width 10 (`CA.ipynb` CSVs), section 1 below | `archives/corrupt_square_CA/size_10/` | 48 concentrations | **Corrupt, do not use** |
 | Size 25 and 7-AGNR "combined" sets, sections 2–3 below | `transmissions_combined/`, `transmission_results_combined/` | — | Not found on the current machine; not re-verified |
 
 In every consolidated array, row $i$ of a concentration is configuration seed $i$. Seeds give nested impurity sets across concentrations, so always split train/test by seed (LOGBOOK Bug #7).
@@ -28,7 +28,7 @@ In every consolidated array, row $i$ of a concentration is configuration seed $i
 - **Input Data**: 326,557 CSV files containing frequency `w` and conductance `G`.
 - **Output Path**: `size_10_combined/conc_{C}.csv`
 - **Output Format**: Row-wise CSV where columns are `config_id` followed by the 400 energy grid points `w` (`0.0`, `0.01`, ..., `3.99`).
-- **Generation Script**: [`notebooks/square_lattice/combine_sq.py`](notebooks/square_lattice/combine_sq.py) and [`notebooks/square_lattice/pipeline_sq.py`](notebooks/square_lattice/pipeline_sq.py).
+- **Generation Script**: [`scripts/generate/combine_sq.py`](scripts/generate/combine_sq.py) and [`scripts/generate/pipeline_sq.py`](scripts/generate/pipeline_sq.py).
 
 ### Concentrations & Configuration Counts
 There are **48 unique concentrations** in this dataset:
@@ -66,7 +66,7 @@ There are **9 unique concentrations** (multiples of 5):
 - **Input Data**: 740,352 binary `.npy` files containing 1D arrays of shape `(300,)`.
 - **Output Path**: `transmission_results_combined/conc_{C}.npy` (along with metadata mapping `conc_{C}_meta.csv`).
 - **Output Format**: 2D stacked NumPy array of shape `(num_configs, 300)` where each row is a transmission curve $T(E)$.
-- **Generation Script**: [`scripts/combine_storage_data.py`](scripts/combine_storage_data.py) and [`notebooks/agnr/ca_agnr.py`](notebooks/agnr/ca_agnr.py).
+- **Generation Script**: [`scripts/combine_storage_data.py`](scripts/combine_storage_data.py) and [`scripts/generate/agnr/ca_agnr.py`](scripts/generate/agnr/ca_agnr.py).
 
 ### Concentrations & Configuration Counts
 There are **74 unique concentrations** (sequential up to 98):
@@ -83,7 +83,7 @@ There are **74 unique concentrations** (sequential up to 98):
 - **Input Data**: 4,400 CSV files containing `(size, size)` complex matrices (parenthesized complex numbers).
 - **Output Path**: `leads_combined/leads_{S}.npy` (along with metadata mapping `leads_{S}_meta.csv`).
 - **Output Format**: 3D complex NumPy array of shape `(400, S, S)` and dtype `complex128`.
-- **Generation Scripts**: [`notebooks/square_lattice/compute_leads_sq.py`](notebooks/square_lattice/compute_leads_sq.py) and [`notebooks/agnr/build_leads_agnr.py`](notebooks/agnr/build_leads_agnr.py).
+- **Generation Scripts**: [`scripts/generate/compute_leads_sq.py`](scripts/generate/compute_leads_sq.py) and [`scripts/generate/agnr/build_leads_agnr.py`](scripts/generate/agnr/build_leads_agnr.py).
 
 ### System Sizes & Energy Grid Counts
 There are **11 unique system sizes**:
@@ -104,7 +104,7 @@ T = s9[19, :3000, :300]             # c = 40, seeds 0-2999, E = 0-2.99 eV
 
 # Clean square lattice, width 10
 import os
-d = os.path.expanduser("~/transmissions_sq/size_10_combined")
+d = os.path.expanduser("data/square/strip/N10/legacy/size_10_combined")
 T_sq = np.load(f"{d}/conc_40.npy", mmap_mode="r")                       # (10000, 400)
 seeds = np.loadtxt(f"{d}/conc_40_meta.csv", delimiter=",", skiprows=1, dtype=int)[:, 1]
 ```

@@ -1,4 +1,4 @@
-# notebooks/material_atlas/meaning/metrics.py
+# src/shazam/meaning/metrics.py
 """How well an embedding identifies known ribbons, and how physically it places spectra it never saw."""
 from collections import Counter
 

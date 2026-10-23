@@ -32,7 +32,6 @@ def test_impurity_sites_are_nested_prefixes_of_one_seed():
 
 
 def test_legacy_trace_reproduces_ca_sq_exactly():
-    sys.path.insert(0, os.path.join(REPO, "notebooks", "square_lattice"))
     import ca_sq
     legacy = np.load(paths.leads_dir("square") / "leads_10.npy")
     h = square_strip(10)

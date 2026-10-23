@@ -36,7 +36,7 @@ from pathlib import Path
 
 import pytest
 
-PAGE = Path(__file__).resolve().parents[2] / "notebooks/material_atlas/atlas_page"
+PAGE = Path(__file__).resolve().parents[2] / "scripts/build/atlas_page"
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")

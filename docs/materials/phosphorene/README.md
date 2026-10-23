@@ -22,7 +22,7 @@ Left: bands of N = 9 (E ≥ 0; mid-gap at E = 0). Right: clean transmission for 
 
 N = 9 at 0.5–4% impurities: the median and 10–90% band, against the clean spectrum. 1,000 configurations per density (`materials_ev_full`).
 
-The figures are made by `docs/materials/make_figures.py` from the code and the stores.
+The figures are made by `scripts/report/make_material_figures.py` from the code and the stores.
 
 ## Physical model
 
@@ -93,10 +93,10 @@ The cuts are the same as graphene's on the mapped grid, and the naming matches p
 
 | Store | Contents | Build |
 |---|---|---|
-| `~/atlas_store/materials_v1/phosphorene/` | clean spectra only, N7/9/14/27 × both edges | BUILD-19 |
-| `~/atlas_store/materials_ev_v1/phosphorene/` | N7/9/14/27 × both edges × 4 densities × 50 seeds; ALL PASS | SMOKE-3 |
-| `~/atlas_store/materials_ev_probe/phosphorene/` | N50 × both edges × 4 × 2 seeds | SMOKE-3 probe |
-| `~/atlas_store/materials_ev_full/phosphorene/` | **N7/9/14/27 × both edges × 4 densities × 1,000 seeds** | FULL-4 |
+| `archives/atlas_store_runs/materials_v1/phosphorene/` | clean spectra only, N7/9/14/27 × both edges | BUILD-19 |
+| `archives/atlas_store_runs/materials_ev_v1/phosphorene/` | N7/9/14/27 × both edges × 4 densities × 50 seeds; ALL PASS | SMOKE-3 |
+| `archives/atlas_store_runs/materials_ev_probe/phosphorene/` | N50 × both edges × 4 × 2 seeds | SMOKE-3 probe |
+| `archives/atlas_store_runs/materials_ev_full/phosphorene/` | **N7/9/14/27 × both edges × 4 densities × 1,000 seeds** | FULL-4 |
 
 **Cost:** single-core seconds per spectrum (SMOKE-3):
 
@@ -108,8 +108,8 @@ The cuts are the same as graphene's on the mapped grid, and the naming matches p
 ## Reproduce
 
 ```bash
-export PYTHONPATH=notebooks/material_atlas:notebooks OMP_NUM_THREADS=1
-~/miniconda3/envs/ml/bin/python -u notebooks/tbribbon/generate_clouds.py --store ~/atlas_store/materials_ev_full --grid materials \
+export PYTHONPATH=src OMP_NUM_THREADS=1
+~/miniconda3/envs/ml/bin/python -u scripts/generate/generate_clouds.py --store archives/atlas_store_runs/materials_ev_full --grid materials \
     --materials phosphorene --widths 7,9,14,27 --spec-version v3 --n-seeds 1000 --n-jobs 16
 ```
 

@@ -2,6 +2,12 @@
 
 Welcome to the project **Logbook**. This document serves as the single source of truth for tracking all model builds, data cleaning iterations, bug fixes, architecture hyperparameters, benchmark metrics, and spectral sequence continuation across the AGNR (7-AGNR & 9-AGNR), ZGNR, and square lattice quantum transport inverse problem pipelines.
 
+
+> **Paths (2026-10-23).** This log was written against the old layout (`notebooks/...`, `~/atlas_store/<run>`,
+> `transmission_data/...`). Code now lives in `src/` and `scripts/`, results in `results/` (the same sub-path the log gives under
+> `notebooks/`), data under `data/<material>/<edge>/N<width>/` and superseded runs in `archives/`. See REORG-1 below and
+> `docs/path_map.csv` for every moved file.
+
 ---
 
 ## 1. Experiment & Build Registry
@@ -2221,6 +2227,43 @@ Artifacts written:
 
 ---
 
+
+### [2026-10-23] REORG-1: Repository and Data Reorganisation
+
+No physics or result changed. The code, results and data were moved so that a new reader can find them.
+
+| Old | New |
+|---|---|
+| `notebooks/tbribbon/*.py` | `src/tbribbon/` (generation tools also launch from `scripts/generate/`) |
+| `notebooks/material_atlas/atlaslib/` | `src/atlaslib/` |
+| `notebooks/material_atlas/{ae_data,shazam_eval,stage3_generic}.py`, `meaning/` | `src/shazam/` |
+| `notebooks/agnr/physics/agnr_lib.py`, `agnr.py` | `src/agnr/agnr_lib.py`, `src/agnr/hamiltonian.py` |
+| other scripts under `notebooks/` | `scripts/{generate,build,evaluate,experiments,report}/` (`docs/path_map.csv`) |
+| logs, JSON, PNG, checkpoints under `notebooks/<x>` | `results/<x>` |
+| `~/atlas_store/{engine_v1,materials3_ev_full,novelty_v1}` | `data/<material>/<edge>/N<width>/` (342 ribbons) |
+| every other `~/atlas_store/<run>` | `archives/atlas_store_runs/<run>` |
+| `transmission_data/.../consolidated_data/size_{7,9}.npy` | `data/graphene-ideal/armchair/N{7,9}/legacy/` (also `.../consolidated/`) |
+| `~/transmissions_sq/{size_10_combined,pristine_10.npy,leads}` | `data/square/strip/N10/legacy/`, `data/square/leads` |
+| raw per-concentration output, corrupt `CA.ipynb` CSVs | `archives/raw_simulations/`, `archives/corrupt_square_CA/` |
+
+**Which copy of a ribbon is kept.** The newest production run that has clouds for it: 308 from FULL-6 (`materials3_ev_full`),
+31 graphene from `engine_v1`, square N10 from `novelty_v1`, and two triangular N4 ribbons that exist only in the oldest run and
+hold a clean spectrum only. Every other copy is in `archives/`; `data/MOVES.csv` logs each move.
+
+**Merged densities.** The `conc_v2` sweep (24 densities) added 20 densities to five ribbons. Their meta entries carry
+`"source": "conc_v2"` and `CloudStore` hides them unless `extra=True`, so lookup, atlas and autoencoder builds see the 4 densities
+they were defined with (BUILD-30/31 inputs are unchanged). The autoencoder's pilot source reads the archived `conc_v2` run.
+
+**Checks.** Test suite 356 passed before the move; 405 passed, 0 skipped after (49 new tests for the move tools, `paths`,
+the store and the launchers). Every script with a command line starts (`--help`) from its own folder. `eval_lookup.py --smoke`
+runs end to end on the new layout.
+
+**Found on the way.** `src/agnr/hamiltonian.py` uses an undefined `g21` in one function (pre-existing).
+`test_spec.py::test_no_clean_spectrum_in_grid_reaches_cap` passed vacuously once its store moved; it now skips loudly if the
+archive is missing. `figure` scripts in `scripts/report/` now draw from the current data tree, so regenerated figures can differ
+slightly from the published ones (older device lengths).
+
+---
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
 

@@ -2,11 +2,11 @@
 import json
 from pathlib import Path
 import numpy as np
+import paths
 from atlaslib import Atlas
 
-REPO = Path(__file__).resolve().parents[2]
-METRICS_PATH = REPO / "notebooks/material_atlas/reference_7_9/metrics.json"
-ATLAS_PATH = REPO / "notebooks/material_atlas/reference_7_9/atlas"
+METRICS_PATH = paths.results_dir("material_atlas", "reference_7_9") / "metrics.json"
+ATLAS_PATH = paths.results_dir("material_atlas", "reference_7_9") / "atlas"
 
 
 def test_metrics_json_exists_and_satisfies_gate1():

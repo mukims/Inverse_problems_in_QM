@@ -42,7 +42,7 @@ Shazam takes one transmission spectrum, on any energy window, and returns the cl
 | Unseen square lattice | answered "no match" 100% |
 | Time per lookup | about 100 ms |
 
-The lookup is weakest above 5% impurity density and in narrow energy windows, where many devices share the same zeros. For 7- and 9-AGNR, a per-width regressor gives the impurity count with MAE about 2 and 90% intervals. Code: [`notebooks/material_atlas/`](notebooks/material_atlas/).
+The lookup is weakest above 5% impurity density and in narrow energy windows, where many devices share the same zeros. For 7- and 9-AGNR, a per-width regressor gives the impurity count with MAE about 2 and 90% intervals. Code: [`results/material_atlas/`](results/material_atlas/).
 
 ## Key findings
 
@@ -63,31 +63,40 @@ The lookup is weakest above 5% impurity density and in narrow energy windows, wh
 ## Repository
 
 ```
-notebooks/tbribbon/         tight-binding engine: lattices, leads, transport, disorder, data generation
-notebooks/material_atlas/   Shazam: atlaslib, builds, unknown flag, concentration (stage 3)
-notebooks/agnr/             earlier 7/9-AGNR models, physics library (agnr_lib.py), agent
-notebooks/square_lattice/   square-lattice generator (ca_sq.py) and studies
-docs/materials/             one README per material, with figures
-docs/report/                interactive report and its figure scripts
-tests/                      pytest suite
-LOGBOOK.md                  every build, result and bug (source of truth)
+src/tbribbon/       tight-binding engine: lattices, leads, transport, disorder, materials, data generation
+src/atlaslib/       Shazam core: input spec, cloud store, atlas, ensemble lookup, conformal intervals
+src/shazam/         autoencoder data, evaluation helpers, concentration (stage 3), meaning-embedding code
+src/agnr/           graphene armchair physics library (agnr_lib.py) and the Hamiltonian module
+src/paths.py        the one place that knows where data, archives and results live
+scripts/            runnable entry points, by job: generate/ build/ evaluate/ experiments/ report/ data/
+notebooks/          Jupyter notebooks only
+results/            metrics, logs, figures and checkpoints the scripts write (same layout the old notebooks/ had)
+docs/               START_HERE.md, one README per material, the report, model write-ups
+tests/              pytest suite
+LOGBOOK.md          every build, result and bug (source of truth)
 ```
+
+New here? Read [`docs/START_HERE.md`](docs/START_HERE.md). Old paths in `LOGBOOK.md` are translated by
+[`docs/path_map.csv`](docs/path_map.csv).
 
 ## Getting started
 
 ```bash
 pip install torch numpy scipy pandas matplotlib xgboost lightgbm scikit-learn
-export PYTHONPATH=notebooks/material_atlas:notebooks
+export PYTHONPATH=src                                  # scripts import the packages in src/
+export TRANSMISSION_DATA=/path/to/data                 # or put a symlink called data/ in the repo root
 
-python -m pytest -q                                   # run the tests
-python notebooks/tbribbon/generate_clouds.py --help   # generate transmission data
-python docs/materials/make_figures.py                 # redraw the material figures
-python notebooks/material_atlas/build_lookup.py       # build the ensemble lookup catalogue
-python notebooks/material_atlas/eval_lookup.py        # evaluate it
-python notebooks/material_atlas/train_ae.py --latent 64   # train the all-ribbons autoencoder
+python -m pytest -q                                    # run the tests (pytest.ini sets the paths)
+python scripts/generate/generate_clouds.py --help      # generate transmission data
+python scripts/report/make_material_figures.py         # redraw the material figures
+python scripts/build/build_lookup.py                   # build the ensemble lookup catalogue
+python scripts/evaluate/eval_lookup.py                 # evaluate it
+python scripts/build/train_ae.py --latent 64           # train the all-ribbons autoencoder
 ```
 
-Generated data lives outside the repository, under `~/atlas_store/` (about 10 GB; the stores are listed in [`docs/materials/README.md`](docs/materials/README.md)).
+Generated data lives outside git, in the folder `TRANSMISSION_DATA` points to (about 11 GB). Its layout, file formats and
+the list of 342 ribbons are in `data/README.md` and `data/INDEX.csv`; the generation settings per material are in
+[`docs/materials/README.md`](docs/materials/README.md).
 
 ## More
 

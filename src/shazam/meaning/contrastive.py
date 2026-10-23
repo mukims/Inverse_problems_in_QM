@@ -1,4 +1,4 @@
-# notebooks/material_atlas/meaning/contrastive.py
+# src/shazam/meaning/contrastive.py
 """Structure embedding: distance means "same ribbon" (paraphrase) or "similar clean physics" (physics)."""
 import numpy as np
 import torch

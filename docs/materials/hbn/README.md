@@ -22,7 +22,7 @@ Left: bands of N = 9 (E ≥ 0, so the conduction band only). Right: clean transm
 
 N = 9 at 0.5–4% impurities: the median and 10–90% band, against the clean spectrum. 1,000 configurations per density, from the full run (`materials_ev_full`).
 
-The figures are made by `docs/materials/make_figures.py` from the code and the stores.
+The figures are made by `scripts/report/make_material_figures.py` from the code and the stores.
 
 ## Physical model
 
@@ -80,10 +80,10 @@ In this plain model, zigzag edge states sit exactly at ±Δ rather than inside t
 
 | Store | Contents | Build |
 |---|---|---|
-| `~/atlas_store/materials_v1/hbn/` | clean spectra only, N7/9/14/27 × both edges, units-of-t grid | BUILD-19 |
-| `~/atlas_store/materials_ev_v1/hbn/` | N7/9/14/27 × both edges × 4 densities × 50 seeds; ALL PASS | SMOKE-3 |
-| `~/atlas_store/materials_ev_probe/hbn/` | N50 × both edges × 4 densities × 2 seeds; ALL PASS | SMOKE-3 timing probe |
-| `~/atlas_store/materials_ev_full/hbn/` | **N7/9/14/27 × both edges × 4 densities × 1,000 seeds** | FULL-4 (running from 2026-10-03) |
+| `archives/atlas_store_runs/materials_v1/hbn/` | clean spectra only, N7/9/14/27 × both edges, units-of-t grid | BUILD-19 |
+| `archives/atlas_store_runs/materials_ev_v1/hbn/` | N7/9/14/27 × both edges × 4 densities × 50 seeds; ALL PASS | SMOKE-3 |
+| `archives/atlas_store_runs/materials_ev_probe/hbn/` | N50 × both edges × 4 densities × 2 seeds; ALL PASS | SMOKE-3 timing probe |
+| `archives/atlas_store_runs/materials_ev_full/hbn/` | **N7/9/14/27 × both edges × 4 densities × 1,000 seeds** | FULL-4 (running from 2026-10-03) |
 
 **Cost:** single-core seconds per spectrum (SMOKE-3), for N7 / 9 / 14 / 27 / 50:
 
@@ -97,10 +97,10 @@ In FULL-4 on 16 workers, the batch wall time was 0.09 s per spectrum (N7), 0.14 
 ## Reproduce
 
 ```bash
-export PYTHONPATH=notebooks/material_atlas:notebooks OMP_NUM_THREADS=1
-~/miniconda3/envs/ml/bin/python -u notebooks/tbribbon/generate_clouds.py --store ~/atlas_store/materials_ev_full --grid materials \
+export PYTHONPATH=src OMP_NUM_THREADS=1
+~/miniconda3/envs/ml/bin/python -u scripts/generate/generate_clouds.py --store archives/atlas_store_runs/materials_ev_full --grid materials \
     --materials hbn --widths 7,9,14,27 --spec-version v3 --n-seeds 1000 --n-jobs 16
-~/miniconda3/envs/ml/bin/python notebooks/tbribbon/check_store.py --store ~/atlas_store/materials_ev_full --out <report>.json
+~/miniconda3/envs/ml/bin/python scripts/generate/check_store.py --store archives/atlas_store_runs/materials_ev_full --out <report>.json
 ```
 
 ## Caveats and choices
