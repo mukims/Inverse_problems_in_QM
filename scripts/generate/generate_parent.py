@@ -31,6 +31,7 @@ from tbribbon import parent_data
 from tbribbon.parent import active_atoms_per_cell
 from tbribbon.parent_prior import RANGES, sample_prior
 
+STALL_SECONDS = 1800        # no result for this long with workers alive: stop (a worker may have died holding the queue lock)
 MAX_ATTEMPTS = 100          # redraws allowed per index; the prior rejects a small fraction, so reaching this is a bug
 REASONS = ("invisible_type", "no_channel", "few_channels")      # in the order they are checked (cheapest first)
 N_CHANNELS = 416
@@ -89,10 +90,12 @@ def _limit_blas():
 
 def _worker(tasks, results):
     keep = _limit_blas()
+    pid = os.getpid()
     while True:
         index = tasks.get()
         if index is None:
             return
+        results.put(("start", pid, index))
         try:
             results.put(("ok", _record(index)))
         except BaseException:
@@ -100,36 +103,53 @@ def _worker(tasks, results):
             return
 
 
-def _compute(indices, n_jobs):
-    """The records of all indices, in index order. Workers are forked, so they see the parent's (patched) modules."""
+def _compute(indices, n_jobs, label="shard"):
+    """The records of all indices, in index order. Workers are forked, so they see the parent's (patched) modules.
+
+    Fails fast: a draw that raises, a worker that exits with a nonzero code (killed, out of memory) or no result for
+    STALL_SECONDS while workers are alive (a worker may have died holding a queue lock) stops the run with an error
+    that names `label` and the draw index in flight.
+    """
     indices = list(indices)
     if n_jobs <= 1:
         _limit_blas()
         return [_record(i) for i in indices]
     ctx = mp.get_context("fork")
     tasks, results = ctx.Queue(), ctx.Queue()
+    n = min(n_jobs, len(indices))
+    procs = [ctx.Process(target=_worker, args=(tasks, results), daemon=True) for _ in range(n)]
+    for p in procs:                                  # fork before the first put: the parent has no feeder thread yet
+        p.start()
     for i in indices:
         tasks.put(i)
-    n = min(n_jobs, len(indices))
     for _ in range(n):
         tasks.put(None)
-    procs = [ctx.Process(target=_worker, args=(tasks, results), daemon=True) for _ in range(n)]
-    for p in procs:
-        p.start()
-    got, t0 = [], time.time()
+    got, running, t0, last = [], {}, time.time(), time.time()
     try:
         while len(got) < len(indices):
             try:
                 msg = results.get(timeout=5)
             except queue.Empty:
+                bad = [p for p in procs if p.exitcode not in (None, 0)]
+                if bad:
+                    p = bad[0]
+                    raise RuntimeError(f"{label}: a worker exited with code {p.exitcode} while computing draw index "
+                                       f"{running.get(p.pid, 'unknown')}") from None
                 if not any(p.is_alive() for p in procs):
-                    raise RuntimeError("all workers exited before finishing their draws") from None
+                    raise RuntimeError(f"{label}: all workers exited before finishing their draws") from None
+                if time.time() - last > STALL_SECONDS:
+                    raise RuntimeError(f"{label}: no result for {STALL_SECONDS} s with workers alive; draws in flight: "
+                                       f"{sorted(running.values())}") from None
                 continue
-            if msg[0] == "error":
-                raise RuntimeError(f"draw index {msg[1]} failed in a worker:\n{msg[2]}")
-            got.append(msg[1])
-            if len(got) % 100 == 0:
-                print(f"  {len(got)}/{len(indices)} draws, {time.time() - t0:.0f} s", flush=True)
+            last = time.time()
+            if msg[0] == "start":
+                running[msg[1]] = msg[2]
+            elif msg[0] == "error":
+                raise RuntimeError(f"{label}: draw index {msg[1]} failed in a worker:\n{msg[2]}")
+            else:
+                got.append(msg[1])
+                if len(got) % 100 == 0:
+                    print(f"  {len(got)}/{len(indices)} draws, {time.time() - t0:.0f} s", flush=True)
     finally:
         for p in procs:
             if p.is_alive():
@@ -150,9 +170,11 @@ def _atomic_bytes(path, write):
 
 
 def _code_version():
+    """git HEAD, with "-dirty" appended when tracked files have uncommitted changes (untracked files are ignored)."""
+    def git(*args):
+        return subprocess.run(["git", *args], cwd=paths.repo_root(), capture_output=True, text=True, check=True).stdout.strip()
     try:
-        return subprocess.run(["git", "rev-parse", "HEAD"], cwd=paths.repo_root(), capture_output=True, text=True,
-                              check=True).stdout.strip()
+        return git("rev-parse", "HEAD") + ("-dirty" if git("status", "--porcelain", "--untracked-files=no") else "")
     except (OSError, subprocess.CalledProcessError):
         return "unknown"
 
@@ -176,7 +198,15 @@ def write_shard(root, shard, indices, n_jobs, shard_size=None):
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     indices = list(indices)
-    recs = _compute(indices, n_jobs)
+    old = load_manifest(root)
+    if old:                                          # an existing data set keeps its shard size
+        if shard_size not in (None, old["shard_size"]):
+            raise ValueError(f"{root} was started with shard size {old['shard_size']}, not {shard_size}")
+        shard_size = old["shard_size"]
+        if len(indices) > shard_size or indices[0] != shard * shard_size:     # a short final shard is allowed
+            raise ValueError(f"shard {shard} of {root} must start at {shard * shard_size} and hold at most "
+                             f"{shard_size} draws, got {indices[0]}..{indices[-1]}")
+    recs = _compute(indices, n_jobs, label=f"shard {shard}")
     col = lambda key, dtype: np.array([r[key] for r in recs], dtype=dtype)
     arrays = dict(
         index=col("index", np.int64), x=col("x", np.float32), raw=col("raw", np.float32), clean=col("clean", np.int16),

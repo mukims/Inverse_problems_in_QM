@@ -17,14 +17,20 @@ def _load(name):
     return mod
 
 
+# pytest's own process already runs BLAS threads, which makes fork() warn; the generator script itself forks before
+# it has any thread (checked separately), so the warning is test-process noise.
+pytestmark = pytest.mark.filterwarnings("ignore:This process .* is multi-threaded:DeprecationWarning")
+
 gp = _load("generate_parent")
 check_parent = _load("check_parent")
 
 
 @pytest.fixture(autouse=True)
-def short_devices(monkeypatch):
-    """Ten cells per device keep the draws fast; the workers are forked, so they see the patch."""
+def small_hosts(monkeypatch):
+    """Ten cells per device and widths 4 to 6 keep the draws fast; the workers are forked, so they see the patches."""
     monkeypatch.setattr(parent_data, "device_cells_for", lambda params, edge: 10)
+    orig = gp.sample_prior
+    monkeypatch.setattr(gp, "sample_prior", lambda rng: (lambda d: d._replace(width=4 + d.width % 3))(orig(rng)))
 
 
 def test_shards_round_trip_and_split_by_index(tmp_path):
@@ -73,7 +79,7 @@ def test_stored_fields_manifest_and_resume(tmp_path):
     assert [p.stat().st_mtime_ns for p in files] == stamps                 # finished shards are not redone
     m = data.load_manifest(tmp_path)
     assert [e["shard"] for e in m["shards"]] == [0, 1] and m["counts"]["n_draws"] == 4 and m["code_version"]
-    assert m["prior_ranges"]["w"] == [4, 22] and (tmp_path / "shard_00001_rejections.json").exists()
+    assert m["code_version"][:7].isalnum() and m["prior_ranges"]["w"] == [4, 22] and (tmp_path / "shard_00001_rejections.json").exists()
     a = data.load_split(tmp_path, "train")
     assert list(a["index"]) == [0, 1, 2, 3]
     assert a["x"].dtype == np.float32 and a["clean"].dtype == np.int16 and a["params"].dtype == np.float64
@@ -83,3 +89,35 @@ def test_stored_fields_manifest_and_resume(tmp_path):
         assert a["n_imp"][r] == n_imp and a["attempts"][r] == attempts and a["n_cells"][r] == 10
         assert np.array_equal(a["clean"][r], clean) and np.allclose(a["raw"][r], raw, atol=1e-6)
         assert a["active_atoms"][r] == 10 * gp.active_atoms_per_cell(draw.params, draw.edge, draw.width)
+
+
+def test_a_worker_that_raises_stops_the_shard(monkeypatch, tmp_path):
+    def broken(index):
+        raise ValueError(f"boom {index}")
+    monkeypatch.setattr(gp, "_record", broken)
+    with pytest.raises(RuntimeError, match=r"shard 3: draw index \d+ failed in a worker[\s\S]*boom"):
+        gp.write_shard(tmp_path, 3, range(0, 4), n_jobs=2)
+    assert not list(tmp_path.glob("shard_*.npz"))
+
+
+def test_a_worker_that_dies_or_stalls_stops_the_shard(monkeypatch):
+    import os
+    import time
+    monkeypatch.setattr(gp, "_record", lambda index: (time.sleep(1), os._exit(3)))
+    with pytest.raises(RuntimeError, match=r"shard 0: a worker exited with code 3 while computing draw index \d+"):
+        gp._compute(range(4), 2, label="shard 0")
+    monkeypatch.setattr(gp, "_record", lambda index: time.sleep(60))
+    monkeypatch.setattr(gp, "STALL_SECONDS", 1)
+    with pytest.raises(RuntimeError, match=r"no result for 1 s"):
+        gp._compute(range(2), 2, label="shard 0")
+
+
+def test_write_shard_keeps_the_shard_size_of_an_existing_data_set(tmp_path):
+    (tmp_path / "manifest.json").write_text('{"shard_size": 20, "shards": []}')
+    with pytest.raises(ValueError, match="shard size 20"):
+        gp.write_shard(tmp_path, 0, range(20), n_jobs=2, shard_size=10)
+    with pytest.raises(ValueError, match="at most 20"):
+        gp.write_shard(tmp_path, 0, range(30), n_jobs=2)
+    with pytest.raises(ValueError, match="must start at 20"):
+        gp.write_shard(tmp_path, 1, range(30, 40), n_jobs=2)
+    assert not list(tmp_path.glob("shard_*"))
