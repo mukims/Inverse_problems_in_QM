@@ -129,7 +129,7 @@ Rows line up with the cloud's seeds.
 ```python
 with np.load(ribbon / "cloud_d0.0100_config.npz") as z:
     print(z.files)
-    xy = z["coords"]                  # (n_seeds, n_impurities, 2): x along the ribbon, y across
+    xy = z["coords"]                  # (n_seeds, n_impurities, 2): positions in the plane, see the note below
     assert np.array_equal(z["seeds"], seeds)
 ```
 
@@ -144,6 +144,20 @@ with np.load(ribbon / "cloud_d0.0100_config.npz") as z:
 | `defect_v_t`, `defect_v_ev` | scalar | the impurity shift |
 | `seeds` | `(n_seeds,)` | the same seeds as `cloud_d<density>_seeds.npy` |
 | `n_cells`, `n_impurities`, `density`, `model_id` | scalar | the device this describes |
+
+**Which coordinate runs along the ribbon depends on the ribbon.** It is `x` for graphene armchair, the square strip,
+kagome and Lieb, but `y` for graphene and hBN zigzag and the MoS₂-family armchair ribbons. The safe rule is that the
+transport direction is the long one: compare the spread of the two columns over the whole device, as below.
+
+```python
+import sys
+sys.path.insert(0, "src")                   # tbribbon builds the full device geometry
+from tbribbon.configuration import device_atom_coordinates
+
+device = device_atom_coordinates("hbn/armchair/N10", n_cells=meta["pristine_n_cells"])   # every atom
+along = int(np.ptp(device[:, 1]) > np.ptp(device[:, 0]))   # 0: x runs along the ribbon, 1: y does
+across = 1 - along
+```
 
 ## Loop over all ribbons
 
