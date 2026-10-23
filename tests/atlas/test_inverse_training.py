@@ -7,9 +7,11 @@ import pytest
 import torch
 
 from shazam.inverse import data
+from shazam.inverse.encoding import STATES, encode
 from shazam.inverse.model import InverseModel
 from tbribbon import parent_data
-from tbribbon.parent_prior import excluded
+from tbribbon.parent import TYPES
+from tbribbon.parent_prior import EDGES, excluded, sample_prior
 
 SCRIPTS = Path(__file__).resolve().parents[2] / "scripts"
 
@@ -89,3 +91,45 @@ def test_exclude_removes_the_hidden_neighbourhood(shard, tmp_path, monkeypatch):
     assert h["excluded"] == {"hide": "hbn", "train": int(bad["train"].sum()), "val": int(bad["val"].sum())}
     assert h["n_train"] == len(train["x"]) - h["excluded"]["train"]
     assert h["n_val"] == len(val["x"]) - h["excluded"]["val"]
+
+
+def _synthetic(n, first, informative=True, seed=0):
+    """Arrays as `train` consumes them, from prior draws; x = [one_hot(state), z] @ P / 10 + noise (or pure noise)."""
+    P = torch.randn(len(STATES) + 14, 416, generator=torch.Generator().manual_seed(123))
+    draws = [sample_prior(np.random.default_rng(first + i)) for i in range(n)]
+    enc = [encode(d) for d in draws]
+    k = torch.tensor([e[0] for e in enc]); z = torch.tensor(np.stack([e[1] for e in enc]), dtype=torch.float32)
+    noise = 0.01 * torch.randn(n, 416, generator=torch.Generator().manual_seed(seed + first))
+    x = (torch.cat([torch.nn.functional.one_hot(k, len(STATES)).float(), z], 1) @ P / 10 if informative else 0) + noise
+    return dict(index=np.arange(first, first + n), x=x.numpy().astype(np.float32),
+                on=np.array([[d.params.on_C, d.params.on_H, d.params.on_K] for d in draws]),
+                lead=np.array([TYPES.index(d.params.lead) for d in draws]),
+                params=np.array([[getattr(d.params, c) for c in data.PARAM_COLUMNS] for d in draws]),
+                edge=np.array([EDGES.index(d.edge) for d in draws]), width=np.array([d.width for d in draws]),
+                density=np.array([d.density for d in draws]))
+
+
+def test_training_learns_a_synthetic_inverse_problem_and_noise_does_not():
+    cfg = ti.TrainConfig(epochs=4, batch=64, seed=0)
+    _, h = ti.train(_synthetic(1500, 0), _synthetic(200, 10**6), cfg)
+    assert all(b < a for a, b in zip(h["train_loss"], h["train_loss"][1:]))
+    assert h["val_loss"][-1] < 0.8 * h["val_loss"][0]
+    _, hn = ti.train(_synthetic(1500, 0, informative=False), _synthetic(200, 10**6, informative=False), cfg)
+    assert hn["val_loss"][-1] > 0.8 * hn["val_loss"][0]               # the same threshold rejects spectra without information
+
+
+def test_cli_records_the_excluded_counts(shard, tmp_path):
+    ti.main(["--data", str(shard), "--out", str(tmp_path), "--exclude", "hbn", "--epochs", "1", "--threads", "2"])
+    h = json.loads((tmp_path / "history.json").read_text())
+    ex = {d: sum(excluded(r, "hbn") for r in data.draws(data.load_split(shard, d), slice(None))) for d in ("train", "val")}
+    assert h["excluded"] == {"hide": "hbn", **ex} and h["n_train"] == 180 - ex["train"]
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["history.json", "model.pt"]          # no .tmp left behind
+
+
+def test_a_non_finite_loss_stops_the_run_and_bad_epochs_are_refused():
+    tr, va = _synthetic(40, 0), _synthetic(10, 10**6)
+    with pytest.raises(ValueError, match="epochs"):
+        ti.train(tr, va, ti.TrainConfig(epochs=0))
+    tr["x"][0, 0] = np.nan
+    with pytest.raises(FloatingPointError, match="epoch 0"):
+        ti.train(tr, va, ti.TrainConfig(epochs=2, batch=64))

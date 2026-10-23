@@ -31,13 +31,14 @@ def split_mask(index, split):
     return np.isin(np.asarray(index) % SPLIT_MOD, SPLIT_RESIDUES[split])
 
 
-def load_split(root, split):
-    """All arrays of one split, concatenated over the shards (keys as in the shard files), ordered by draw index."""
+def load_split(root, split, keys=None):
+    """The arrays of one split, concatenated over the shards (keys as in the shard files; all of them unless `keys`
+    names the ones to read, which keeps memory low), ordered by draw index."""
     parts = []
     for path in shard_paths(root):
         with np.load(path) as z:
             mask = split_mask(z["index"], split)
-            parts.append({k: z[k][mask] for k in z.files})
+            parts.append({k: z[k][mask] for k in z.files if keys is None or k in keys or k == "index"})
     if not parts:
         raise FileNotFoundError(f"no shard_*.npz under {root}")
     out = {k: np.concatenate([p[k] for p in parts]) for k in parts[0]}

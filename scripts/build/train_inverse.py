@@ -10,6 +10,7 @@ stopping either). Writes model.pt (best epoch) and history.json to --out.
 import argparse
 import copy
 import json
+import os
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -36,6 +37,9 @@ class TrainConfig:
     patience: int = 10
     seed: int = 0
     exclude: str = "none"                      # none, hbn, kagome or silicene
+
+
+NEEDED = ("index", "x", "on", "lead", "params", "edge", "width", "density")      # the arrays `train` reads
 
 
 def _config(cfg):
@@ -79,6 +83,8 @@ def train(train_arrays, val_arrays, cfg, on_epoch=None):
 
     `cfg` is a TrainConfig (or a dict of its fields). `on_epoch(model, history, improved)` is called after each epoch."""
     cfg = _config(cfg)
+    if cfg.epochs < 1:
+        raise ValueError(f"epochs must be at least 1, got {cfg.epochs}")
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
     tr, n_ex_tr = prepare(train_arrays, cfg.exclude)
@@ -106,6 +112,8 @@ def train(train_arrays, val_arrays, cfg, on_epoch=None):
             for k in tot:
                 tot[k] += parts[k] * len(idx)
         v = _validation_loss(model, va, cfg.batch, cfg.seed + 1)
+        if not (np.isfinite(tot["loss"]) and np.isfinite(v["loss"])):
+            raise FloatingPointError(f"non-finite loss in epoch {epoch}: train {tot['loss'] / n}, val {v['loss']}")
         history["train_loss"].append(tot["loss"] / n)
         history["train_ce"].append(tot["ce"] / n)
         history["train_flow"].append(tot["flow"] / n)
@@ -123,6 +131,13 @@ def train(train_arrays, val_arrays, cfg, on_epoch=None):
             break
     model.load_state_dict(best_state)
     return model.eval(), history
+
+
+def _atomic(path, write):
+    """write(tmp) then rename onto path, so a reader or a crash never sees a half-written file."""
+    tmp = path.with_name(path.name + ".tmp")
+    write(tmp)
+    os.replace(tmp, path)
 
 
 def main(argv=None):
@@ -144,7 +159,7 @@ def main(argv=None):
     manifest = data.load_manifest(a.data)
     extra = dict(data=str(a.data), code_version=(manifest or {}).get("code_version"), threads=torch.get_num_threads())
     t0 = time.time()
-    tr, va = data.load_split(a.data, "train"), data.load_split(a.data, "val")
+    tr, va = data.load_split(a.data, "train", NEEDED), data.load_split(a.data, "val", NEEDED)
     print(f"[inverse] {len(tr['x']):,} train / {len(va['x']):,} val rows loaded ({time.time() - t0:.0f}s)", flush=True)
 
     def on_epoch(model, history, improved):
@@ -152,13 +167,13 @@ def main(argv=None):
         print(f"[inverse] epoch {e} train {history['train_loss'][e]:.4f} val {history['val_loss'][e]:.4f} "
               f"({history['seconds'][e]:.0f}s){' *' if improved else ''}", flush=True)
         if improved:                                  # the file always holds the best model so far
-            torch.save({"cfg": model.cfg, "state_dict": model.state_dict()}, out / "model.pt")
-        (out / "history.json").write_text(json.dumps({**history, **extra}, indent=1))
+            _atomic(out / "model.pt", lambda p: torch.save({"cfg": model.cfg, "state_dict": model.state_dict()}, p))
+        _atomic(out / "history.json", lambda p: p.write_text(json.dumps({**history, **extra}, indent=1)))
 
     cfg = TrainConfig(a.epochs, a.batch, a.lr, a.patience, a.seed, a.exclude)
     model, history = train(tr, va, cfg, on_epoch)
-    model.save(out / "model.pt")
-    (out / "history.json").write_text(json.dumps({**history, **extra}, indent=1))
+    _atomic(out / "model.pt", model.save)
+    _atomic(out / "history.json", lambda p: p.write_text(json.dumps({**history, **extra}, indent=1)))
     print(f"[inverse] best epoch {history['best_epoch']} val {min(history['val_loss']):.4f}; wrote {out}", flush=True)
     return history
 
