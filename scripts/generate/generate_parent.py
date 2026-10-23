@@ -97,7 +97,7 @@ def _worker(tasks, results):
             return
         results.put(("start", pid, index))
         try:
-            results.put(("ok", _record(index)))
+            results.put(("ok", _record(index), pid))
         except BaseException:
             results.put(("error", index, traceback.format_exc()))
             return
@@ -127,14 +127,13 @@ def _compute(indices, n_jobs, label="shard"):
     got, running, t0, last = [], {}, time.time(), time.time()
     try:
         while len(got) < len(indices):
+            bad = [p for p in procs if p.exitcode not in (None, 0)]        # every iteration: cheap, and a busy
+            if bad:                                                        # result stream must not hide a dead worker
+                raise RuntimeError(f"{label}: a worker exited with code {bad[0].exitcode} while computing draw index "
+                                   f"{running.get(bad[0].pid, 'unknown')}")
             try:
-                msg = results.get(timeout=5)
+                msg = results.get(timeout=1)
             except queue.Empty:
-                bad = [p for p in procs if p.exitcode not in (None, 0)]
-                if bad:
-                    p = bad[0]
-                    raise RuntimeError(f"{label}: a worker exited with code {p.exitcode} while computing draw index "
-                                       f"{running.get(p.pid, 'unknown')}") from None
                 if not any(p.is_alive() for p in procs):
                     raise RuntimeError(f"{label}: all workers exited before finishing their draws") from None
                 if time.time() - last > STALL_SECONDS:
@@ -148,6 +147,7 @@ def _compute(indices, n_jobs, label="shard"):
                 raise RuntimeError(f"{label}: draw index {msg[1]} failed in a worker:\n{msg[2]}")
             else:
                 got.append(msg[1])
+                running.pop(msg[2], None)
                 if len(got) % 100 == 0:
                     print(f"  {len(got)}/{len(indices)} draws, {time.time() - t0:.0f} s", flush=True)
     finally:
@@ -156,6 +156,9 @@ def _compute(indices, n_jobs, label="shard"):
                 p.terminate()
         for p in procs:
             p.join()
+        for q in (tasks, results):              # undelivered tasks would keep a feeder thread blocked on a full pipe
+            q.cancel_join_thread()              # and hang the interpreter at exit
+            q.close()
     return sorted(got, key=lambda r: r["index"])
 
 
@@ -198,6 +201,8 @@ def write_shard(root, shard, indices, n_jobs, shard_size=None):
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     indices = list(indices)
+    if not indices:
+        raise ValueError(f"shard {shard}: no draw indices to compute")
     old = load_manifest(root)
     if old:                                          # an existing data set keeps its shard size
         if shard_size not in (None, old["shard_size"]):

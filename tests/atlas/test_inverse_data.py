@@ -1,4 +1,7 @@
 import importlib.util
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -100,16 +103,46 @@ def test_a_worker_that_raises_stops_the_shard(monkeypatch, tmp_path):
     assert not list(tmp_path.glob("shard_*.npz"))
 
 
-def test_a_worker_that_dies_or_stalls_stops_the_shard(monkeypatch):
+def test_a_dead_worker_is_noticed_while_the_others_keep_working(monkeypatch):
     import os
     import time
-    monkeypatch.setattr(gp, "_record", lambda index: (time.sleep(1), os._exit(3)))
-    with pytest.raises(RuntimeError, match=r"shard 0: a worker exited with code 3 while computing draw index \d+"):
-        gp._compute(range(4), 2, label="shard 0")
+
+    def draw(index):
+        time.sleep(0.2)                                  # slow-ish stub draws: 3 workers stream results meanwhile
+        if index == 1:
+            os._exit(3)
+        return {"index": index}
+    monkeypatch.setattr(gp, "_record", draw)
+    t0 = time.time()
+    with pytest.raises(RuntimeError, match=r"shard 0: a worker exited with code 3 while computing draw index 1$"):
+        gp._compute(range(60), 3, label="shard 0")
+    assert time.time() - t0 < 5          # the other draws alone would take 60 * 0.2 / 2 = 6 s
+
+
+def test_a_stalled_shard_stops(monkeypatch):
+    import time
     monkeypatch.setattr(gp, "_record", lambda index: time.sleep(60))
     monkeypatch.setattr(gp, "STALL_SECONDS", 1)
-    with pytest.raises(RuntimeError, match=r"no result for 1 s"):
+    with pytest.raises(RuntimeError, match=r"no result for 1 s.*\[[01], [01]\]"):
         gp._compute(range(2), 2, label="shard 0")
+
+
+def test_the_process_exits_after_a_failed_large_shard(tmp_path):
+    """A dead worker leaves thousands of undelivered tasks; the parent must still exit instead of hanging."""
+    code = (
+        "import importlib.util, os, sys\n"
+        f"spec = importlib.util.spec_from_file_location('generate_parent', {str(SCRIPTS / 'generate_parent.py')!r})\n"
+        "gp = importlib.util.module_from_spec(spec); spec.loader.exec_module(gp)\n"
+        "gp._record = lambda index: os._exit(3)\n"
+        "gp._compute(range(200000), 2, label='shard 0')\n")
+    env = dict(os.environ, PYTHONPATH=str(Path(__file__).resolve().parents[2] / "src"))
+    res = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True, timeout=60)
+    assert res.returncode != 0 and "exited with code 3" in res.stderr
+
+
+def test_write_shard_refuses_an_empty_shard(tmp_path):
+    with pytest.raises(ValueError, match="no draw indices"):
+        gp.write_shard(tmp_path, 0, range(0), n_jobs=2)
 
 
 def test_write_shard_keeps_the_shard_size_of_an_existing_data_set(tmp_path):
