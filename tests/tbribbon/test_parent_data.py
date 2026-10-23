@@ -1,0 +1,27 @@
+import numpy as np, pytest
+from tbribbon.parent import named_material, HexParams
+from tbribbon.parent_prior import Draw
+from tbribbon.parent_data import band_weights, clean_channels, simulate_raw, to_input, reject_reason, n_impurities
+
+G = Draw(named_material("graphene-ideal"), "armchair", 6, 0.02)
+
+def test_band_weights_sum_to_one_and_single_type_is_all_weight():
+    assert band_weights(named_material("kagome")) == {"K": pytest.approx(1.0)}
+    w = band_weights(HexParams(on_C=True, on_H=True, on_K=False, lead="H", s=2.0, t_AB=1, t_CC=0.5, t_CH=0.4))
+    assert set(w) == {"C", "H"} and sum(w.values()) == pytest.approx(1.0)
+
+def test_simulated_spectrum_never_exceeds_the_clean_channels_much():
+    raw = simulate_raw(G, n_imp=6, seed=1, n_cells=20)
+    assert raw.shape == (416,) and np.all(np.isfinite(raw))
+    assert np.mean(np.minimum(raw, clean_channels(G) + 1) - clean_channels(G)) <= 0.05
+
+def test_reject_reasons():
+    zeros, some = np.zeros(416), np.r_[np.ones(50), np.zeros(366)]
+    assert reject_reason(G, zeros, zeros, {"H": 1.0}) == "no_channel"
+    assert reject_reason(G, some, some, {"H": 0.995, "C": 0.005}) == "invisible_type"
+    assert reject_reason(G, some, np.r_[np.ones(5), np.zeros(411)], {"H": 1.0}) == "few_channels"
+    assert reject_reason(G, some, some, {"H": 1.0}) is None
+
+def test_input_is_the_v4_transform():
+    x = to_input(simulate_raw(G, 6, 1, n_cells=20))
+    assert x.shape == (416,) and x.dtype == np.float32 and 0 <= x.min() and x.max() <= 1
