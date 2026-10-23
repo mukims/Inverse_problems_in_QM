@@ -25,7 +25,7 @@ models/
 checkpoints/
 *.pt
 *.pth
-notebooks/agnr/multi_width/seed_split_10k/*.json
+results/agnr/multi_width/seed_split_10k/*.json
 
 # Jupyter
 .ipynb_checkpoints/
