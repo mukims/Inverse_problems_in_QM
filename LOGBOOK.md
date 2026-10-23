@@ -2371,6 +2371,31 @@ of freedom, bootstrap interval). Bonferroni over 192 comparisons per ribbon.
 edge fraction and the sublattice balance. Neither the plain nor the edge-aware graph entropy adds information beyond
 them. Results: `results/edge_fraction/{hbn_armchair_N10,graphene-ideal_zigzag_N10}_error_vs_arrangement.json`.
 
+### [2026-10-23] INV-SMOKE: Inverse-Design Training Data, Smoke Run and Cost
+
+**Question.** What does one training draw of the hexagonal-parent generator cost, how often are draws rejected, and how
+long would the full run take?
+
+**Setup.** `scripts/generate/generate_parent.py --n-draws 2000 --shard-size 1000 --n-jobs 22` (one BLAS thread per
+worker) into `$TRANSMISSION_DATA/_generated/hexagonal_parent_smoke/`, at commit 16ac2bb1b. Validity check
+`check_parent.py`; cost report `scripts/generate/report_parent.py`. Stored `seconds` covers every attempt of a draw, so
+the projection is draws x mean(seconds) / workers.
+
+**Result.**
+* Validity: all values finite, no duplicate spectra, no draw above its clean channel count (max excess -0.0007): `ok`.
+* Wall time 2,593 s for 2,000 draws on 22 workers. Seconds per draw: mean 27.9, median 12.6, 95th percentile 103,
+  max 330.
+* Rejections: 48 of 2,048 attempts (2.3%): invisible type 35, too few channels 11, no channel 2. Mean 1.02 attempts per
+  accepted draw.
+* Patterns 13.1% to 15.2% each (1/7 = 14.3%); zigzag 49.7%.
+* Cost grows with width and site count: mean 4.6 s at w = 4-8, 14 s at 9-13, 34 s at 14-18, 65 s at 19-22; 6 s for C
+  alone, 10 s for H, 14 s for K, 67 s for all three types.
+* Projection for 300,000 draws on 22 workers: 106 h from the per-draw times, 108 h from the measured wall time
+  (about 4.5 days).
+
+**Reading.** The rejection rules cost little (2.3% of attempts). The run is dominated by wide, many-site hosts. The
+full-run size is the user's decision (spec section 5). Report: `results/inverse_design/smoke_report.json`.
+
 ---
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
