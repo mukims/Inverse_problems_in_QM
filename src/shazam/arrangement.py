@@ -79,17 +79,43 @@ def laplacian_entropy(coords, length):
     rho = L / tr L (unit trace, eigenvalues >= 0), S = -sum(lambda ln lambda). One linked pair gives 0; n equally linked
     impurities give ln(n - 1); graphs with no links at all give 0. Depends only on distances, so moving or mirroring
     the arrangement leaves it unchanged."""
+    return np.array([_von_neumann(_links(np.asarray(c, dtype=np.float64), length)) for c in coords])
+
+
+def _links(c, length):
+    """Link weights exp(-d^2 / 2 length^2) between impurities (0 on the diagonal)."""
+    return np.exp(-(_distances(c) ** 2) / (2.0 * length ** 2))
+
+
+def _von_neumann(W):
+    """-sum(lambda ln lambda) over the eigenvalues of L / tr L, L = D - W; 0 for a graph without links."""
+    L = np.diag(W.sum(1)) - W
+    tr = np.trace(L)
+    if tr <= 0:
+        return 0.0
+    lam = np.linalg.eigvalsh(L / tr)
+    lam = lam[lam > 1e-12]
+    return float(-(lam * np.log(lam)).sum())
+
+
+def edge_graph_entropy(coords, device_xy, across, length):
+    """Von Neumann entropy of the impurity graph with the two ribbon edges added as nodes.
+
+    Impurities link to each other with weight exp(-d^2 / 2 length^2) and to each edge node with exp(-delta^2 / 2 length^2),
+    delta the impurity's distance to that edge. The edge nodes do not link to each other. Mirroring across the width
+    swaps the two edge nodes and moving along the ribbon changes no distance, so neither changes the entropy."""
+    lines = np.asarray(device_xy)[:, across]
+    lo, hi = lines.min(), lines.max()
     out = np.zeros(len(coords))
     for i, c in enumerate(coords):
-        d = _distances(np.asarray(c, dtype=np.float64))
-        W = np.exp(-(d ** 2) / (2.0 * length ** 2))                 # exp(-inf) = 0 on the diagonal
-        L = np.diag(W.sum(1)) - W
-        tr = np.trace(L)
-        if tr <= 0:
-            continue
-        lam = np.linalg.eigvalsh(L / tr)
-        lam = lam[lam > 1e-12]
-        out[i] = float(-(lam * np.log(lam)).sum())
+        c = np.asarray(c, dtype=np.float64)
+        n = len(c)
+        W = np.zeros((n + 2, n + 2))
+        W[:n, :n] = _links(c, length)
+        for j, edge in enumerate((lo, hi)):
+            w = np.exp(-((c[:, across] - edge) ** 2) / (2.0 * length ** 2))
+            W[:n, n + j] = W[n + j, :n] = w
+        out[i] = _von_neumann(W)
     return out
 
 
@@ -103,4 +129,6 @@ def descriptors(coords, sublattice, device_xy, across, lengths=(2.0, 5.0, 10.0))
          "near_contact": near_contact(coords, device_xy, across)}
     for length in lengths:
         d[f"graph_entropy_l{length:g}"] = laplacian_entropy(coords, length)
+    for length in lengths:
+        d[f"edge_graph_entropy_l{length:g}"] = edge_graph_entropy(coords, device_xy, across, length)
     return d

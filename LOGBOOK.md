@@ -2342,6 +2342,37 @@ Results: `results/edge_fraction/{hbn_armchair_N10,graphene-ideal_zigzag_N10}{,_e
 
 ---
 
+### [2026-10-23] EDGE-3: Edge-Node Graph Entropy and Partial Correlations
+
+**Question.** Does a graph that also knows the ribbon edges add information about model errors beyond the two
+descriptors that already explain them (EDGE-2: edge fraction in graphene zigzag, share on sublattice 0 in hBN)?
+
+**Setup.** New descriptor `edge_graph_entropy` (`src/shazam/arrangement.py`): the EDGE-2 impurity graph plus two nodes for
+the ribbon edges, each impurity linked to each edge with weight exp(-delta^2 / 2 l^2) (delta = its distance to that edge),
+von Neumann entropy of L / tr L, at l = 2, 5, 10 bond lengths. Mirroring across the width swaps the edge nodes, so the
+value is unchanged. `error_vs_arrangement.py` now also reports the **partial** Spearman correlation: the ranks of the edge
+fraction and the sublattice-0 share are regressed out of both the error and the descriptor (t-test, n - 2 - k degrees
+of freedom, bootstrap interval). Bonferroni over 192 comparisons per ribbon.
+
+**Result (hBN armchair N10 and graphene zigzag N10, 4 densities each).**
+* Edge-node graph entropy vs **lookup concentration error**: no Bonferroni-significant correlation, plain or partial, in
+  either ribbon (all |rho| <= 0.17).
+* Edge-node graph entropy vs **edge-fraction residual**: plain correlations up to +0.35 (hBN l = 2) and +0.37 (graphene
+  zigzag l = 5, 4%), all Bonferroni-significant; partial correlations fall to <= 0.10 and none survive Bonferroni. Its
+  signal is the edge fraction measured again.
+* The regression-towards-the-mean artefact disappears as expected: the residual's plain correlation with the distance from
+  the centre line (-0.61 to -0.67 in hBN) is +0.00 to +0.08 once the edge fraction is held fixed.
+* One cell beyond the two controls survives Bonferroni: graphene zigzag lookup error vs adjacent impurity pairs at 2%,
+  partial rho = -0.30 (plain -0.21); -0.19 at 4%, but +0.19 (not significant) at 0.5%. Mixed sign across densities: a
+  hypothesis for more ribbons, not a finding.
+* Single-star cells (95% interval excludes 0, not Bonferroni) number about what chance gives for 192 comparisons.
+
+**Reading.** For these two ribbons the arrangement dependence of both errors is carried by two simple descriptors, the
+edge fraction and the sublattice balance. Neither the plain nor the edge-aware graph entropy adds information beyond
+them. Results: `results/edge_fraction/{hbn_armchair_N10,graphene-ideal_zigzag_N10}_error_vs_arrangement.json`.
+
+---
+
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
 
 ### Bug #1: Hardcoded Lead Paths in Generation Scripts

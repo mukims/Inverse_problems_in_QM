@@ -8,8 +8,9 @@ every arrangement descriptor of src/shazam/arrangement.py:
     build the catalogue), spectra matched to the right device only;
   * edge fraction: out-of-fold residual (predicted minus true) of the edge-fraction regression, all seeds.
 
-Spearman correlation with a bootstrap 95% interval; "significant" uses a Bonferroni-corrected p-value over every
-comparison in the run.
+Spearman correlation with a bootstrap 95% interval, plain and partial (the edge fraction and the share on sublattice 0
+regressed out of both ranks, so the partial correlation shows what a descriptor adds beyond them). "Significant" uses
+a Bonferroni-corrected p-value over every comparison in the run.
 
     PYTHONPATH=src python scripts/experiments/edge_fraction/error_vs_arrangement.py --model hbn/armchair/N10
 """
@@ -20,7 +21,8 @@ import time
 from pathlib import Path
 
 import numpy as np
-from scipy.stats import spearmanr
+from scipy.stats import rankdata, spearmanr
+from scipy.stats import t as student_t
 
 import paths
 from atlaslib.energy import on_axis
@@ -33,13 +35,14 @@ ef = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(ef)
 
 TEST_MIN = 850          # lookup_v4 was built from seeds 0-699 and calibrated on 700-849
+CONTROLS = ("edge_frac", "sub0_frac")      # what the partial correlation holds fixed
 
 
 def rank_correlation(err, desc, n_boot=1000, seed=0, n_tests=1, alpha=0.05):
     """Spearman rho between an error and a descriptor, its bootstrap interval and Bonferroni-corrected significance."""
     err, desc = np.asarray(err, dtype=float), np.asarray(desc, dtype=float)
     if np.ptp(desc) == 0 or np.ptp(err) == 0:
-        return {"rho": float("nan"), "ci": [float("nan"), float("nan")], "p": float("nan"), "significant": False}
+        return _nan_result()
     rho, p = spearmanr(err, desc)
     rng = np.random.default_rng(seed)
     boot = []
@@ -49,6 +52,45 @@ def rank_correlation(err, desc, n_boot=1000, seed=0, n_tests=1, alpha=0.05):
             boot.append(spearmanr(err[i], desc[i])[0])
     lo, hi = np.quantile(boot, [0.025, 0.975])
     return {"rho": float(rho), "ci": [float(lo), float(hi)], "p": float(p), "significant": bool(p < alpha / n_tests)}
+
+
+def _nan_result():
+    return {"rho": float("nan"), "ci": [float("nan"), float("nan")], "p": float("nan"), "significant": False}
+
+
+def _partial_rho(err, desc, controls):
+    """Pearson correlation of the ranks of err and desc after a least-squares fit on the ranks of the controls."""
+    Z = np.column_stack([np.ones(len(err))] + [rankdata(c) for c in controls])
+    resid = lambda v: v - Z @ np.linalg.lstsq(Z, v, rcond=None)[0]
+    a, b = resid(rankdata(err)), resid(rankdata(desc))
+    if a.std() == 0 or b.std() == 0:
+        return float("nan")
+    return float(np.corrcoef(a, b)[0, 1])
+
+
+def partial_rank_correlation(err, desc, controls, n_boot=1000, seed=0, n_tests=1, alpha=0.05):
+    """Spearman correlation between err and desc with the controls' ranks regressed out of both, its bootstrap
+    interval, and a t-test p-value (n - 2 - k degrees of freedom); controls that never vary are dropped."""
+    err, desc = np.asarray(err, dtype=float), np.asarray(desc, dtype=float)
+    controls = [np.asarray(c, dtype=float) for c in controls if np.ptp(c) > 0]
+    if np.ptp(desc) == 0 or np.ptp(err) == 0:
+        return _nan_result()
+    rho = _partial_rho(err, desc, controls)
+    if np.isnan(rho):
+        return _nan_result()
+    df = len(err) - 2 - len(controls)
+    t = rho * np.sqrt(df / max(1e-300, 1.0 - rho ** 2))
+    p = float(2 * student_t.sf(abs(t), df))
+    rng = np.random.default_rng(seed)
+    boot = []
+    for _ in range(n_boot):
+        i = rng.integers(0, len(err), len(err))
+        if np.ptp(desc[i]) > 0 and np.ptp(err[i]) > 0:
+            r = _partial_rho(err[i], desc[i], [c[i] for c in controls])
+            if not np.isnan(r):
+                boot.append(r)
+    lo, hi = np.quantile(boot, [0.025, 0.975])
+    return {"rho": rho, "ci": [float(lo), float(hi)], "p": p, "significant": bool(p < alpha / n_tests)}
 
 
 def lookup_errors(cat, model, folder, key, density):
@@ -97,27 +139,36 @@ def main():
             f"{right.sum()} test spectra ({(~right).sum()} matched to another device)")
 
     names = list(next(iter(rows.values()))["desc"])
-    n_tests = 2 * len(names) * len(rows)
-    res = {"model": a.model, "catalogue": a.catalogue, "n_tests": n_tests, "densities": {}}
+    n_tests = 2 * 2 * len(names) * len(rows)                     # 2 errors x plain/partial x descriptors x densities
+    res = {"model": a.model, "catalogue": a.catalogue, "n_tests": n_tests, "controls": list(CONTROLS), "densities": {}}
     for key, r in rows.items():
         out = {"n_impurities": r["info"]["n_impurities"], "lookup_n": int(len(r["lerr"])), "lookup_wrong_device": r["n_wrong"],
-               "lookup_error_mean": float(r["lerr"].mean()), "lookup_error_std": float(r["lerr"].std()),
-               "lookup": {}, "edge_residual": {}}
-        for n in names:
-            out["lookup"][n] = rank_correlation(r["lerr"], r["desc"][n][r["lidx"]], a.n_boot, n_tests=n_tests)
-            out["edge_residual"][n] = rank_correlation(r["resid"], r["desc"][n], a.n_boot, n_tests=n_tests)
+               "lookup_error_mean": float(r["lerr"].mean()), "lookup_error_std": float(r["lerr"].std())}
+        for kind, err, idx in (("lookup", r["lerr"], r["lidx"]), ("edge_residual", r["resid"], slice(None))):
+            out[kind], out[kind + "_partial"] = {}, {}
+            for n in names:
+                d = r["desc"][n][idx]
+                out[kind][n] = rank_correlation(err, d, a.n_boot, n_tests=n_tests)
+                ctrl = [r["desc"][c][idx] for c in CONTROLS if c != n]
+                out[kind + "_partial"][n] = (_nan_result() if n in CONTROLS else
+                                             partial_rank_correlation(err, d, ctrl, a.n_boot, n_tests=n_tests))
         res["densities"][key] = out
 
+    def cell(c):
+        if np.isnan(c["rho"]):
+            return "      -   "
+        mark = "**" if c["significant"] else ("* " if c["ci"][0] > 0 or c["ci"][1] < 0 else "  ")
+        return f"{c['rho']:+8.3f}{mark}"
+
+    keys = list(res["densities"])
     for kind, title in (("lookup", "lookup concentration error"), ("edge_residual", "edge-fraction residual")):
-        print(f"\nSpearman rho: {title} vs descriptor   (* 95% interval excludes 0, ** Bonferroni over {n_tests} tests)")
-        print(f"{'descriptor':22s}" + "".join(f"{k:>14s}" for k in res["densities"]))
+        print(f"\nSpearman rho, {title} vs descriptor: plain | partial (controls: {', '.join(CONTROLS)})")
+        print(f"   * 95% interval excludes 0, ** Bonferroni over {n_tests} tests")
+        print(f"{'descriptor':24s}" + "".join(f"{k:>10s}" for k in keys) + "  |" + "".join(f"{k:>10s}" for k in keys))
         for n in names:
-            cells = []
-            for k, v in res["densities"].items():
-                c = v[kind][n]
-                mark = "**" if c["significant"] else ("*" if c["ci"][0] > 0 or c["ci"][1] < 0 else "")
-                cells.append("           nan" if np.isnan(c["rho"]) else f"{c['rho']:+12.3f}{mark:2s}")
-            print(f"{n:22s}" + "".join(cells))
+            plain = "".join(cell(res["densities"][k][kind][n]) for k in keys)
+            part = "".join(cell(res["densities"][k][kind + "_partial"][n]) for k in keys)
+            print(f"{n:24s}{plain}  |{part}")
 
     out = paths.results_dir("edge_fraction", create=True) / f"{a.model.replace('/', '_')}_error_vs_arrangement.json"
     out.write_text(json.dumps(res, indent=2))
