@@ -25,3 +25,13 @@ def test_reject_reasons():
 def test_input_is_the_v4_transform():
     x = to_input(simulate_raw(G, 6, 1, n_cells=20))
     assert x.shape == (416,) and x.dtype == np.float32 and 0 <= x.min() and x.max() <= 1
+
+
+def test_band_weights_put_a_decoupled_flat_band_on_its_own_type():
+    # one flat C state at 1.5 s against one in-window honeycomb state per k: equal weights; a swapped row map fails
+    w = band_weights(HexParams(on_C=True, on_H=True, on_K=False, lead="H", s=2.0, eps_C=1.5, t_AB=1, t_CC=1e-9, t_CH=1e-4))
+    assert w == {"C": pytest.approx(0.5, abs=0.01), "H": pytest.approx(0.5, abs=0.01)}
+
+
+def test_impurity_count_follows_the_density_over_the_whole_device():
+    assert n_impurities(G, 125) == round(0.02 * 125 * 12) and n_impurities(Draw(G.params, "armchair", 6, 1e-6), 10) == 1
