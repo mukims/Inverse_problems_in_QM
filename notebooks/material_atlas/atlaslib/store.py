@@ -129,6 +129,84 @@ class CloudStore:
         c, _ = self.read_cloud(model_id, density)
         return float(np.mean(c > pris[None, :] + 1e-6))
 
+    def has_configuration_cloud(self, model_id, density) -> bool:
+        return (self._dir(model_id) / f"cloud_{_key(density)}_config.npz").exists()
+
+    def read_configuration_cloud(self, model_id, density):
+        """Read saved (n_seeds, n_impurities, ...) .npz configuration arrays for a cloud."""
+        p = self._dir(model_id) / f"cloud_{_key(density)}_config.npz"
+        if not p.exists():
+            raise FileNotFoundError(f"No configuration file {p}")
+        return np.load(p)
+
+    def write_configuration_cloud(self, model_id, density, force=False, unit="lattice"):
+        """Generate and save cloud_<key>_config.npz alongside the cloud."""
+        out_p = self._dir(model_id) / f"cloud_{_key(density)}_config.npz"
+        if out_p.exists() and not force:
+            return out_p
+        from tbribbon.configuration import generate_cloud_configurations
+        meta = self._meta(model_id)
+        k = _key(density)
+        cloud_meta = meta.get("clouds", {}).get(k, {})
+        n_imp = cloud_meta.get("n_impurities")
+        n_cells = cloud_meta.get("n_cells", meta.get("pristine_n_cells", 100))
+        _, seeds = self.read_cloud(model_id, density)
+        data = generate_cloud_configurations(model_id, density, seeds, n_impurities=n_imp,
+                                             n_cells=n_cells, unit=unit)
+        np.savez_compressed(out_p, **data)
+        return out_p
+
+    def read_configuration(self, model_id, density, seed, unit="lattice"):
+        """Reconstruct exact microscopic impurity configuration for a stored cloud."""
+        from tbribbon.configuration import reconstruct_configuration
+        meta = self._meta(model_id)
+        k = _key(density)
+        cloud_meta = meta.get("clouds", {}).get(k, {})
+        n_imp = cloud_meta.get("n_impurities")
+        n_cells = cloud_meta.get("n_cells", meta.get("pristine_n_cells", 100))
+        return reconstruct_configuration(model_id, seed, n_impurities=n_imp, density=density,
+                                         n_cells=n_cells, unit=unit)
+
+    def read_cloud_with_configurations(self, model_id, density, unit="lattice"):
+        """Read spectra, seeds, and corresponding list of ImpurityConfiguration objects."""
+        spectra, seeds = self.read_cloud(model_id, density)
+        if self.has_configuration_cloud(model_id, density):
+            npz = self.read_configuration_cloud(model_id, density)
+            from tbribbon.configuration import ImpurityConfiguration, _resolve_model
+            model = _resolve_model(model_id)
+            n_cells = int(npz["n_cells"])
+            n_atoms = n_cells * (model.sites_per_cell // model.orbitals_per_site)
+            configs = [
+                ImpurityConfiguration(
+                    model_id=model_id,
+                    material=model.material,
+                    edge=model.edge,
+                    width=model.width,
+                    seed=int(s),
+                    n_impurities=int(npz["n_impurities"]),
+                    density=float(npz["density"]),
+                    n_cells=n_cells,
+                    n_atoms=n_atoms,
+                    orbitals_per_site=model.orbitals_per_site,
+                    t_ev=model.t_ev,
+                    atom_indices=npz["atom_indices"][i],
+                    cell_indices=npz["cell_indices"][i],
+                    site_indices=npz["site_indices"][i],
+                    coordinates=npz["coords"][i],
+                    host_onsite_t=npz["host_onsite_t"][i],
+                    host_onsite_ev=npz["host_onsite_ev"][i],
+                    impurity_onsite_t=npz["impurity_onsite_t"][i],
+                    impurity_onsite_ev=npz["impurity_onsite_ev"][i],
+                    defect_v_t=float(npz["defect_v_t"]),
+                    defect_v_ev=float(npz["defect_v_ev"]),
+                    sublattice=npz["sublattice"][i],
+                )
+                for i, s in enumerate(seeds)
+            ]
+            return spectra, seeds, configs
+        configs = [self.read_configuration(model_id, density, s, unit=unit) for s in seeds]
+        return spectra, seeds, configs
+
 
 class MultiStore:
     """Read-only view over several CloudStores (e.g. graphene and new materials); each model lives in exactly one."""
@@ -155,6 +233,18 @@ class MultiStore:
 
     def densities(self, model_id):
         return self._store(model_id).densities(model_id)
+
+    def has_configuration_cloud(self, model_id, density) -> bool:
+        return self._store(model_id).has_configuration_cloud(model_id, density)
+
+    def read_configuration_cloud(self, model_id, density):
+        return self._store(model_id).read_configuration_cloud(model_id, density)
+
+    def read_configuration(self, model_id, density, seed, unit="lattice"):
+        return self._store(model_id).read_configuration(model_id, density, seed, unit=unit)
+
+    def read_cloud_with_configurations(self, model_id, density, unit="lattice"):
+        return self._store(model_id).read_cloud_with_configurations(model_id, density, unit=unit)
 
     def models(self):
         return sorted(self._owner)

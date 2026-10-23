@@ -52,9 +52,10 @@ class _Rows:
 
 
 def collect(split, root="~/atlas_store", stores=CATALOGUE_STORES, pilots=PILOT_STORES, legacy_dir=LEGACY_DIR,
-            per_cloud=None, include=SOURCES):
+            per_cloud=None, include=SOURCES, with_configurations=False, config_unit="lattice"):
     """All spectra of one split as one array X (n, 416) with labels. The clean spectrum of every catalogue device joins
-    the train split once, at density 0. `per_cloud` thins every cloud to evenly spaced seeds."""
+    the train split once, at density 0. `per_cloud` thins every cloud to evenly spaced seeds.
+    If `with_configurations=True`, attaches exact microscopic impurity configurations to the returned dict."""
     lo, hi = SPLITS[split]
     rows, root = _Rows(), Path(root).expanduser()
     for source, names in (("catalogue", stores), ("pilot", pilots)):
@@ -85,7 +86,28 @@ def collect(split, root="~/atlas_store", stores=CATALOGUE_STORES, pilots=PILOT_S
             seeds = seeds[_pick(len(seeds), per_cloud)]
             for i in range(mm.shape[0]):
                 rows.add(window_inputs(SPEC, e_ev, np.asarray(mm[i, seeds]))[0], m.model_id, 2 * (i + 1) / sites, "legacy", seeds)
-    return rows.done()
+    out = rows.done()
+    if with_configurations:
+        attach_configurations(out, unit=config_unit)
+    return out
+
+
+def attach_configurations(data, unit="lattice"):
+    """Attach microscopic impurity configurations to dataset dictionary produced by collect()."""
+    from tbribbon.configuration import reconstruct_configuration
+    devices = data["devices"]
+    configs = []
+    for i in range(len(data["x"])):
+        mid = devices[data["dev"][i]]
+        d = float(data["dens"][i])
+        s = int(data["seed"][i])
+        if s < 0 or d == 0:
+            # Pristine / clean device: 0 impurities
+            configs.append(reconstruct_configuration(mid, seed=0, n_impurities=0, density=0.0, unit=unit))
+        else:
+            configs.append(reconstruct_configuration(mid, seed=s, density=d, unit=unit))
+    data["configs"] = configs
+    return data
 
 
 def save(data, directory):

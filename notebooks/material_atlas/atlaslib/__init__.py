@@ -5,3 +5,11 @@ from .importers import import_consolidated_agnr, import_square_combined, nearest
 from .encoder import Conv1dAE, embed, train_autoencoder  # noqa: F401
 from .atlas import Atlas, Located  # noqa: F401
 from .conformal import coverage, fit_relative, intervals  # noqa: F401
+
+
+def __getattr__(name):
+    if name in ("ImpurityConfiguration", "device_atom_coordinates", "device_host_onsite",
+                "device_onsite_profile", "reconstruct_configuration"):
+        import tbribbon.configuration as _cfg
+        return getattr(_cfg, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
