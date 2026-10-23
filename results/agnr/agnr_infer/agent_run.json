@@ -1,0 +1,104 @@
+{
+  "step1_gap": {
+    "gap_energy": 0.24,
+    "gap_index": 24
+  },
+  "step1_ranking": {
+    "observed_gap": 0.24,
+    "viable": [
+      7,
+      6,
+      9,
+      10,
+      13,
+      12,
+      11,
+      5,
+      8
+    ],
+    "rejected": []
+  },
+  "step1_top5": [
+    {
+      "width": 7,
+      "gap_ref": 0.24,
+      "gap_diff": 0.0,
+      "shape_misfit": 1.0661816258493315,
+      "score": 0.10661816258493316,
+      "possible": true,
+      "reason": ""
+    },
+    {
+      "width": 6,
+      "gap_ref": 0.22,
+      "gap_diff": 0.01999999999999999,
+      "shape_misfit": 1.2487328081379316,
+      "score": 0.14487328081379316,
+      "possible": true,
+      "reason": ""
+    },
+    {
+      "width": 9,
+      "gap_ref": 0.18,
+      "gap_diff": 0.06,
+      "shape_misfit": 1.087165360825241,
+      "score": 0.1687165360825241,
+      "possible": true,
+      "reason": ""
+    },
+    {
+      "width": 10,
+      "gap_ref": 0.17,
+      "gap_diff": 0.06999999999999998,
+      "shape_misfit": 1.1874331796940918,
+      "score": 0.18874331796940916,
+      "possible": true,
+      "reason": ""
+    },
+    {
+      "width": 13,
+      "gap_ref": 0.14,
+      "gap_diff": 0.09999999999999998,
+      "shape_misfit": 1.078487975763124,
+      "score": 0.2078487975763124,
+      "possible": true,
+      "reason": ""
+    }
+  ],
+  "step2_llm_error": "timed out",
+  "step2_decision": null,
+  "step2_chosen_width": 7,
+  "step2_gap_validation": {
+    "ok": true,
+    "measured": 0.24,
+    "expected": 0.24,
+    "delta": 0.0,
+    "tol": 0.03,
+    "verdict": "gap consistent with width 7 (|\u0394|=0.000 \u2264 0.030)"
+  },
+  "step3_concentration": {
+    "predictions": {
+      "xgb": 21.212207794189453
+    },
+    "errors": {},
+    "benchmark": {},
+    "best_model": null
+  },
+  "step3_value": 21.212207794189453,
+  "step4_llm_raw": ",\n  \"assessment\": \"The width identification is mathematically sound and consistent with the gap check, suggesting internal consistency in the parameter estimation. However, the concentration value must be treated with caution because the model benchmark is not trained, and significant disorder suppression (0.359) indicates substantial uncertainty. A physicist should trust the mathematical consistency but treat the resulting concentration as a statistical estimate rather than a definitive physical quantity.\",\n  \"main_risk\": \"The lack of a trained benchmark prevents reliable physical interpretation of the concentration value.\",\n  \"next_check\": \"Train the model or perform sensitivity analysis on the disorder suppression factor to quantify the uncertainty in the predicted concentration.\"\n}\n```",
+  "step4_feasibility": {
+    "feasible": true,
+    "confidence": "medium",
+    "assessment": "The width identification is mathematically sound and consistent with the gap check, suggesting internal consistency in the parameter estimation. However, the concentration value must be treated with caution because the model benchmark is not trained, and significant disorder suppression (0.359) indicates substantial uncertainty. A physicist should trust the mathematical consistency but treat the resulting concentration as a statistical estimate rather than a definitive physical quantity.",
+    "main_risk": "The lack of a trained benchmark prevents reliable physical interpretation of the concentration value.",
+    "next_check": "Train the model or perform sensitivity analysis on the disorder suppression factor to quantify the uncertainty in the predicted concentration."
+  },
+  "summary": {
+    "width": 7,
+    "concentration": 21.212207794189453,
+    "model_spread": 0.0,
+    "gap_ok": true,
+    "suppression": 0.35865985182457005,
+    "domain": "in-domain (width 7 has trained models)"
+  }
+}

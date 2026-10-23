@@ -9,7 +9,8 @@ venv/
 *.egg-info/
 
 # Datasets & computed data (Do NOT track)
-data/
+/data/
+/data
 size_10/
 transmissions/
 *.csv
@@ -48,4 +49,3 @@ create_notebook.py
 ORIGINAL_REQUEST.md
 docs/superpowers/
 plans/
-/data

@@ -1,0 +1,140 @@
+{
+  "step1_gap": {
+    "gap_energy": 0.24,
+    "gap_index": 24
+  },
+  "step1_ranking": {
+    "observed_gap": 0.24,
+    "viable": [
+      7,
+      6,
+      9,
+      10,
+      13,
+      12,
+      11,
+      5,
+      8
+    ],
+    "rejected": []
+  },
+  "step1_top5": [
+    {
+      "width": 7,
+      "gap_ref": 0.24,
+      "gap_diff": 0.0,
+      "shape_misfit": 1.0661816258493315,
+      "score": 0.10661816258493316,
+      "possible": true,
+      "reason": ""
+    },
+    {
+      "width": 6,
+      "gap_ref": 0.22,
+      "gap_diff": 0.01999999999999999,
+      "shape_misfit": 1.2487328081379316,
+      "score": 0.14487328081379316,
+      "possible": true,
+      "reason": ""
+    },
+    {
+      "width": 9,
+      "gap_ref": 0.18,
+      "gap_diff": 0.06,
+      "shape_misfit": 1.087165360825241,
+      "score": 0.1687165360825241,
+      "possible": true,
+      "reason": ""
+    },
+    {
+      "width": 10,
+      "gap_ref": 0.17,
+      "gap_diff": 0.06999999999999998,
+      "shape_misfit": 1.1874331796940918,
+      "score": 0.18874331796940916,
+      "possible": true,
+      "reason": ""
+    },
+    {
+      "width": 13,
+      "gap_ref": 0.14,
+      "gap_diff": 0.09999999999999998,
+      "shape_misfit": 1.078487975763124,
+      "score": 0.2078487975763124,
+      "possible": true,
+      "reason": ""
+    }
+  ],
+  "step2_llm_raw": "```json\n{\n  \"gap_trustworthy\": true,\n  \"chosen_width\": 7,\n  \"plausible_widths\": [\n    6,\n    9\n  ],\n  \"confidence\": \"high\",\n  \"reasoning\": \"Width 7 provides an exact match to the observed gap (0.240 eV) and its pristine reference gap (0.24 eV), minimizing the required disorder shift. Widths 6 and 9 remain plausible candidates but require larger inferred shifts, leading to lower confidence.\"\n}\n```",
+  "step2_decision": {
+    "gap_trustworthy": true,
+    "chosen_width": 7,
+    "plausible_widths": [
+      6,
+      9
+    ],
+    "confidence": "high",
+    "reasoning": "Width 7 provides an exact match to the observed gap (0.240 eV) and its pristine reference gap (0.24 eV), minimizing the required disorder shift. Widths 6 and 9 remain plausible candidates but require larger inferred shifts, leading to lower confidence."
+  },
+  "step2_chosen_width": 7,
+  "step2_gap_validation": {
+    "ok": true,
+    "measured": 0.24,
+    "expected": 0.24,
+    "delta": 0.0,
+    "tol": 0.03,
+    "verdict": "gap consistent with width 7 (|\u0394|=0.000 \u2264 0.030)"
+  },
+  "step3_concentration": {
+    "predictions": {
+      "xgb": 21.212207794189453,
+      "mlp": 22.467134475708008,
+      "transformer": 23.426565170288086
+    },
+    "errors": {},
+    "benchmark": {
+      "xgb": {
+        "MAE": 1.8468678701266243,
+        "RMSE": 2.844194464192899,
+        "max_err": 18.426467895507812,
+        "train_seconds": 49.5
+      },
+      "mlp": {
+        "MAE": 2.6447403615390934,
+        "RMSE": 3.7905445878522914,
+        "max_err": 21.3660888671875,
+        "train_seconds": 3056.5
+      },
+      "transformer": {
+        "MAE": 2.8251408717720894,
+        "RMSE": 3.9240361379929842,
+        "max_err": 19.019935607910156,
+        "train_seconds": 6903.7,
+        "arch": {
+          "patch": 10,
+          "d_model": 64,
+          "nhead": 4,
+          "layers": 2
+        }
+      }
+    },
+    "best_model": "xgb"
+  },
+  "step3_value": 21.212207794189453,
+  "step4_llm_raw": "edium\",\n  \"assessment\": \"The width identification is mathematically consistent with the gap check, suggesting a sound initial parameter. However, the concentration value (21.21) must be treated with caution because the model predictions vary significantly (ranging from 21.21 to 23.43), and the benchmark errors are substantial. The high uncertainty introduced by the machine learning models reduces confidence in this single derived result.\",\n  \"main_risk\": \"The significant spread in model predictions and high benchmark errors introduce substantial uncertainty regarding the true concentration value.\",\n  \"next_check\": \"Perform a sensitivity analysis by calculating the predicted concentrations for all plausible widths (6 and 9) using the trained models to determine the most robust range.\"\n}\n```",
+  "step4_feasibility": {
+    "feasible": true,
+    "confidence": "medium",
+    "assessment": "The width identification is mathematically consistent with the gap check, suggesting a sound initial parameter. However, the concentration value (21.21) must be treated with caution because the model predictions vary significantly (ranging from 21.21 to 23.43), and the benchmark errors are substantial. The high uncertainty introduced by the machine learning models reduces confidence in this single derived result.",
+    "main_risk": "The significant spread in model predictions and high benchmark errors introduce substantial uncertainty regarding the true concentration value.",
+    "next_check": "Perform a sensitivity analysis by calculating the predicted concentrations for all plausible widths (6 and 9) using the trained models to determine the most robust range."
+  },
+  "summary": {
+    "width": 7,
+    "concentration": 21.212207794189453,
+    "model_spread": 2.214,
+    "gap_ok": true,
+    "suppression": 0.35865985182457005,
+    "domain": "in-domain (width 7 has trained models)"
+  }
+}
