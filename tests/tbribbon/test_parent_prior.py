@@ -30,6 +30,30 @@ def test_point_masses_at_zero():
     assert abs(np.mean([p.eps_C == 0 for p in single_c]) - 0.5) < 0.04
 
 
+def test_mean_honeycomb_energy_has_a_point_mass_only_for_honeycomb_alone():
+    lone = [d.params for d in DRAWS if d.params.pattern == (False, True, False)]
+    mixed = [d.params for d in DRAWS if d.params.on_H and d.params.pattern != (False, True, False)]
+    assert abs(np.mean([p.eps_H_mean == 0 for p in lone]) - 0.5) < 0.04
+    assert not any(p.eps_H_mean == 0 for p in mixed)
+
+
+def test_lead_is_uniform_over_the_active_types():
+    for pat in {d.params.pattern for d in DRAWS}:
+        leads = [d.params.lead for d in DRAWS if d.params.pattern == pat]
+        active = DRAWS[[d.params.pattern for d in DRAWS].index(pat)].params.active_types
+        for t in active:
+            assert abs(leads.count(t) / len(leads) - 1 / len(active)) < 0.05
+
+
+def test_three_types_are_connected_uniformly_over_the_four_combinations():
+    three = [d.params for d in DRAWS if d.params.pattern == (True, True, True)]
+    combos = [(p.t_CH > 0, p.t_CK > 0, p.t_HK > 0) for p in three]
+    allowed = {(True, True, False), (True, False, True), (False, True, True), (True, True, True)}
+    assert set(combos) == allowed
+    for c in allowed:
+        assert abs(combos.count(c) / len(combos) - 0.25) < 0.04
+
+
 def test_optional_hoppings_are_zero_or_bounded_away_from_zero():
     for d in DRAWS[:5000]:
         p = d.params
