@@ -8,6 +8,7 @@ the inverse problem: from one transmission spectrum T(E), read the ribbon's mate
 | You want | Go to |
 |---|---|
 | The data | `data/<material>/<edge>/N<width>/`, described in `data/README.md`; `data/INDEX.csv` lists all 342 ribbons |
+| To read the data with plain NumPy | [`reading-cloud-data.md`](reading-cloud-data.md) |
 | To simulate a ribbon | `src/tbribbon/` (engine), run with `scripts/generate/generate_clouds.py` |
 | To identify a spectrum | `src/atlaslib/` (`Atlas`, ensemble `lookup`), built by `scripts/build/`, scored by `scripts/evaluate/` |
 | The older 7/9-AGNR models | `scripts/experiments/agnr/` and `results/agnr/` |
