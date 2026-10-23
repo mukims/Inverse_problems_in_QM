@@ -56,7 +56,10 @@ class InverseModel(nn.Module):
 
     def loss(self, x, state, z, mask):
         """Cross-entropy of the state plus flow-matching MSE on the active slots; returns (loss, parts)."""
-        if not self.cfg["masks_fixed"]:
+        if self.cfg["masks_fixed"]:
+            if not torch.equal(self.state_masks[state], mask.to(torch.bool)):
+                raise ValueError("mask differs from the model's fixed state_masks for the given states")
+        else:
             with torch.no_grad():
                 self.state_masks[state] = mask
                 self.mask_known[state] = True
@@ -78,7 +81,10 @@ class InverseModel(nn.Module):
         self.eval()
         try:
             dev = self.state_masks.device
-            h = self.encode(x.to(dev))
+            x = torch.as_tensor(x, dtype=torch.float32, device=dev)
+            if x.shape != (1, self.cfg["channels"]):
+                raise ValueError(f"x must have shape (1, {self.cfg['channels']}), got {tuple(x.shape)}")
+            h = self.encode(x)
             if state is None:
                 logits = self.discrete(h)[0].masked_fill(~self.mask_known, float("-inf"))
                 if not self.mask_known.any():

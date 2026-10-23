@@ -1,9 +1,17 @@
 import numpy as np
+import pytest
 import torch
 
 from shazam.inverse.model import InverseModel
 
-torch.set_num_threads(2)
+
+@pytest.fixture(autouse=True)
+def two_threads():
+    """Small models: two threads are enough; the previous setting is restored for the rest of the session."""
+    before = torch.get_num_threads()
+    torch.set_num_threads(2)
+    yield
+    torch.set_num_threads(before)
 
 
 def _problem():
@@ -63,3 +71,23 @@ def test_save_load_round_trip(tmp_path):
     m3 = InverseModel(n_states); m3.loss(*batch(64)); m3.save(tmp_path / "m3.pt")
     m4 = InverseModel.load(tmp_path / "m3.pt")
     assert torch.equal(m3.state_masks, m4.state_masks) and torch.equal(m3.mask_known, m4.mask_known)
+
+
+def test_fixed_mask_loss_rejects_a_mismatching_mask_and_sample_checks_the_input_shape():
+    torch.manual_seed(3)
+    n_states, masks, batch = _problem()
+    m = InverseModel(n_states, state_masks=masks)
+    x, s, z, mk = batch(8)
+    m.loss(x, s, z, mk)                                            # the matching mask is accepted
+    with pytest.raises(ValueError, match="state_masks"):
+        m.loss(x, s, z, ~mk)
+    x1 = batch(1)[0]
+    with pytest.raises(ValueError, match=r"\(1, 416\)"):
+        m.sample(x1[0], 3)                                         # 1-D
+    with pytest.raises(ValueError, match=r"\(1, 416\)"):
+        m.sample(batch(2)[0], 3)                                   # two spectra
+    with pytest.raises(ValueError, match=r"\(1, 416\)"):
+        m.sample(x1[:, :400], 3)
+    torch.manual_seed(5); a = m.sample(x1, 5, steps=4)
+    torch.manual_seed(5); b = m.sample(x1.numpy().astype(np.float64), 5, steps=4)    # numpy float64 is cast to float32
+    assert torch.equal(a[0], b[0]) and torch.allclose(a[1], b[1])
