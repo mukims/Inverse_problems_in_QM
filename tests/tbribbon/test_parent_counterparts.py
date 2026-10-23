@@ -41,6 +41,7 @@ def test_disordered_spectra_equal_when_the_same_atoms_are_disordered(key, ref):
     hp, hr = parent_ribbon(named_material(name), edge, 10), reference_ribbon(*ref, 10)
     # Ruling R4: reference site j of cell c is parent site perm[j] of cell c + shift[j]
     perm, shift = match_sites(hp.positions, hr.positions, period=_period(edge), ref_period=reference_period(*ref))
+    assert not shift.any()                     # Ruling R9: folded parent cells line up with the builder's cells
     n_cells, n = 6, hr.H0.shape[0]
     sr = np.zeros((n_cells, n))
     sr[1:-1] = impurity_shifts(n_cells - 2, n, 8, seed=3, v=0.5)              # interior device cells only
