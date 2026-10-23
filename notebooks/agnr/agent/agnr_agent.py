@@ -38,7 +38,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import _bootstrap  # noqa: F401,E402 - puts sibling topic folders on sys.path
-import agnr_lib as A          # noqa: E402
+from agnr import agnr_lib as A          # noqa: E402
 import width_id as W          # noqa: E402
 
 OLLAMA_URL = "http://localhost:11434/api/generate"

@@ -16,10 +16,10 @@ import torch
 from atlaslib import Atlas, CloudStore, MultiStore
 from atlaslib.encoder import embed
 from atlaslib.energy import on_axis
-from meaning.contrastive import embed_structure, train_structure_encoder
-from meaning.distances import clean_distance_matrix, distances_to, kernel_sigma
-from meaning.metrics import evaluate_held_out
-from meaning.split import check_same_ribbons, seed_split
+from shazam.meaning.contrastive import embed_structure, train_structure_encoder
+from shazam.meaning.distances import clean_distance_matrix, distances_to, kernel_sigma
+from shazam.meaning.metrics import evaluate_held_out
+from shazam.meaning.split import check_same_ribbons, seed_split
 from tbribbon.materials import make_model
 
 HERE = Path(__file__).resolve().parent

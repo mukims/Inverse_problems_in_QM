@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from meaning.metrics import evaluate_embedding
+from shazam.meaning.metrics import evaluate_embedding
 
 
 def _cloud(rng, centre, n=50, s=0.05):
@@ -45,7 +45,7 @@ def test_missing_clean_distance_is_refused(rng):
         evaluate_embedding(lambda X: X, refs, known, untrained, unseen, clean, ["a", "b", "c"])
 
 
-from meaning.metrics import evaluate_held_out
+from shazam.meaning.metrics import evaluate_held_out
 
 
 def test_held_out_groups_are_placed_and_graded(rng):

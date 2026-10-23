@@ -1,7 +1,7 @@
 # tests/atlas/test_stage3_generic.py
 import numpy as np
 from atlaslib.store import CloudStore
-from stage3_generic import evaluate_ribbon, fit_ribbon, split_masks
+from shazam.stage3_generic import evaluate_ribbon, fit_ribbon, split_masks
 
 E = np.arange(200) * 0.02
 

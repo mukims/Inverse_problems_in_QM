@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from atlaslib import CloudStore, MultiStore, InputSpec
-from notebooks.material_atlas import ae_data
+from shazam import ae_data
 from notebooks.material_atlas.export_configurations import export_pairs
 from tbribbon.materials import make_model
 

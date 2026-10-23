@@ -12,7 +12,7 @@ import os as _os, sys as _sys  # noqa: E402
 _sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
 import _bootstrap  # noqa: F401,E402 - puts sibling topic folders on sys.path
 try:
-    import agnr  # Needs to run from notebooks/agnr
+    from agnr import hamiltonian as agnr  # Needs to run from notebooks/agnr
 except ImportError:
     pass
 

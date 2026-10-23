@@ -24,7 +24,7 @@ from tqdm import tqdm
 
 # Add local directory for agnr_lib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import agnr_lib as A
+from agnr import agnr_lib as A
 
 
 def compute_single_spectrum(args):

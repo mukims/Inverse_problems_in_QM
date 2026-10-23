@@ -26,7 +26,7 @@ from multiprocessing import Pool
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import agnr_lib as A  # noqa: E402
+from agnr import agnr_lib as A  # noqa: E402
 
 
 def _one(args):

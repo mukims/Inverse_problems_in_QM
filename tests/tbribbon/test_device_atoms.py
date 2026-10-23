@@ -86,8 +86,8 @@ def test_graphene_armchair_rejects_device_atoms(tmp_path):
 
 def test_cli_flag_reaches_the_store(tmp_path):
     env = dict(os.environ, OMP_NUM_THREADS="1",
-               PYTHONPATH=os.pathsep.join([str(REPO / "notebooks" / "material_atlas"), str(REPO / "notebooks")]))
-    subprocess.run([sys.executable, str(REPO / "notebooks" / "tbribbon" / "generate_clouds.py"),
+               PYTHONPATH=str(REPO / "src"))
+    subprocess.run([sys.executable, "-m", "tbribbon.generate_clouds",
                     "--store", str(tmp_path / "s"), "--grid", "models", "--models", "triangular/zigzag/N4",
                     "--densities", "0.05", "--spec-version", "v3", "--formula", "caroli", "--n-seeds", "2",
                     "--n-jobs", "1", "--device-atoms", "160"], check=True, env=env, cwd=REPO, capture_output=True)

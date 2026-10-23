@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn.functional as F
 
-from meaning.contrastive import (
+from shazam.meaning.contrastive import (
     StructureEncoder,
     class_batch,
     contrastive_loss,
@@ -99,7 +99,7 @@ def test_embed_structure_handles_empty_input():
     assert embed_structure(enc, np.zeros((0, 64), np.float32)).shape == (0, 8)
 
 
-from meaning.contrastive import stress_loss
+from shazam.meaning.contrastive import stress_loss
 
 
 def test_single_sigma_list_equals_float_sigma():

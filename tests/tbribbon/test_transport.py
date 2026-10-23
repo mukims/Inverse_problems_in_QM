@@ -3,6 +3,8 @@ import sys
 
 import numpy as np
 import pytest
+
+import paths
 from tbribbon.bands import band_edges, open_channels
 from tbribbon.disorder import impurity_shifts
 from tbribbon.lattices import honeycomb_ribbon, square_strip
@@ -32,7 +34,7 @@ def test_impurity_sites_are_nested_prefixes_of_one_seed():
 def test_legacy_trace_reproduces_ca_sq_exactly():
     sys.path.insert(0, os.path.join(REPO, "notebooks", "square_lattice"))
     import ca_sq
-    legacy = np.load(os.path.expanduser("~/transmissions_sq/leads/leads_10.npy"))
+    legacy = np.load(paths.leads_dir("square") / "leads_10.npy")
     h = square_strip(10)
     E = np.array([0.37, 1.21, 2.84])
     shifts = impurity_shifts(100, 10, 30, seed=7, v=0.5)

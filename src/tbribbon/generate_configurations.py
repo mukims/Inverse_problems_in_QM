@@ -9,6 +9,7 @@ from pathlib import Path
 import time
 import numpy as np
 
+import paths
 from atlaslib import CloudStore
 
 
@@ -50,7 +51,7 @@ def generate_configurations_for_store(store_path, n_jobs=8, force=False, unit="l
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Generate cloud_<key>_config.npz alongside clouds")
-    ap.add_argument("--stores", default="~/atlas_store/engine_v1,~/atlas_store/materials3_ev_full",
+    ap.add_argument("--stores", default=str(paths.data_root()),
                     help="Comma-separated store paths")
     ap.add_argument("--n-jobs", type=int, default=8, help="Number of worker processes")
     ap.add_argument("--force", action="store_true", help="Overwrite existing config.npz files")

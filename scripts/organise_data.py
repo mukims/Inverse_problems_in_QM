@@ -230,7 +230,7 @@ def merge_clouds(src, dst):
     for key in new:
         for f in [*src.glob(f"cloud_{key}.*"), *src.glob(f"cloud_{key}_*")]:
             shutil.copy2(f, dst / f.name)
-        dst_meta["clouds"][key] = src_meta["clouds"][key]
+        dst_meta["clouds"][key] = {**src_meta["clouds"][key], "source": src.parent.parent.parent.name}
     (dst / "meta.json").write_text(json.dumps(dst_meta, indent=2))
     return len(new)
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """Clean (pristine) fingerprints of registered models with consistent backends."""
 import argparse
-import sys
 from pathlib import Path
 
 import matplotlib
@@ -9,16 +8,13 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
+import paths
 from atlaslib import CloudStore, InputSpec
 from tbribbon.leads import LeadCache
 from tbribbon.materials import hamiltonian_for, make_model
 from tbribbon.transport import spectrum
 
-REPO = Path(__file__).resolve().parents[2]
-AGNR_PHYSICS = REPO / "notebooks" / "agnr" / "physics"
-if str(AGNR_PHYSICS) not in sys.path:
-    sys.path.insert(0, str(AGNR_PHYSICS))
-import agnr_lib
+from agnr import agnr_lib
 
 
 def run(store, models, spec, out_png=None):
@@ -57,9 +53,9 @@ def run(store, models, spec, out_png=None):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--store", default="~/atlas_store/engine_v1")
+    ap.add_argument("--store", default=str(paths.data_root()))
     a = ap.parse_args()
     ms = ([make_model("graphene-ideal", "armchair", n) for n in list(range(5, 17)) + [27]]
           + [make_model("graphene-ideal", "zigzag", n) for n in list(range(4, 13)) + [27]]
           + [make_model("square", "strip", 10)])
-    run(CloudStore(a.store), ms, InputSpec(), out_png="notebooks/tbribbon/fingerprints_ideal.png")
+    run(CloudStore(a.store), ms, InputSpec(), out_png=str(paths.results_dir("tbribbon", create=True) / "fingerprints_ideal.png"))

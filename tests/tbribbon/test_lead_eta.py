@@ -8,13 +8,14 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+import paths
 from atlaslib import CloudStore, InputSpec
 from tbribbon.check_store import check_model
 from tbribbon.generate_clouds import DEFAULT_LEAD_ETA, generate
 from tbribbon.materials import make_model
 
 REPO = Path(__file__).resolve().parents[2]
-SMOKE4 = Path("~/atlas_store/materials2_ev_smoke").expanduser()
+SMOKE4 = paths.archive_run("materials2_ev_smoke")
 V3 = InputSpec(version="v3")
 
 
@@ -34,7 +35,7 @@ def test_lead_eta_reaches_the_leads_and_is_recorded(tmp_path):
     assert check_model(narrow, m, None)["clean_channels_max_err"] < 1e-4
 
 
-@pytest.mark.skipif(not (SMOKE4 / "mose2/zigzag/N7/pristine.npy").exists(), reason="SMOKE-4 store not on this machine")
+@pytest.mark.skipif(not (SMOKE4 / "mose2/zigzag/N7/pristine.npy").exists(), reason="archived SMOKE-4 store not found (set TRANSMISSION_ARCHIVES)")
 def test_default_reproduces_the_smoke4_pristine(tmp_path):
     m = make_model("mose2", "zigzag", 7)
     store = CloudStore(tmp_path / "s")
@@ -73,8 +74,8 @@ def test_graphene_armchair_rejects_a_lead_eta(tmp_path):
 
 def test_cli_flag_reaches_the_store(tmp_path):
     env = dict(os.environ, OMP_NUM_THREADS="1",
-               PYTHONPATH=os.pathsep.join([str(REPO / "notebooks" / "material_atlas"), str(REPO / "notebooks")]))
-    subprocess.run([sys.executable, str(REPO / "notebooks" / "tbribbon" / "generate_clouds.py"),
+               PYTHONPATH=str(REPO / "src"))
+    subprocess.run([sys.executable, "-m", "tbribbon.generate_clouds",
                     "--store", str(tmp_path / "s"), "--grid", "models", "--models", "triangular/zigzag/N4",
                     "--densities", "0.02", "--spec-version", "v3", "--formula", "caroli", "--n-seeds", "2",
                     "--n-jobs", "1", "--lead-eta", "1e-5"], check=True, env=env, cwd=REPO, capture_output=True)

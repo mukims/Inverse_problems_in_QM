@@ -93,6 +93,8 @@ def test_merge_adds_only_the_new_density_files_and_meta_entries(tmp_path):
     od.execute([row("MOVE", canon, dst), row("MERGE", extra, dst)], tmp_path / "MOVES.csv")
     meta = json.loads((dst / "meta.json").read_text())
     assert sorted(meta["clouds"]) == ["d0.0027", "d0.0048", "d0.0049", "d0.0100"]
+    # merged-in clouds say where they came from; the canonical ones stay unmarked
+    assert meta["clouds"]["d0.0027"]["source"] == "conc_v2" and "source" not in meta["clouds"]["d0.0048"]
     assert (dst / "cloud_d0.0027.npy").exists() and (dst / "cloud_d0.0049_seeds.npy").exists()
     # the density both copies had keeps the canonical spectra, not the conc_v2 ones
     assert np.load(dst / "cloud_d0.0100.npy")[0, 0] == pytest.approx(1.01)

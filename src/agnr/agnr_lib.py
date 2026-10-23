@@ -28,6 +28,8 @@ from functools import lru_cache
 
 import numpy as np
 
+import paths
+
 W_MIN, W_MAX, W_STEP = 0.0, 3.0, 0.01
 NCELLS = 100
 
@@ -133,10 +135,11 @@ def leads_sancho_rubio(w_vals, d, t, e, m, tol=1e-10, max_iter=200):
     return np.linalg.inv(Ws), count
 
 
-CELL_V2_LEADS_DIR = os.path.expanduser("~/atlas_store/leads/agnr_cell_v2")
+CELL_V2_LEADS_DIR = str(paths.leads_dir("graphene-ideal") / "agnr_cell_v2")
+V1_LEADS_DIR = str(paths.leads_dir("graphene-ideal") / "agnr_v1_backup")
 
 
-def load_leads(m, leads_dir="~/Desktop/backup/agnr"):
+def load_leads(m, leads_dir=V1_LEADS_DIR):
     """Load precomputed AGNR leads for width m -> (300, 2m, 2m).
 
     Odd m loads historical leads from `leads_dir` (validated by regression).

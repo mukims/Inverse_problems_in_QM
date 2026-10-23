@@ -4,7 +4,7 @@ from collections import Counter
 import numpy as np
 
 from atlaslib.energy import on_axis
-from meaning.distances import rms_distance, shape_profile
+from shazam.meaning.distances import rms_distance, shape_profile
 
 
 def _locate_test(atlas, store, reg, mid, test_seed_min):

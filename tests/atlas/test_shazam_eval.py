@@ -1,7 +1,7 @@
 # tests/atlas/test_shazam_eval.py
 import numpy as np
 from atlaslib import Atlas, InputSpec, Registry
-from shazam_eval import clean_ground_truth, identify, query_group
+from shazam.shazam_eval import clean_ground_truth, identify, query_group
 try:
     from toy import toy_store
 except ImportError:

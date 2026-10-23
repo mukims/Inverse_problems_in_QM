@@ -6,7 +6,6 @@ and zigzag orientations across designated widths, saving spectra into CloudStore
 generating fingerprints_real.png.
 """
 import argparse
-import sys
 from pathlib import Path
 
 import matplotlib
@@ -14,13 +13,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Ensure material_atlas and tbribbon are on PYTHONPATH
-REPO = Path(__file__).resolve().parents[2]
-if str(REPO / "notebooks" / "material_atlas") not in sys.path:
-    sys.path.insert(0, str(REPO / "notebooks" / "material_atlas"))
-if str(REPO / "notebooks") not in sys.path:
-    sys.path.insert(0, str(REPO / "notebooks"))
-
+import paths
 from atlaslib import CloudStore, InputSpec
 from tbribbon.leads import LeadCache
 from tbribbon.materials import hamiltonian_for, make_model
@@ -68,8 +61,8 @@ def run(store, models, spec, out_png=None):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--store", default="~/atlas_store/materials_v1")
-    ap.add_argument("--out-png", default=str(REPO / "notebooks" / "tbribbon" / "fingerprints_real.png"))
+    ap.add_argument("--store", default=str(paths.data_root()))
+    ap.add_argument("--out-png", default=str(paths.results_dir("tbribbon", create=True) / "fingerprints_real.png"))
     ap.add_argument("--widths", default="7,9,14,27")
     a = ap.parse_args()
 

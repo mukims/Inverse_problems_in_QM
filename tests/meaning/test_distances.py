@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from meaning.distances import clean_distance_matrix, distances_to, kernel_sigma, rms_distance
+from shazam.meaning.distances import clean_distance_matrix, distances_to, kernel_sigma, rms_distance
 
 
 def test_matrix_is_symmetric_with_zero_diagonal_and_matches_rms():

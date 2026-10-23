@@ -1,7 +1,7 @@
 # tests/atlas/test_shape_profile.py
 import numpy as np
 import pytest
-from meaning.distances import rms_distance, shape_profile
+from shazam.meaning.distances import rms_distance, shape_profile
 
 
 def _staircase(e, top, steps):

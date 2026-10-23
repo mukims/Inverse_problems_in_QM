@@ -12,8 +12,11 @@ def _key(density: float) -> str:
 
 
 class CloudStore:
-    def __init__(self, root):
+    """extra=False hides clouds merged in from another run (their meta entry has a "source"), so a catalogue built
+    from the store sees the densities it was defined with. extra=True shows every density."""
+    def __init__(self, root, extra=False):
         self.root = Path(root).expanduser()
+        self.extra = extra
 
     def _dir(self, model_id):
         return self.root / model_id
@@ -112,14 +115,21 @@ class CloudStore:
         d, k = self._dir(model_id), _key(density)
         return np.load(d / f"cloud_{k}.npy"), np.load(d / f"cloud_{k}_seeds.npy")
 
+    def _shown(self, model_id):
+        clouds = self._meta(model_id)["clouds"]
+        return clouds if self.extra else {k: v for k, v in clouds.items() if "source" not in v}
+
     def has_cloud(self, model_id, density) -> bool:
-        return (self._dir(model_id) / f"cloud_{_key(density)}.npy").exists()
+        k = _key(density)
+        if not (self._dir(model_id) / f"cloud_{k}.npy").exists():
+            return False
+        return self.extra or "source" not in self._meta(model_id)["clouds"].get(k, {})
 
     def has_pristine(self, model_id) -> bool:
         return (self._dir(model_id) / "pristine.npy").exists()
 
     def densities(self, model_id):
-        return sorted(v["density"] for v in self._meta(model_id)["clouds"].values())
+        return sorted(v["density"] for v in self._shown(model_id).values())
 
     def models(self):
         return sorted(str(p.parent.relative_to(self.root)) for p in self.root.rglob("energies_t.npy"))

@@ -14,7 +14,7 @@ import torch
 from sklearn.decomposition import PCA
 from sklearn.metrics import roc_auc_score
 
-import ae_data
+from shazam import ae_data
 from atlaslib import CloudStore, Conv1dAE, embed
 from atlaslib.energy import on_axis
 from atlaslib.lookup import window_inputs

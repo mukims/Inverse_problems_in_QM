@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
+import paths
 from atlaslib import CloudStore, InputSpec
 from atlaslib.energy import on_axis
 from atlaslib.lookup import window_inputs
@@ -12,9 +13,8 @@ from tbribbon.materials import MATERIALS
 
 SPEC = InputSpec(version="v4")
 SPLITS = {"train": (0, 699), "val": (700, 849), "test": (850, 999)}      # inclusive configuration seeds
-CATALOGUE_STORES = ("engine_v1", "materials3_ev_full")                    # 339 devices, 4 stored densities
-PILOT_STORES = ("conc_v2",)                                                # 24 densities, 0.25-6%
-LEGACY_DIR = ("/run/media/shardul/storage/machine_learning/transmission_data/transmission_results/consolidated_data")
+PILOT_STORES = ("conc_v2",)                                                # archived run: 24 densities, 0.25-6%
+LEGACY_DIR = "default"                                                     # the 7/9-AGNR arrays under data/graphene-ideal
 LEGACY = {7: ("size_7.npy", 1400), 9: ("size_9.npy", 1800)}               # c = 2, 4, ... impurities on `sites` sites
 SOURCES = ("catalogue", "pilot", "legacy")
 
@@ -51,35 +51,45 @@ class _Rows:
                 "devices": np.array(names)}
 
 
-def collect(split, root="~/atlas_store", stores=CATALOGUE_STORES, pilots=PILOT_STORES, legacy_dir=LEGACY_DIR,
+def _stores(root, stores, pilots):
+    """(source, CloudStore) pairs. Default: the data tree is the catalogue (the densities it was built with: clouds
+    merged in from another run stay hidden) and the archived conc_v2 run is the pilot. With `root`, `stores` and
+    `pilots` are folder names under it."""
+    if root is None:
+        return [("catalogue", CloudStore(paths.data_root()))] + [
+            ("pilot", CloudStore(paths.archive_run(n))) for n in (PILOT_STORES if pilots is None else pilots)]
+    root = Path(root).expanduser()
+    return [("catalogue", CloudStore(root / n)) for n in stores or ()] + [("pilot", CloudStore(root / n)) for n in pilots or ()]
+
+
+def collect(split, root=None, stores=None, pilots=None, legacy_dir=LEGACY_DIR,
             per_cloud=None, include=SOURCES, with_configurations=False, config_unit="lattice"):
     """All spectra of one split as one array X (n, 416) with labels. The clean spectrum of every catalogue device joins
     the train split once, at density 0. `per_cloud` thins every cloud to evenly spaced seeds.
     If `with_configurations=True`, attaches exact microscopic impurity configurations to the returned dict."""
     lo, hi = SPLITS[split]
-    rows, root = _Rows(), Path(root).expanduser()
-    for source, names in (("catalogue", stores), ("pilot", pilots)):
+    rows = _Rows()
+    for source, store in _stores(root, stores, pilots):
         if source not in include:
             continue
-        for name in names:
-            store = CloudStore(root / name)
-            for mid in sorted(store.models()):
-                if mid.startswith("square/"):
-                    continue                       # the unseen lattice stays out of training and of the catalogue
-                m = _Axis(mid)
-                e_t, pris = store.read_pristine(mid)
-                e_ev, _ = on_axis(SPEC, m, e_t)
-                if split == "train" and source == "catalogue":
-                    rows.add(window_inputs(SPEC, e_ev, pris)[0], mid, 0.0, source, [-1])
-                for d in store.densities(mid):
-                    cloud, seeds = store.read_cloud(mid, d)
-                    keep = np.flatnonzero((seeds >= lo) & (seeds <= hi))
-                    keep = keep[_pick(len(keep), per_cloud)]
-                    if len(keep):
-                        rows.add(window_inputs(SPEC, e_ev, cloud[keep])[0], mid, d, source, seeds[keep])
+        for mid in sorted(store.models()):
+            if mid.startswith("square/") or not store.densities(mid):
+                continue                       # the unseen lattice, and ribbons with only a clean spectrum, stay out
+            m = _Axis(mid)
+            e_t, pris = store.read_pristine(mid)
+            e_ev, _ = on_axis(SPEC, m, e_t)
+            if split == "train" and source == "catalogue":
+                rows.add(window_inputs(SPEC, e_ev, pris)[0], mid, 0.0, source, [-1])
+            for d in store.densities(mid):
+                cloud, seeds = store.read_cloud(mid, d)
+                keep = np.flatnonzero((seeds >= lo) & (seeds <= hi))
+                keep = keep[_pick(len(keep), per_cloud)]
+                if len(keep):
+                    rows.add(window_inputs(SPEC, e_ev, cloud[keep])[0], mid, d, source, seeds[keep])
     if "legacy" in include and legacy_dir:
         for width, (fname, sites) in LEGACY.items():
-            mm = np.load(Path(legacy_dir) / fname, mmap_mode="r")      # (n_conc, n_seeds, 300), row i = seed i
+            path = paths.agnr_consolidated(width) if legacy_dir == LEGACY_DIR else Path(legacy_dir) / fname
+            mm = np.load(path, mmap_mode="r")                          # (n_conc, n_seeds, 300), row i = seed i
             m = _Axis(f"graphene-ideal/armchair/N{width}")
             e_ev, _ = on_axis(SPEC, m, np.arange(mm.shape[2]) * 0.01)
             seeds = np.arange(lo, min(hi, mm.shape[1] - 1) + 1)

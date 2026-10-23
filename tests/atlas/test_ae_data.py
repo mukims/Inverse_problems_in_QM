@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from atlaslib import CloudStore
-from ae_data import SPEC, SPLITS, collect, load, save
+from shazam.ae_data import SPEC, SPLITS, collect, load, save
 from tbribbon.materials import make_model
 
 DENS = (0.01, 0.02)

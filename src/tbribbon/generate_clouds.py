@@ -5,12 +5,12 @@ import argparse
 import multiprocessing as mp
 from dataclasses import replace
 import os
-import sys
 import time
 from pathlib import Path
 
 import numpy as np
 
+import paths
 from atlaslib import CloudStore, InputSpec
 from atlaslib.energy import generation_grid_t
 from tbribbon.disorder import impurity_shifts
@@ -18,11 +18,7 @@ from tbribbon.leads import LeadCache
 from tbribbon.materials import device_cells, hamiltonian_for, make_model
 from tbribbon.transport import spectrum
 
-REPO = Path(__file__).resolve().parents[2]
-AGNR_PHYSICS = REPO / "notebooks" / "agnr" / "physics"
-if str(AGNR_PHYSICS) not in sys.path:
-    sys.path.insert(0, str(AGNR_PHYSICS))
-import agnr_lib
+from agnr import agnr_lib
 
 _W = {}
 DEFAULT_LEAD_ETA = 1e-4  # LeadCache's default; every store before FULL-5 was generated with it
@@ -189,7 +185,7 @@ def _parse_models(val):
 if __name__ == "__main__":
     import time
     ap = argparse.ArgumentParser()
-    ap.add_argument("--store", default="~/atlas_store/engine_v1")
+    ap.add_argument("--store", default=str(paths.data_root()))
     ap.add_argument("--n-jobs", type=int, default=4)
     ap.add_argument("--formula", default="legacy_trace")
     ap.add_argument("--n-seeds", type=int, default=None, help="Fixed number of seeds per model (e.g. 50 for smoke build)")

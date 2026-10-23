@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from meaning.split import check_same_ribbons, seed_split
+from shazam.meaning.split import check_same_ribbons, seed_split
 
 
 def test_seed_split_boundaries():

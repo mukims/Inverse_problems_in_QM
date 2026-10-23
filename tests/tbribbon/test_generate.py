@@ -20,17 +20,12 @@ def test_generate_writes_then_resumes(tmp_path):
 def test_agnr_lib_reproduces_stored_rows():
     import numpy as np
     import pytest
-    from pathlib import Path
-    import sys
+    from agnr import agnr_lib as A
+    import paths
 
-    REPO = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(REPO / "notebooks" / "agnr" / "physics"))
-    import agnr_lib as A
-
-    d7_path = Path("/run/media/shardul/storage/machine_learning/transmission_data/transmission_results/consolidated_data/size_7.npy")
-    d9_path = Path("/run/media/shardul/storage/machine_learning/transmission_data/transmission_results/consolidated_data/size_9.npy")
+    d7_path, d9_path = paths.agnr_consolidated(7), paths.agnr_consolidated(9)
     if not (d7_path.exists() and d9_path.exists()):
-        pytest.skip("Consolidated AGNR datasets not found")
+        pytest.skip(f"consolidated 7/9-AGNR arrays not found under {paths.data_root()} (set TRANSMISSION_DATA)")
 
     d7 = np.load(d7_path, mmap_mode="r")
     d9 = np.load(d9_path, mmap_mode="r")
@@ -53,10 +48,7 @@ def test_agnr_lib_reproduces_stored_rows():
 def test_agnr_disorder_physical_invariant_on_odd_widths():
     """Verify physical invariant on validated widths: median(cloud) <= pristine + tol (0.05)."""
     from pathlib import Path
-    import sys
-    REPO = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(REPO / "notebooks" / "agnr" / "physics"))
-    import agnr_lib as A
+    from agnr import agnr_lib as A
     import numpy as np
 
     for m in (5, 7):
@@ -72,11 +64,8 @@ def test_agnr_disorder_physical_invariant_on_odd_widths():
 
 def test_even_width_agnr_bands_match_geometric_honeycomb():
     """Check 3a: Bands of unitcell + T1_matrix match honeycomb_ribbon for m=5..16."""
-    import sys
     from pathlib import Path
-    REPO = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(REPO / "notebooks" / "agnr" / "physics"))
-    import agnr_lib as A
+    from agnr import agnr_lib as A
     from tbribbon.lattices import honeycomb_ribbon
     import numpy as np
 
@@ -95,11 +84,8 @@ def test_even_width_agnr_bands_match_geometric_honeycomb():
 
 def test_even_width_agnr_clean_matches_open_channels():
     """Check 3b: Clean T equals open_channels at stable energies for m=6, 8."""
-    import sys
     from pathlib import Path
-    REPO = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(REPO / "notebooks" / "agnr" / "physics"))
-    import agnr_lib as A
+    from agnr import agnr_lib as A
     from tbribbon.lattices import honeycomb_ribbon
     from tbribbon.bands import open_channels
     import numpy as np
@@ -117,11 +103,8 @@ def test_even_width_agnr_clean_matches_open_channels():
 
 def test_even_width_agnr_disorder_physical_invariant():
     """Check 3c: Single impurity max(T - pristine) <= 0.05 for m=6, 8 over first 60 channels."""
-    import sys
     from pathlib import Path
-    REPO = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(REPO / "notebooks" / "agnr" / "physics"))
-    import agnr_lib as A
+    from agnr import agnr_lib as A
     import numpy as np
 
     grid = A.energy_grid()
@@ -135,11 +118,8 @@ def test_even_width_agnr_disorder_physical_invariant():
 
 def test_agnr_leads_finite_all_widths():
     """Check 3d: Precomputed/cached leads are finite at all 300 energies for m=5..16."""
-    import sys
     from pathlib import Path
-    REPO = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(REPO / "notebooks" / "agnr" / "physics"))
-    import agnr_lib as A
+    from agnr import agnr_lib as A
     import numpy as np
 
     for m in range(5, 17):

@@ -5,21 +5,16 @@ import hashlib
 from dataclasses import replace
 import json
 import os
-import sys
 from pathlib import Path
 
 import numpy as np
 
-REPO = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO / "notebooks" / "material_atlas"))
-sys.path.insert(0, str(REPO / "notebooks"))
-sys.path.insert(0, str(REPO / "notebooks" / "agnr" / "physics"))
-
+import paths
 from atlaslib import CloudStore, Registry
 from tbribbon.bands import open_channels
 from tbribbon.disorder import impurity_shifts
 from tbribbon.materials import hamiltonian_for, make_model
-import agnr_lib
+from agnr import agnr_lib
 
 
 def check_seed_excess(spec, pris, step_mask=None, tol=0.05):
@@ -167,7 +162,7 @@ def check_model(store, model, reg):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--store", default="~/atlas_store/smoke_v1")
+    ap.add_argument("--store", default=str(paths.data_root()))
     ap.add_argument("--out", default=None)
     ap.add_argument("--narrow-only", action="store_true", help="Validate only the 21 narrow baseline models")
     a = ap.parse_args()

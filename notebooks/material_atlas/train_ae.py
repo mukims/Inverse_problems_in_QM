@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-import ae_data
+from shazam import ae_data
 from atlaslib import train_autoencoder
 
 HERE = Path(__file__).resolve().parent

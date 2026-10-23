@@ -10,11 +10,7 @@ from tbribbon.configuration import (
 )
 from tbribbon.disorder import impurity_shifts
 from tbribbon.materials import MATERIALS, make_model, hamiltonian_for
-import sys
-from pathlib import Path
-REPO = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO / "notebooks" / "agnr" / "physics"))
-import agnr_lib
+from agnr import agnr_lib
 
 
 @pytest.mark.parametrize("material", ["graphene-ideal", "hbn", "phosphorene", "mos2", "silicene", "germanene", "triangular", "kagome"])

@@ -1,5 +1,7 @@
 import numpy as np
 import pytest
+
+import paths
 from atlaslib.spec import InputSpec
 
 
@@ -65,7 +67,9 @@ def test_inputspec_v2_cap_is_64():
 
 def test_no_clean_spectrum_in_grid_reaches_cap():
     from atlaslib.store import CloudStore
-    store = CloudStore("~/atlas_store/smoke_v1")
+    store = CloudStore(paths.archive_run("smoke_v1"))
+    if not store.models():
+        pytest.skip("archived smoke_v1 run not found (set TRANSMISSION_ARCHIVES)")
     s2 = InputSpec(version="v2")
     for mid in store.models():
         _, pris = store.read_pristine(mid)

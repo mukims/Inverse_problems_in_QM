@@ -10,7 +10,7 @@ import numpy as np
 
 from atlaslib import Atlas, CloudStore, Registry
 from atlaslib.energy import on_axis
-from stage3_generic import _load, split_masks
+from shazam.stage3_generic import _load, split_masks
 
 
 def main():

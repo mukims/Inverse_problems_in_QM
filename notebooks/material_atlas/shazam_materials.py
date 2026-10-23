@@ -14,7 +14,7 @@ import numpy as np
 
 from atlaslib import Atlas, CloudStore, MultiStore, Registry
 from build_atlas_v2 import GRIDS
-from shazam_eval import clean_ground_truth, identify, query_group
+from shazam.shazam_eval import clean_ground_truth, identify, query_group
 from tbribbon.materials import make_model
 
 TRAIN_MAX, VAL_MIN, VAL_MAX, TEST_MIN = 699, 700, 849, 850

@@ -1,5 +1,7 @@
 import numpy as np
 import pytest
+
+import paths
 from atlaslib.spec import InputSpec, despike
 
 
@@ -48,24 +50,33 @@ def test_only_v4_despikes_the_input():
     assert np.array_equal(np.delete(x3, 50, 1), np.delete(x4, 50, 1))
 
 
-@pytest.mark.parametrize("root", ["~/atlas_store/materials_v1", "~/atlas_store/engine_v1"])
+def _graphene_store():
+    from atlaslib.store import CloudStore
+    store = CloudStore(paths.data_root())
+    return store, [m for m in store.models() if m.startswith("graphene-ideal/")]
+
+
+@pytest.mark.parametrize("root", ["archived materials_v1", "graphene-ideal"])
 def test_despike_leaves_every_clean_spectrum_unchanged(root):
     from atlaslib.store import CloudStore
-    store = CloudStore(root)
-    if not store.models():
-        pytest.skip(f"{root} not present")
-    for mid in store.models():
+    if root == "graphene-ideal":
+        store, models = _graphene_store()
+    else:
+        store = CloudStore(paths.archive_run("materials_v1"))
+        models = store.models()
+    if not models:
+        pytest.skip(f"{root} not present (set TRANSMISSION_DATA / TRANSMISSION_ARCHIVES)")
+    for mid in models:
         _, pris = store.read_pristine(mid)
         p = np.round(pris, 3)[None]
         assert np.array_equal(despike(p), p), mid
 
 
 def test_despike_leaves_caroli_disorder_clouds_unchanged():
-    from atlaslib.store import CloudStore
-    store = CloudStore("~/atlas_store/engine_v1")
-    caroli = [m for m in store.models() if store._meta(m).get("pristine_formula") == "caroli"]
+    store, models = _graphene_store()
+    caroli = [m for m in models if store._meta(m).get("pristine_formula") == "caroli"]
     if not caroli:
-        pytest.skip("no Caroli models in engine_v1")
+        pytest.skip("no Caroli graphene models in the data tree")
     for mid in caroli:
         for d in store.densities(mid):
             c = np.round(store.read_cloud(mid, d)[0][:100], 3)
