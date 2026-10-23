@@ -2265,6 +2265,83 @@ slightly from the published ones (older device lengths).
 
 ---
 
+### [2026-10-23] EDGE-1: Is the Edge Fraction of Impurities Readable from One Spectrum? (hBN armchair N10)
+
+**Question.** At a fixed impurity count, can a spectrum tell what share of the impurities sit on the two outermost lines
+of atoms (edge fraction)? This is the first label beyond concentration: the arrangement at fixed count.
+
+**Setup.** `scripts/experiments/edge_fraction/run_edge_fraction.py`; labels from `cloud_<density>_config.npz` via
+`src/shazam/arrangement.py` (across axis from the ribbon period vector). One density at a time (count fixed), the 4
+catalogue densities, 1,000 seeds each. Features: T / clean spectrum (rounded to 3 decimals, clipped to [0, 1]), 416
+channels. XGBoost (500 trees, depth 6, lr 0.03, early stopping on 15% of the training seeds). Every spectrum predicted
+out of fold, 5 folds split by configuration seed. Score: misfit = mean squared difference; skill = 1 - misfit / misfit of
+predicting the mean (variance of the label), with a 95% bootstrap interval. Control: the same model on shuffled labels.
+
+| Density | Impurities | Edge impurities (mean) | Misfit model | Misfit mean | Skill (95% CI) | Skill, shuffled | RMSE (edge impurities) model / mean |
+|---|---:|---:|---:|---:|---|---:|---|
+| 0.48% | 12 | 2.5 | 0.00913 | 0.01419 | **0.353** (0.312-0.390) | -0.029 | 1.15 / 1.43 |
+| 1% | 25 | 5.0 | 0.00521 | 0.00679 | **0.231** (0.188-0.263) | -0.012 | 1.81 / 2.06 |
+| 2% | 50 | 10.0 | 0.00275 | 0.00309 | **0.108** (0.078-0.137) | -0.025 | 2.62 / 2.78 |
+| 4% | 100 | 20.0 | 0.00136 | 0.00139 | **0.021** (0.003-0.037) | 0.000 | 3.68 / 3.73 |
+
+**Reading.** The edge fraction is partly identifiable from one spectrum: about a third of its seed-to-seed variance is
+explained at 0.5%, falling to almost nothing at 4%. The shuffled control is at zero at every density, so the signal is
+real and not a leak. It fades as multiple scattering mixes the contributions of individual impurities. Results:
+`results/edge_fraction/hbn_armchair_N10.json`.
+
+---
+
+### [2026-10-23] EDGE-2: Model Errors Against the Impurity Arrangement; Edge Fraction on Graphene Zigzag
+
+**Question.** Do the errors of our models depend on where the impurities sit? Two error sources, one density at a time:
+the ensemble lookup's concentration estimate minus the true density (lookup_v4, test seeds 850-999, all matched to
+the right device), and the out-of-fold residual of the EDGE-1 edge-fraction regression (all 1,000 seeds). Nine
+descriptors per seed (`src/shazam/arrangement.py`): edge fraction, distance from the centre line, share on sublattice
+0, mean nearest-neighbour distance, adjacent pairs, share near a lead, and the von Neumann entropy of the impurity
+graph (weights exp(-d^2 / 2 l^2), rho = L / tr L, S = -sum lambda ln lambda) at l = 2, 5 and 10 bond lengths. Spearman
+correlation, bootstrap 95% interval, Bonferroni over the 72 comparisons per ribbon.
+Script: `scripts/experiments/edge_fraction/error_vs_arrangement.py`.
+
+**Lookup concentration error, Spearman rho** (** = Bonferroni-significant)
+
+| Descriptor | hBN armchair N10: 0.48% / 1% / 2% / 4% | graphene zigzag N10: 0.5% / 1% / 2% / 4% |
+|---|---|---|
+| share on sublattice 0 | **+0.98 / +0.96 / +0.91 / +0.81** ** | -0.07 / +0.02 / +0.02 / -0.07 |
+| edge fraction | -0.06 / -0.16 / -0.10 / +0.04 | **-0.48 / -0.62 / -0.49** ** / -0.17 |
+| graph entropy (l = 2, 5, 10) | all \|rho\| <= 0.18, none Bonferroni-significant | all \|rho\| <= 0.15, none significant |
+| other descriptors | none Bonferroni-significant | none Bonferroni-significant |
+
+Lookup error spread (1e-4 density units): hBN 13.7 / 19.7 / 28.1 / 25.0; graphene zigzag 1.8 / 3.2 / 5.2 / 10.0.
+
+**Reading.**
+* In hBN, sublattice 0 is boron (on-site +1.58 t = +3.6 eV). The spectra cover 0-8.3 eV, the boron-dominated conduction
+  band, so an impurity on boron scatters the probed states far more than one on nitrogen. The lookup therefore over-counts
+  ribbons whose impurities sit mostly on boron and under-counts the opposite; sublattice balance explains almost all of
+  hBN's concentration error (rho^2 about 0.9 at 1%). The effect is absent in graphene, whose sublattices are equivalent.
+  Corollary: the B:N balance of the impurities is itself readable from the spectrum, and a model that estimates it could
+  remove most of hBN's concentration error.
+* In graphene zigzag, impurities on the zigzag edges scatter less than those inside, so edge-heavy ribbons are
+  under-counted.
+* The graph entropy does not explain concentration errors in either ribbon. It correlates weakly with the edge-fraction
+  residual at higher density (l = 2: +0.15 to +0.25), together with the nearest-neighbour distance: locally clustered
+  impurities make the edge fraction harder to read.
+* Edge-fraction residuals correlate strongly and negatively with the edge fraction itself: regression towards the mean,
+  an artefact of any imperfect predictor, not physics.
+
+**Edge fraction on graphene zigzag N10** (EDGE-1 setup, out-of-fold, 5 seed folds)
+
+| Density | Impurities | Skill (95% CI) | Skill, shuffled |
+|---|---:|---|---:|
+| 0.5% | 10 | **0.935** (0.921-0.948) | -0.007 |
+| 1% | 20 | **0.845** (0.819-0.866) | -0.011 |
+| 2% | 40 | **0.709** (0.683-0.733) | -0.031 |
+| 4% | 80 | **0.522** (0.488-0.554) | -0.014 |
+
+Zigzag edges make the edge fraction far more readable than in hBN armchair (EDGE-1: 0.35 to 0.02), and it survives to 4%.
+Results: `results/edge_fraction/{hbn_armchair_N10,graphene-ideal_zigzag_N10}{,_error_vs_arrangement}.json`.
+
+---
+
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
 
 ### Bug #1: Hardcoded Lead Paths in Generation Scripts

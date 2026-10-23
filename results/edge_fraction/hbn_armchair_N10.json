@@ -1,0 +1,91 @@
+{
+  "model": "hbn/armchair/N10",
+  "folds": "5, split by configuration seed",
+  "features": "T / clean, rounded, clipped",
+  "regressor": {
+    "xgboost": {
+      "n_estimators": 500,
+      "max_depth": 6,
+      "learning_rate": 0.03,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "tree_method": "hist",
+      "early_stopping_rounds": 50
+    }
+  },
+  "densities": {
+    "d0.0048": {
+      "density": 0.0048,
+      "n_impurities": 12,
+      "n_spectra": 1000,
+      "label_mean": 0.2055,
+      "label_std": 0.11875640333612893,
+      "misfit_model": 0.009128079874607653,
+      "misfit_mean": 0.014190193675509421,
+      "misfit_shuffled": 0.014518805086330727,
+      "skill_model": 0.35275998454657176,
+      "skill_model_95ci": [
+        0.31231770837300865,
+        0.39034538672983005
+      ],
+      "skill_shuffled": -0.029477366273147787,
+      "rmse_edge_impurities_model": 1.1464918237578068,
+      "rmse_edge_impurities_mean": 1.4294711921802958
+    },
+    "d0.0100": {
+      "density": 0.01,
+      "n_impurities": 25,
+      "n_spectra": 1000,
+      "label_mean": 0.20128000000000004,
+      "label_std": 0.08233566420452318,
+      "misfit_model": 0.005213020798578142,
+      "misfit_mean": 0.006793245536332181,
+      "misfit_shuffled": 0.006861792870118675,
+      "skill_model": 0.23102278627225203,
+      "skill_model_95ci": [
+        0.1875543727013332,
+        0.2634597275567407
+      ],
+      "skill_shuffled": -0.012189010233754516,
+      "rmse_edge_impurities_model": 1.8050313014214847,
+      "rmse_edge_impurities_mean": 2.060528684635963
+    },
+    "d0.0200": {
+      "density": 0.02,
+      "n_impurities": 50,
+      "n_spectra": 1000,
+      "label_mean": 0.20012,
+      "label_std": 0.05551923630598677,
+      "misfit_model": 0.002748219040121696,
+      "misfit_mean": 0.0030914449480968858,
+      "misfit_shuffled": 0.0031584859918836737,
+      "skill_model": 0.10841166656057044,
+      "skill_model_95ci": [
+        0.07818927643382532,
+        0.13722250911818198
+      ],
+      "skill_shuffled": -0.024688796847375016,
+      "rmse_edge_impurities_model": 2.6211729436083075,
+      "rmse_edge_impurities_mean": 2.7800381958243334
+    },
+    "d0.0400": {
+      "density": 0.04,
+      "n_impurities": 100,
+      "n_spectra": 1000,
+      "label_mean": 0.19979000000000002,
+      "label_std": 0.03720827730492235,
+      "misfit_model": 0.0013558360922318918,
+      "misfit_mean": 0.0013900503719723185,
+      "misfit_shuffled": 0.00138493691636165,
+      "skill_model": 0.020672242263627183,
+      "skill_model_95ci": [
+        0.002633444384483195,
+        0.03714896860075978
+      ],
+      "skill_shuffled": -0.00034744072501702306,
+      "rmse_edge_impurities_model": 3.6821679649791808,
+      "rmse_edge_impurities_mean": 3.7283379299257713
+    }
+  }
+}

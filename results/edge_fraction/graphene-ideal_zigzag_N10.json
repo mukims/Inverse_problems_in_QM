@@ -1,0 +1,91 @@
+{
+  "model": "graphene-ideal/zigzag/N10",
+  "folds": "5, split by configuration seed",
+  "features": "T / clean, rounded, clipped",
+  "regressor": {
+    "xgboost": {
+      "n_estimators": 500,
+      "max_depth": 6,
+      "learning_rate": 0.03,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "tree_method": "hist",
+      "early_stopping_rounds": 50
+    }
+  },
+  "densities": {
+    "d0.0050": {
+      "density": 0.005,
+      "n_impurities": 10,
+      "n_spectra": 1000,
+      "label_mean": 0.10010000000000002,
+      "label_std": 0.09322011585489476,
+      "misfit_model": 0.0005634569148195968,
+      "misfit_mean": 0.008729775086505192,
+      "misfit_shuffled": 0.008747392612019598,
+      "skill_model": 0.9351602343823644,
+      "skill_model_95ci": [
+        0.9205985211087313,
+        0.9479353830556076
+      ],
+      "skill_shuffled": -0.006605601619748658,
+      "rmse_edge_impurities_model": 0.2373724741455076,
+      "rmse_edge_impurities_mean": 0.9343326541711572
+    },
+    "d0.0100": {
+      "density": 0.01,
+      "n_impurities": 20,
+      "n_spectra": 1000,
+      "label_mean": 0.0969,
+      "label_std": 0.06622227721847082,
+      "misfit_model": 0.0006814349583239132,
+      "misfit_mean": 0.004390293252595155,
+      "misfit_shuffled": 0.004433175957847688,
+      "skill_model": 0.8446124613035755,
+      "skill_model_95ci": [
+        0.8194798165797699,
+        0.8656655324388222
+      ],
+      "skill_shuffled": -0.010896626719103075,
+      "rmse_edge_impurities_model": 0.5220861838140953,
+      "rmse_edge_impurities_mean": 1.3251857609550677
+    },
+    "d0.0200": {
+      "density": 0.02,
+      "n_impurities": 40,
+      "n_spectra": 1000,
+      "label_mean": 0.09842500000000001,
+      "label_std": 0.04659017466161723,
+      "misfit_model": 0.0006321846753674869,
+      "misfit_mean": 0.002172430417387543,
+      "misfit_shuffled": 0.002237115855861034,
+      "skill_model": 0.7087571402075078,
+      "skill_model_95ci": [
+        0.6831000174192532,
+        0.7334401371523979
+      ],
+      "skill_shuffled": -0.030622925443986926,
+      "rmse_edge_impurities_model": 1.00573131630072,
+      "rmse_edge_impurities_mean": 1.864373532267627
+    },
+    "d0.0400": {
+      "density": 0.04,
+      "n_impurities": 80,
+      "n_spectra": 1000,
+      "label_mean": 0.09844999999999998,
+      "label_std": 0.03231829976963516,
+      "misfit_model": 0.0004997675334260415,
+      "misfit_mean": 0.0010451020085423877,
+      "misfit_shuffled": 0.001059484158075955,
+      "skill_model": 0.5215120231255094,
+      "skill_model_95ci": [
+        0.48775599016449045,
+        0.5538426522902469
+      ],
+      "skill_shuffled": -0.014372478046051684,
+      "rmse_edge_impurities_model": 1.7884384848036194,
+      "rmse_edge_impurities_mean": 2.5862429999269754
+    }
+  }
+}
