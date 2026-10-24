@@ -72,6 +72,13 @@ def nearest_named(draw):
     return NAMED[i], d[i]
 
 
+def mahalanobis(x, mean, cov):
+    """Mahalanobis distance of x (a vector, or the rows of a matrix) from `mean` under `cov`."""
+    d = np.atleast_2d(np.asarray(x, float) - mean)
+    out = np.sqrt(np.maximum(np.einsum("ij,ij->i", d, np.linalg.solve(cov, d.T).T), 0.0))
+    return out if np.ndim(x) > 1 else float(out[0])
+
+
 @dataclass
 class Candidate:
     """One candidate host. `intervals` hold only the slots active in the medoid's state (members whose state switches a
@@ -90,6 +97,8 @@ class Candidate:
     material_distance: float
     box_edge: list
     realistic: bool
+    mahal_99: float                              # 99th percentile of the members' Mahalanobis distances from `mean` under `cov`
+    #                                              (unscaled full_vector units, ruling R18; calibration.captures uses it)
 
 
 def _cluster(x):
@@ -191,7 +200,9 @@ def _candidate(members, medoid, states, draws, vec, total, atoms):
     counts = [_n_imp(draws[i], atoms) for i in members]
     n_imp = tuple(int(round(q)) for q in np.percentile(counts, INTERVAL))
     cov = np.cov(v, rowvar=False) if len(members) > 1 else np.zeros((len(CONT),) * 2)
+    cov = cov + COV_JITTER * np.eye(len(CONT))
+    mahal_99 = float(np.percentile(mahalanobis(v, v.mean(axis=0), cov), 99))
     material, distance = nearest_named(draw)
     return Candidate(STATES[state].edge, STATES[state].pattern, state, draw, len(members) / total, members, intervals,
-                     n_imp, v.mean(axis=0), cov + COV_JITTER * np.eye(len(CONT)), material, distance,
-                     box_edge_warnings(draw), is_realistic(draw))
+                     n_imp, v.mean(axis=0), cov, material, distance,
+                     box_edge_warnings(draw), is_realistic(draw), mahal_99)

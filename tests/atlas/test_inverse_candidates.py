@@ -201,3 +201,13 @@ def test_graphene_like_and_hbn_like_hosts_are_two_candidates():
     assert [round(c.probability, 12) for c in cands] == [0.6, 0.4] and p_un == 0.0
     assert "delta" not in cands[0].intervals and "delta" in cands[1].intervals
     assert abs(cands[1].draw.params.delta - 1.576) < 0.1 and cands[0].draw.params.delta == 0.0
+
+
+def test_mahal_99_is_the_99th_percentile_of_the_members_own_distances():
+    states, z = samples([(HOST_A, 600), (HOST_B, 400)], seed=5)
+    cands, _ = candidates(states, z)
+    vec = np.array([full_vector(decode(int(k), v)) for k, v in zip(states, z)])
+    for c in cands:
+        d = vec[c.members] - c.mean
+        dist = np.sqrt(np.einsum("ij,ij->i", d @ np.linalg.inv(c.cov), d))
+        assert c.mahal_99 > 0 and abs(c.mahal_99 - np.percentile(dist, 99)) < 1e-6 * max(1.0, c.mahal_99)
