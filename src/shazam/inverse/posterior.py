@@ -111,8 +111,9 @@ def fit_update(records, kappas=UPDATE_KAPPAS, log_L0_grid=None):
     comment). `log_L0_grid` defaults to 41 quantiles of all observed log_L.
     Ties (ECE within TIE_TOL = 1e-12) go to the smallest kappa, then the smallest log_L0.
 
-    Returns {"kappa", "log_L0", "ece"} (plain floats), "ece_model" (the ECE of the raw model probabilities) and
-    "kappa_at_edge" (bool: the chosen kappa is the first or last grid value, so the grid may be too narrow)."""
+    Returns {"kappa", "log_L0", "ece"} (plain floats), "ece_model" (the ECE of the raw model probabilities),
+    "kappa_at_edge" and "log_L0_at_edge" (bool: the chosen kappa / log_L0 is the first or last value of its grid, so that
+    grid may be too narrow)."""
     log_p, log_L, hits, group, starts, log_p0 = _pooled(records)
     kappas = np.unique(np.asarray(kappas, float))
     if log_L0_grid is None:
@@ -134,4 +135,5 @@ def fit_update(records, kappas=UPDATE_KAPPAS, log_L0_grid=None):
     i, j = np.unravel_index(np.argmax(ece <= ece.min() + TIE_TOL), ece.shape)   # first tie: smallest kappa, log_L0
     model_p = np.exp(log_p)
     return dict(kappa=float(kappas[i]), log_L0=float(grid[j]), ece=float(ece[i, j]),
-                ece_model=float(expected_calibration_error(model_p, hits)), kappa_at_edge=bool(i in (0, len(kappas) - 1)))
+                ece_model=float(expected_calibration_error(model_p, hits)), kappa_at_edge=bool(i in (0, len(kappas) - 1)),
+                log_L0_at_edge=bool(j in (0, len(grid) - 1)))

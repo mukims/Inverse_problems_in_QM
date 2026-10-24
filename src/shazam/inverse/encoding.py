@@ -111,7 +111,8 @@ def _from_z(z, lo, hi):
     return float(np.clip(lo + (hi - lo) * expit(z), lo, hi))
 
 
-def _state_of(draw):
+def state_of(draw):
+    """The discrete state of a draw, read off its values (a Delta of 0 is delta_zero, a t_AA of 0 is t_AA_on False, ...)."""
     p = draw.params
     alone = sum(p.pattern) == 1
     eps = {"C": p.eps_C, "H": p.eps_H_mean, "K": p.eps_K}
@@ -122,7 +123,7 @@ def _state_of(draw):
 
 def encode(draw):
     """(state index, z of shape (14,), mask of shape (14,)): z is unbounded, 0 on inactive slots."""
-    k = state_index(_state_of(draw))
+    k = state_index(state_of(draw))
     mask = active_slots(k)
     p = draw.params
     value = {"log_s": np.log(p.s), "log_c": np.log(draw.density), "w": float(draw.width)}

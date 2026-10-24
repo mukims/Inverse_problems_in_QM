@@ -211,3 +211,19 @@ def test_mahal_99_is_the_99th_percentile_of_the_members_own_distances():
         d = vec[c.members] - c.mean
         dist = np.sqrt(np.einsum("ij,ij->i", d @ np.linalg.inv(c.cov), d))
         assert c.mahal_99 > 0 and abs(c.mahal_99 - np.percentile(dist, 99)) < 1e-6 * max(1.0, c.mahal_99)
+
+
+def test_the_reported_state_is_the_decoded_medoids_own():
+    """R11: with |eps_H_mean| > 1.95 the Delta interval is empty and decode gives Delta = 0 even in a state that switches Delta
+    on; the candidate reports the state of its decoded host (Delta off), and no Delta interval."""
+    from shazam.inverse.encoding import state_index, state_of
+    host = Draw(HexParams(False, True, False, "H", 1.5, eps_H_mean=1.97, t_AB=1.0, t_AA=0.1), "armchair", 8, 0.01)
+    on = state_of(host)._replace(delta_zero=False)
+    k, z, _ = encode(host)
+    z = np.tile(z, (40, 1))
+    z[:, CONT.index("delta")] = 0.3                                       # a delta value the empty interval ignores
+    z[:, CONT.index("log_s")] += np.random.default_rng(0).normal(0, 1e-3, 40)
+    (cand,), _ = candidates(np.full(40, state_index(on)), z)
+    assert cand.draw.params.delta == 0.0
+    assert STATES[cand.state] == state_of(cand.draw) and STATES[cand.state].delta_zero
+    assert "delta" not in cand.intervals and "s" in cand.intervals

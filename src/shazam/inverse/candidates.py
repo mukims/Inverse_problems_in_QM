@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.cluster.hierarchy import linkage
 
-from shazam.inverse.encoding import CONT, SLOT, STATES, active_slots, decode
+from shazam.inverse.encoding import CONT, SLOT, STATES, active_slots, decode, state_index, state_of
 from tbribbon.parent import NAMED, device_cells_for, named_material
 from tbribbon.parent_data import n_impurities
 from tbribbon.parent_prior import RANGES, Draw, box_edge_warnings
@@ -81,11 +81,13 @@ def mahalanobis(x, mean, cov):
 
 @dataclass
 class Candidate:
-    """One candidate host. `intervals` hold only the slots active in the medoid's state (members whose state switches a
-    slot off contribute 0 to it), so the medoid lying inside its intervals is likely but not guaranteed in general."""
+    """One candidate host. `state` is the discrete state of the decoded medoid host (state_of(draw)), which can differ from
+    the state the medoid was sampled in when decoding switches a value off (ruling R11: an empty Delta interval gives
+    Delta = 0). `intervals` hold only the slots active in that state (members whose state switches a slot off contribute
+    0 to it), so the medoid lying inside its intervals is likely but not guaranteed in general."""
     edge: str
     pattern: tuple
-    state: int                                   # discrete state of the medoid
+    state: int                                   # discrete state of the medoid's decoded host
     draw: Draw                                   # the medoid's host
     probability: float                           # cluster size / total samples
     members: np.ndarray                          # indices into the input samples
@@ -178,7 +180,7 @@ def candidates(states, z, min_size=20, top=5):
             clusters.append((rows[sel], int(medoid)))
     clusters.sort(key=lambda c: (-len(c[0]), c[0][0]))
     atoms = {}                                                                  # (pattern, edge, width) -> atoms in the device
-    return [_candidate(c, m, states, draws, vec, total, atoms) for c, m in clusters[:top]], unassigned / total
+    return [_candidate(c, m, draws, vec, total, atoms) for c, m in clusters[:top]], unassigned / total
 
 
 def _n_imp(draw, atoms):
@@ -189,8 +191,9 @@ def _n_imp(draw, atoms):
     return max(1, round(draw.density * atoms[key]))
 
 
-def _candidate(members, medoid, states, draws, vec, total, atoms):
-    draw, state = draws[medoid], int(states[medoid])
+def _candidate(members, medoid, draws, vec, total, atoms):
+    draw = draws[medoid]
+    state = state_index(state_of(draw))                  # agrees with the parameters reported (R11)
     v = vec[members]
     canonical = v.copy()
     canonical[:, [SLOT["log_s"], SLOT["log_c"]]] = np.exp(canonical[:, [SLOT["log_s"], SLOT["log_c"]]])

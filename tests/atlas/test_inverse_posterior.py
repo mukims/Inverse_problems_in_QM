@@ -151,3 +151,12 @@ def test_wide_default_kappa_grid_handles_416_channel_likelihoods():
 def test_kappa_at_edge_flags_a_too_narrow_grid():
     fit = post.fit_update(_large_scale(100), kappas=np.geomspace(1.0, 10.0, 5))
     assert fit["kappa_at_edge"] is True and fit["kappa"] == 10.0
+
+
+def test_log_L0_at_edge_flags_a_background_at_the_end_of_its_grid():
+    recs = _large_scale(100)
+    fit = post.fit_update(recs)
+    grid = np.unique(np.quantile(np.concatenate([r["log_L"] for r in recs]), np.linspace(0, 1, post.N_LOG_L0)))
+    assert isinstance(fit["log_L0_at_edge"], bool) and fit["log_L0_at_edge"] == (fit["log_L0"] in (grid[0], grid[-1]))
+    one = post.fit_update(recs, log_L0_grid=[fit["log_L0"]])            # a one-point grid: its only value is an edge
+    assert one["log_L0_at_edge"] is True
