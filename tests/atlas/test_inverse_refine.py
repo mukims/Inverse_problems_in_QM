@@ -74,3 +74,9 @@ def test_refine_keeps_the_discrete_state(monkeypatch):
     assert (out.params.pattern, out.edge, out.params.lead) == (host.params.pattern, host.edge, host.params.lead)
     assert out.width == host.width and res.misfit == pytest.approx(min(
         float(np.mean((np.median(spectra(d, OPT_SEEDS), axis=0) - target) ** 2)) for d, _, _ in seen), rel=1e-5)
+
+
+def test_a_failed_evaluation_is_penalised_not_propagated():
+    f = lambda x: float("nan") if x[0] > 0.2 else float(np.sum(x ** 2))       # simulations fail in half the box
+    best_x, best_f, history, _ = trust_region_minimise(f, np.array([0.0, 1.0, 0.0]), 10, None, np.random.default_rng(1))
+    assert np.all(np.isfinite(history)) and best_f == min(history) and best_x[0] <= 0.2

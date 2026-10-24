@@ -32,6 +32,7 @@ RADIUS_RANGE = (0.01, 4.0)       # the box never collapses to a point or grows p
 N_CANDIDATES = 512               # uniform points in the trust box scored by expected improvement
 LENGTH_SCALE = (2.0, (0.5, 30.0))  # GP length-scale start and bounds, in unbounded units: keeps 3-point fits from collapsing
 PATIENCE = 2                     # consecutive successes (failures) before the radius doubles (halves)
+Z_MAX = 8.0                      # proposals stay where the logit decode still responds (|z| > ~7 saturates the box)
 _EXCLUDED = (SLOT["log_c"], SLOT["w"])
 
 
@@ -51,7 +52,7 @@ def _expected_improvement(gp, points, best):
 
 
 def _propose(x_obs, y_obs, centre, radius, rng):
-    points = centre + radius * rng.uniform(-1.0, 1.0, size=(N_CANDIDATES, centre.size))
+    points = np.clip(centre + radius * rng.uniform(-1.0, 1.0, size=(N_CANDIDATES, centre.size)), -Z_MAX, Z_MAX)
     if len(y_obs) < 2:
         return points[0]
     kernel = Matern(LENGTH_SCALE[0] * np.ones(centre.size), LENGTH_SCALE[1], nu=2.5) + WhiteKernel(1e-3, (1e-8, 1.0))
@@ -71,13 +72,19 @@ def trust_region_minimise(f: Callable[[np.ndarray], float], x0, n_evals: int, th
     Stops early when the best value drops below `threshold` (None = never).
     """
     x0 = np.asarray(x0, float)
-    xs, ys = [x0], [float(f(x0))]
+
+    def value(x):                # a failed simulation (nan/inf) becomes a large finite penalty instead of poisoning the GP
+        v = float(f(x))
+        return v if np.isfinite(v) else 10.0 * max([abs(y) for y in ys] + [1.0])
+
+    ys = []
+    xs, ys = [x0], [value(x0)]
     best_i, radius, wins, losses = 0, RADIUS0, 0, 0
     stopped = threshold is not None and ys[0] < threshold
     while len(ys) < n_evals and not stopped:
         x = _propose(np.array(xs), np.array(ys), xs[best_i], radius, rng)
         xs.append(x)
-        ys.append(float(f(x)))
+        ys.append(value(x))
         if ys[-1] < ys[best_i]:
             best_i, wins, losses = len(ys) - 1, wins + 1, 0
         else:
