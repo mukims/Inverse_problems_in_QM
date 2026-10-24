@@ -1,4 +1,4 @@
-from dataclasses import fields
+from dataclasses import fields, replace
 
 import numpy as np
 
@@ -92,50 +92,44 @@ def test_medoid_is_a_member_and_inside_its_intervals():
 
 
 def test_no_candidate_when_every_cluster_is_tiny():
-    # 1000 samples in about 100 groups of 10 -> ([], 1.0); 88 hosts of 11 or 12 samples (see factorial_hosts)
-    hosts = [h for edge in ("armchair", "zigzag") for pattern in PATTERNS for h in factorial_hosts(edge, pattern)]
-    assert len(hosts) == 88
-    sizes = np.array_split(np.arange(1000), len(hosts))
-    states, z = samples([(h, len(s)) for h, s in zip(hosts, sizes)])
-    assert len(states) == 1000 and max(len(s) for s in sizes) < 20
+    # 1000 samples in 100 groups of 10 -> ([], 1.0)
+    hosts = [h for edge in ("armchair", "zigzag") for pattern in PATTERNS for h in cube_hosts(edge, pattern)][:100]
+    states, z = samples([(h, 10) for h in hosts])
+    assert len(states) == 1000
     cands, p_un = candidates(states, z)
     assert cands == [] and p_un == 1.0
 
 
 PATTERNS = [(True, False, False), (False, True, False), (False, False, True), (True, True, False),
             (True, False, True), (False, True, True), (True, True, True)]
-# (low, high) of each free slot used by factorial_hosts; the first active type of a pattern is its lead
-LEVELS = {"s": (1.0, 3.0), "eps_C": (-1.5, 1.5), "eps_H_mean": (-1.0, 1.0), "delta": (0.2, 0.8), "eps_K": (-1.5, 1.5),
-          "t_CC": (0.3, 0.9), "t_AB": (0.3, 0.9), "t_KK": (0.3, 0.9), "t_AA": (0.05, 0.25), "t_CH": (0.2, 0.9),
-          "t_CK": (0.2, 0.9), "t_HK": (0.2, 0.9), "c": (0.004, 0.03), "w": (5, 15)}
 
 
-def factorial_hosts(edge, pattern):
-    """All 2**b hosts of a two-level factorial design over the free slots of a pattern, three slots per binary factor, so
-    two hosts differing in one factor stand 2 * sqrt(3) > 3 standard units apart however the group is standardised."""
+def base_host(edge, pattern):
+    """A valid host of the pattern (its first active type leads; every other free value is mid-range)."""
     lead = "CHK"[pattern.index(True)]
-    names = ["s", "c", "w"]
+    own = {"C": ("eps_C", "t_CC"), "H": ("eps_H_mean", "t_AB"), "K": ("eps_K", "t_KK")}
+    kw = {}
     for t, on in zip("CHK", pattern):
         if on:
-            names += [{"C": "eps_C", "H": "eps_H_mean", "K": "eps_K"}[t]]
-            names += [{"C": "t_CC", "H": "t_AB", "K": "t_KK"}[t]] * (t != lead) + ["delta", "t_AA"] * (t == "H")
-    names += [n for n, (a, b) in zip(("t_CH", "t_CK", "t_HK"), (("C", "H"), ("C", "K"), ("H", "K")))
-              if pattern["CHK".index(a)] and pattern["CHK".index(b)]]
-    n_bits = len(names) // 3
-    hosts = []
-    for code in range(2 ** n_bits):
-        value = {n: LEVELS[n][(code >> (i // 3)) & 1] for i, n in enumerate(names[:3 * n_bits])}
-        value.update({n: LEVELS[n][0] for n in names[3 * n_bits:]})
-        kw = {n: v for n, v in value.items() if n not in ("s", "c", "w")}
-        kw.update({{"C": "t_CC", "H": "t_AB", "K": "t_KK"}[lead]: 1.0})
-        kw.update({n: LEVELS[n][0] for n in ("t_CH", "t_CK", "t_HK") if n in names and n not in kw})
-        hosts.append(Draw(HexParams(*pattern, lead, value["s"], **kw), edge, int(value["w"]), value["c"]))
-    return hosts
+            kw[own[t][0]] = 0.5
+            kw[own[t][1]] = 1.0 if t == lead else 0.6
+    if pattern[1]:
+        kw.update(delta=0.5, t_AA=0.1)
+    kw.update({name: 0.5 for name, (a, b) in zip(("t_CH", "t_CK", "t_HK"), ("CH", "CK", "HK"))
+               if pattern["CHK".index(a)] and pattern["CHK".index(b)]})
+    return Draw(HexParams(*pattern, lead, 2.0, **kw), edge, 10, 0.01)
+
+
+def cube_hosts(edge, pattern):
+    """The 8 corners of the cube over (s, c, w) around a base host: hosts that differ in one slot alone."""
+    base = base_host(edge, pattern)
+    return [base._replace(params=replace(base.params, s=s), width=w, density=c)
+            for s in (1.0, 3.0) for c in (0.004, 0.03) for w in (5, 15)]
 
 
 def test_at_most_five_candidates_ordered_by_probability():
     counts = [300, 200, 150, 120, 100, 80, 50]                         # seven hosts, each in its own (edge, pattern) group
-    hosts = [(factorial_hosts("zigzag" if i % 2 else "armchair", pattern)[-1], n)
+    hosts = [(base_host("zigzag" if i % 2 else "armchair", pattern), n)
              for i, (n, pattern) in enumerate(zip(counts, PATTERNS))]
     states, z = samples(hosts)
     cands, p_un = candidates(states, z)
@@ -170,3 +164,40 @@ def test_a_group_with_a_single_sample_is_its_own_cluster():
     assert [c.probability for c in cands] == [0.5, 0.5] and p_un == 0.0
     assert np.allclose(cands[0].cov, 1e-4 * np.eye(14))                  # single member: cov = 1e-4 I
     assert candidates(states, z)[1] == 1.0
+
+
+def uninformed(states, z, slot, seed=1):
+    """Replace one slot of every sample by an uninformed value: uniform over the slot's prior interval (z = logit U)."""
+    u = np.random.default_rng(seed).uniform(1e-6, 1 - 1e-6, len(z))
+    z = z.copy()
+    z[:, CONT.index(slot)] = np.log(u / (1 - u))
+    return states, z
+
+
+def test_two_hosts_differing_only_in_delta_are_two_candidates():
+    hosts = [(h_only(1.5, 0.0, 0.3, 0.1, 9, 0.01), 600), (h_only(1.5, 0.0, 1.8, 0.1, 9, 0.01), 400)]
+    cands, p_un = candidates(*samples(hosts, sigma=0.05))
+    assert [round(c.probability, 12) for c in cands] == [0.6, 0.4] and p_un == 0.0
+
+
+def test_a_width_minority_of_one_step_stays_in_its_host():
+    hosts = [(h_only(1.5, 0.0, 0.8, 0.1, 9, 0.01), 900), (h_only(1.5, 0.0, 0.8, 0.1, 10, 0.01), 100)]
+    cands, p_un = candidates(*samples(hosts, sigma=0.05))
+    assert len(cands) == 1 and cands[0].probability == 1.0 and p_un == 0.0
+
+
+def test_a_tight_host_with_one_uninformed_slot_is_one_candidate():
+    states, z = samples([(h_only(1.5, 0.0, 0.8, 0.1, 9, 0.01), 1000)], sigma=0.05)
+    cands, p_un = candidates(*uninformed(states, z, "t_AA"))
+    assert len(cands) == 1 and cands[0].probability == 1.0 and p_un == 0.0
+    lo, hi = cands[0].intervals["t_AA"]
+    assert lo < 0.07 and hi > 0.25                                       # roughly the 5th-95th percentile of 0.03 to 0.3
+
+
+def test_graphene_like_and_hbn_like_hosts_are_two_candidates():
+    graphene = Draw(HexParams(False, True, False, "H", 2.3, t_AB=1.0), "armchair", 9, 0.01)
+    hbn = Draw(HexParams(False, True, False, "H", 2.3, delta=1.576, t_AB=1.0), "armchair", 9, 0.01)
+    cands, p_un = candidates(*samples([(graphene, 600), (hbn, 400)], sigma=0.05))
+    assert [round(c.probability, 12) for c in cands] == [0.6, 0.4] and p_un == 0.0
+    assert "delta" not in cands[0].intervals and "delta" in cands[1].intervals
+    assert abs(cands[1].draw.params.delta - 1.576) < 0.1 and cands[0].draw.params.delta == 0.0

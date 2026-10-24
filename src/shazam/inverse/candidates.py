@@ -12,14 +12,41 @@ from scipy.cluster.hierarchy import linkage
 from shazam.inverse.encoding import CONT, SLOT, STATES, active_slots, decode
 from tbribbon.parent import NAMED, device_cells_for, named_material
 from tbribbon.parent_data import n_impurities
-from tbribbon.parent_prior import Draw, box_edge_warnings
+from tbribbon.parent_prior import RANGES, Draw, box_edge_warnings
 
-CUT = 3.0                  # clusters whose halves have centres more than this many standard units apart are split
+# Clustering happens in prior units: every slot of full_vector is divided by the standard deviation of that slot's prior
+# continuous distribution, so a distance of 1 is "one prior standard deviation of one slot", whatever the group holds.
+# A Ward-tree node is split into its two children only when all three hold (ruling R17):
+#   the children's centres are more than SPLIT_DISTANCE apart (smallest difference worth a candidate: one slot alone,
+#       Delta >= 0.28, s ratio >= 1.29, eps >= 0.58, within-type t >= 0.115, t_AA >= 0.039, cross t >= 0.14,
+#       c ratio >= 1.54, w >= 3 steps),
+#   that distance exceeds SPLIT_RATIO times the pooled RMS spread of the two children along the line joining the
+#       centres (the children are separated, not two halves of one blob),
+#   both children hold at least MIN_CHILD samples.
+SPLIT_DISTANCE = 0.5
+SPLIT_RATIO = 4.0
+MIN_CHILD = 5
 COV_JITTER = 1e-4
-STD_FLOOR = 1e-6           # a column whose standard deviation is below this is numerically constant: scale 1
 INTERVAL = (5, 95)         # percentiles of the 90% marginal intervals
 HOST_SLOTS = slice(0, SLOT["log_c"])          # the host's own slots of full_vector: everything before log_c and w
 _KEY = {"log_s": "s", "log_c": "c"}           # CONT slot -> interval / canonical key
+
+
+def _prior_scale():
+    """Standard deviation of each CONT slot's prior continuous distribution (interval width / sqrt(12); the integer width
+    w has (n^2 - 1) / 12 for n values)."""
+    width = {"log_s": np.ptp(np.log(RANGES["s"])), "log_c": np.ptp(np.log(RANGES["c"])),
+             "delta": RANGES["delta_min"][1] - RANGES["delta_min"][0], "t_AA": np.ptp(RANGES["t_AA"])}
+    width.update({n: np.ptp(RANGES["eps"]) for n in ("eps_C", "eps_H_mean", "eps_K")})
+    width.update({n: np.ptp(RANGES["t_within"]) for n in ("t_CC", "t_AB", "t_KK")})
+    width.update({n: np.ptp(RANGES["t_cross"]) for n in ("t_CH", "t_CK", "t_HK")})
+    scale = np.array([width[n] / np.sqrt(12) if n != "w" else 0.0 for n in CONT])
+    n_w = RANGES["w"][1] - RANGES["w"][0] + 1
+    scale[SLOT["w"]] = np.sqrt((n_w ** 2 - 1) / 12)
+    return scale
+
+
+PRIOR_SCALE = _prior_scale()
 
 
 def full_vector(draw):
@@ -47,6 +74,8 @@ def nearest_named(draw):
 
 @dataclass
 class Candidate:
+    """One candidate host. `intervals` hold only the slots active in the medoid's state (members whose state switches a
+    slot off contribute 0 to it), so the medoid lying inside its intervals is likely but not guaranteed in general."""
     edge: str
     pattern: tuple
     state: int                                   # discrete state of the medoid
@@ -63,24 +92,14 @@ class Candidate:
     realistic: bool
 
 
-def _standardise(x):
-    scale = x.std(axis=0)
-    scale[scale < STD_FLOOR] = 1.0
-    return (x - x.mean(axis=0)) / scale
-
-
 def _cluster(x):
-    """Labels of a deterministic clustering of the rows of x (already standardised): Ward linkage, then from the root
-    downwards a node is split while the centres of its two halves are more than CUT apart (in the Ward tree the
-    merge height is sqrt(2 n1 n2 / (n1 + n2)) times that centre distance)."""
+    """Labels of a deterministic clustering of the rows of x (in prior units): Ward linkage, then from the root downwards a
+    node is split when its two children pass the separation test described at SPLIT_DISTANCE."""
     n = len(x)
     if n == 1:
         return np.zeros(1, int)
     z = linkage(x, "ward")
     children = z[:, :2].astype(int)
-    size = np.concatenate([np.ones(n), z[:, 3]])
-    centre = z[:, 2] * np.sqrt((size[children[:, 0]] + size[children[:, 1]])
-                               / (2 * size[children[:, 0]] * size[children[:, 1]]))
 
     def leaves(node):
         out, stack = [], [node]
@@ -92,11 +111,24 @@ def _cluster(x):
                 stack.extend(children[k - n])
         return out
 
+    def separated(node):
+        a, b = (leaves(k) for k in children[node - n])
+        if min(len(a), len(b)) < MIN_CHILD:
+            return False
+        ca, cb = x[a].mean(axis=0), x[b].mean(axis=0)
+        d = float(np.linalg.norm(cb - ca))
+        if d <= SPLIT_DISTANCE:
+            return False
+        u = (cb - ca) / d
+        pa, pb = (x[a] - ca) @ u, (x[b] - cb) @ u
+        spread = np.sqrt((pa @ pa + pb @ pb) / (len(a) + len(b)))
+        return d > SPLIT_RATIO * spread
+
     labels = np.empty(n, int)
     label, todo = 0, [2 * n - 2]
     while todo:
         k = todo.pop()
-        if k >= n and centre[k - n] > CUT:
+        if k >= n and separated(k):
             todo.extend(children[k - n][::-1])
         else:
             labels[leaves(k)] = label
@@ -107,9 +139,9 @@ def _cluster(x):
 def candidates(states, z, min_size=20, top=5):
     """The candidate hosts of a batch of samples, most probable first, and p_unassigned.
 
-    Samples are grouped by (edge, pattern); within a group they are written as full_vectors, standardised per column
-    (columns with zero spread keep scale 1) and clustered. A cluster with at least `min_size` samples is a candidate,
-    its probability its share of all samples; the medoid is the member nearest the cluster mean (standardised space).
+    Samples are grouped by (edge, pattern); within a group they are written as full_vectors, divided slot by slot by
+    the prior standard deviation (PRIOR_SCALE) and clustered. A cluster with at least `min_size` samples is a candidate,
+    its probability its share of all samples; the medoid is the member nearest the cluster mean (prior units).
     p_unassigned is the share of samples in clusters smaller than `min_size`. At most `top` candidates are returned;
     clusters of at least `min_size` that rank beyond `top` are NOT counted in p_unassigned, they are simply not
     returned (the update of spec section 8 treats everything not returned as the prior share p0).
@@ -125,7 +157,7 @@ def candidates(states, z, min_size=20, top=5):
     clusters, unassigned = [], 0
     for rows in groups.values():
         rows = np.array(rows)
-        x = _standardise(vec[rows])
+        x = vec[rows] / PRIOR_SCALE
         labels = _cluster(x)
         for lab in range(labels.max() + 1):
             sel = labels == lab
