@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
+from scipy import stats
 
 from shazam.inverse import calibration as cal, data
 from shazam.inverse.candidates import PRIOR_SCALE, candidates, full_vector
@@ -129,3 +130,100 @@ def test_cli_writes_a_well_formed_calibration_json(tmp_path, monkeypatch):
     assert set(r["coverage"]) >= {"per_parameter", "pooled"} and "value" in r["top5_recall"] and "value" in r["ece"]
     assert isinstance(r["pass"], bool) and r["pass"] == all(r["gates"].values())
     assert {"sbc_unconditional", "coverage", "top5_recall", "ece"} <= set(r["gates"])
+
+
+def test_sbc_rank_needs_an_explicit_rng():
+    with pytest.raises(TypeError):
+        cal.sbc_rank(1.0, np.array([1.0, 1.0]))
+
+
+class _TwoClusterModel:
+    """A perfectly calibrated 'model' whose posterior holds two well-separated clusters (60 / 40 %) in the same state, hence
+    the same (edge, pattern): it samples the mixture, and conditioned on the state it is the same mixture."""
+
+    def __init__(self, state, centres, weight, rng, sigma=0.1):
+        self.state, self.centres, self.weight, self.rng, self.sigma = state, centres, weight, rng, sigma
+        self.mask = active_slots(state)
+
+    def sample(self, x, n, steps=64, state=None):
+        pick = self.rng.random(n) >= self.weight
+        z = np.where(pick[:, None], self.centres[1], self.centres[0]) + self.sigma * self.rng.normal(size=(n, 14))
+        return torch.full((n,), self.state, dtype=torch.long), torch.as_tensor(z * self.mask)
+
+
+def test_coverage_is_conditioned_on_the_nearest_right_key_candidate(monkeypatch):
+    from shazam.inverse import candidates as cmod
+    from shazam.inverse.encoding import decode
+    monkeypatch.setattr(cmod, "_n_imp", lambda draw, atoms: 1)           # the impurity counts play no part here
+    rng = np.random.default_rng(0)
+    k, z0, mask = encode(sample_prior(np.random.default_rng(3))._replace(width=9))
+    shift = np.where(mask, 2.0, 0.0)                                     # a second cluster 2 logits away on every active slot
+    records = []
+    for _ in range(80):
+        base = z0 + 0.3 * rng.normal(size=14) * mask
+        model = _TwoClusterModel(k, (base, base + shift), 0.6, rng)
+        truth = decode(k, model.sample(None, 1)[1][0].numpy())              # the truth comes from the same posterior
+        records.append(cal.evaluate_draw(model, np.zeros(416, np.float32), truth, 400, 1, 0, rng))
+    s = cal.summarize(records, 400)
+    old, new = s["coverage"]["key_only_diagnostic"]["pooled"], s["coverage"]["pooled"]
+    assert old["coverage"] < 0.8                                         # the truth often belongs to the other cluster
+    assert 0.85 <= new["coverage"] <= 0.95 and new["n"] < old["n"]       # top and nearest: the top cluster's own 90% intervals
+    assert s["coverage"]["n_draws"] < s["coverage"]["key_only_diagnostic"]["n_draws"]
+
+
+def _records(n, coverage_hits, rng, n_samples=100):
+    """Fabricated per-draw records: uniform SBC ranks and a coverage of `coverage_hits` / n for c and one more parameter."""
+    return [dict(uncond={k: int(rng.integers(0, n_samples + 1)) for k in ("log_s", "log_c", "w")},
+                 cond={"eps_C": int(rng.integers(0, n_samples + 1))},
+                 covered={"c": i < coverage_hits, "s": True, "w": False}, covered_key_only=None,
+                 recall=True, probs=[0.5], hits=[bool(i % 2)]) for i in range(n)]
+
+
+def test_noise_aware_verdicts_are_reported_without_changing_the_gates():
+    rng = np.random.default_rng(0)
+    s = cal.summarize(_records(500, 450, rng), 100)
+    k = len(s["sbc_unconditional"]) + len(s["sbc_conditional"])
+    assert k == 4 and s["noise_aware"]["ks_gates"] == 4
+    for g in (*s["sbc_unconditional"].values(), *s["sbc_conditional"].values()):
+        assert abs(g["ks_p_bonferroni"] - min(1.0, k * g["ks_p"])) < 1e-12
+        assert g["pass"] == (g["ks_p"] > 0.01)                           # the spec flag is untouched
+    c = s["coverage"]["per_parameter"]["c"]
+    assert c["coverage"] == 0.9 and c["pass"] and abs(c["binomial_p"] - stats.binomtest(450, 500, 0.9).pvalue) < 1e-12
+    assert s["coverage"]["per_parameter"]["s"]["coverage"] == 1.0 and not s["coverage"]["per_parameter"]["s"]["pass"]
+    assert s["coverage"]["per_parameter"]["w"]["gated"] is False and s["coverage"]["per_parameter"]["w"]["pass"] is None
+    assert "ruling R19" in s["coverage"]["note_w"]
+    assert s["noise_aware"]["coverage_gates"] == 2 and abs(c["binomial_p_bonferroni"] - min(1.0, 2 * c["binomial_p"])) < 1e-12
+    assert s["pass"] is False and s["coverage_consistent_bonferroni"] is False        # coverage of s is 1.0 over 500 draws
+    # a borderline coverage: 0.93 passes the spec flag; Bonferroni says whether it is consistent with 0.90
+    t = cal.summarize(_records(100, 93, rng), 100)["coverage"]["per_parameter"]["c"]
+    assert t["pass"] and t["binomial_p_bonferroni"] > 0.01
+
+
+def test_cli_resumes_from_the_jsonl_and_gives_the_same_result(tmp_path, monkeypatch):
+    ev = _load("evaluate", "eval_inverse_calibration")
+    torch.manual_seed(0)
+    InverseModel(len(STATES), state_masks=np.stack([active_slots(s) for s in STATES])).save(tmp_path / "model.pt")
+    np.savez(tmp_path / "shard_00000.npz", **_arrays(4))
+    args = ["--model", str(tmp_path / "model.pt"), "--data", str(tmp_path), "--n-test", "4", "--n-samples", "60",
+            "--steps", "4", "--threads", "2", "--out", str(tmp_path / "calibration.json")]
+    ev.main(args)
+    first = json.loads((tmp_path / "calibration.json").read_text())
+    log = tmp_path / "calibration.jsonl"
+    lines = log.read_text().splitlines()
+    assert len(lines) == 4 and sorted(json.loads(l)["index"] for l in lines) == [19, 39, 59, 79]
+    log.write_text("\n".join(lines[:2]) + "\n" + lines[2][:20])             # two done, a third cut short by a crash
+    calls = []
+    orig = cal.evaluate_draw
+    monkeypatch.setattr(cal, "evaluate_draw", lambda *a, **k: calls.append(1) or orig(*a, **k))
+    ev.main(args)
+    assert len(calls) == 2                                               # only the missing draws are evaluated
+    second = json.loads((tmp_path / "calibration.json").read_text())
+    for key in ("sbc_unconditional", "sbc_conditional", "coverage", "top5_recall", "ece", "gates", "pass"):
+        assert second[key] == first[key]                                 # (index, seed) fix each draw's randomness
+    good = [json.loads(l) for l in log.read_text().splitlines() if l.endswith("}")]            # the cut line stays, ignored
+    assert second["resumed_draws"] == 2 and sorted(r["index"] for r in good) == [19, 39, 59, 79]
+    calls.clear()
+    ev.main(args)
+    assert not calls
+    with pytest.raises(SystemExit):
+        ev.main(args[:args.index("--n-samples")] + ["--n-samples", "50"] + args[args.index("--n-samples") + 2:])

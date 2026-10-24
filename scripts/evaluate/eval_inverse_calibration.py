@@ -5,8 +5,15 @@
 Draws --n-test rows of the TEST split (draw index % 20 == 19; a seeded random choice when the split is larger), samples
 --n-samples per spectrum, and writes calibration.json next to the model: each gate's value and pass flag and an overall
 `pass`. Gates: SBC KS p > 0.01 (log_s, log_c, w unconditionally; every active parameter with the true state fixed),
-per-parameter 90%-interval coverage in 0.87-0.93, top-5 recall >= 0.95, candidate ECE <= 0.05. Nothing is tuned on the
-test split: a failing gate is a result to report, not a prompt to change thresholds or sampling settings.
+per-parameter 90%-interval coverage in 0.87-0.93 (draws whose top candidate has the true edge and pattern and is the
+nearest candidate to the truth; the integer width w is reported, not gated), top-5 recall >= 0.95, candidate ECE <= 0.05.
+calibration.json also carries noise-aware verdicts (Bonferroni over the KS gates, binomial tests of the coverage) as
+reporting only. Nothing is tuned on the test split: a failing gate is a result to report, not a prompt to change
+thresholds or sampling settings.
+
+The run takes about an hour, so each evaluated draw is appended to calibration.jsonl next to the output; a restart skips
+the draws already there (keyed by the test draw's index; each draw's randomness derives from (seed, index), so the rest
+is reproducible). Records written with other settings (model, samples, steps, seed) are refused: delete the file.
 """
 import argparse
 import json
@@ -45,23 +52,56 @@ def main(argv=None):
     n_rows = len(arrays["index"])
     rows = np.sort(np.random.default_rng(a.seed).choice(n_rows, size=min(a.n_test, n_rows), replace=False))
     draws, xs = data.draws(arrays, rows), arrays["x"][rows]
+    indices = [int(i) for i in arrays["index"][rows]]
     print(f"[calibration] {len(rows)} of {n_rows} test rows, {a.n_samples} samples each", flush=True)
+
+    cfg = dict(model=str(a.model), n_samples=a.n_samples, steps=a.steps, seed=a.seed)
+    log = out.with_name("calibration.jsonl")
+    done = {}
+    if log.exists():
+        for line in log.read_text().splitlines():
+            if not line.strip():
+                continue
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:               # a line cut short by a crash: that draw is simply redone
+                continue
+            if rec["cfg"] != cfg:
+                raise SystemExit(f"{log} was written with {rec['cfg']}, not {cfg}: delete it to start over")
+            done[rec["index"]] = rec["record"]
+        print(f"[calibration] resuming: {len(done)} draws already in {log.name}", flush=True)
+    log.parent.mkdir(parents=True, exist_ok=True)
+    fh = open(log, "a")
+    if log.stat().st_size and not log.read_text().endswith("\n"):
+        fh.write("\n")                                 # a crash cut the last line short: keep new records on their own lines
+
+    def on_record(index, record):
+        fh.write(json.dumps(dict(index=index, cfg=cfg, record=record)) + "\n")
+        fh.flush()
 
     def progress(i, n, seconds):
         if i % 50 == 0 or i == n:
-            print(f"[calibration] {i}/{n} draws, {seconds / i:.2f} s per draw", flush=True)
+            print(f"[calibration] {i}/{n} draws, {seconds:.2f} s per new draw", flush=True)
 
-    summary, seconds = calibration.run(model, xs, draws, a.n_samples, a.steps, a.seed, progress)
+    try:
+        summary, seconds, _ = calibration.run(model, xs, draws, indices, a.n_samples, a.steps, a.seed, progress, done,
+                                              on_record)
+    finally:
+        fh.close()
+    n_new = len(rows) - sum(i in done for i in indices)
     manifest = data.load_manifest(a.data)
     report = dict(model=str(a.model), data=str(a.data), code_version=(manifest or {}).get("code_version"),
                   split="test", steps=a.steps, seed=a.seed, threads=torch.get_num_threads(), seconds=seconds,
-                  seconds_per_draw=seconds / max(len(rows), 1), **summary)
+                  resumed_draws=len(rows) - n_new, seconds_per_draw=seconds / max(n_new, 1) if n_new else None, **summary)
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = out.with_name(out.name + ".tmp")
     tmp.write_text(json.dumps(report, indent=1))
     os.replace(tmp, out)
     verdict = ", ".join(f"{k} {'ok' if v else 'FAIL'}" for k, v in summary["gates"].items())
-    print(f"[calibration] {'PASS' if summary['pass'] else 'FAIL'}: {verdict}; wrote {out}", flush=True)
+    print(f"[calibration] spec verdict {'PASS' if summary['pass'] else 'FAIL'}: {verdict}", flush=True)
+    print(f"[calibration] noise-aware (reporting only): SBC after Bonferroni "
+          f"{'ok' if summary['sbc_pass_bonferroni'] else 'FAIL'}, coverage consistent with 0.90 after Bonferroni "
+          f"{'ok' if summary['coverage_consistent_bonferroni'] else 'FAIL'}; wrote {out}", flush=True)
     return report
 
 
