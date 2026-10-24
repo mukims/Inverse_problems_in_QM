@@ -9,6 +9,9 @@ from tbribbon.parent import named_material
 from tbribbon.parent_data import n_impurities
 from tbribbon.parent_prior import Draw
 
+# pytest's own process already runs BLAS threads, which makes fork() warn in the parallel test; test-process noise.
+pytestmark = pytest.mark.filterwarnings("ignore:This process .* is multi-threaded:DeprecationWarning")
+
 N_CELLS = 20                      # short devices keep the tests fast
 # The seeds below are small integers on purpose: they are test seeds, not the verification seeds of VERIFY_SEEDS.
 SEEDS = tuple(range(1, 52))       # 51 independent disorder realisations: 50 ensemble members + 1 target

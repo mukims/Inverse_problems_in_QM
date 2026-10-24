@@ -67,7 +67,10 @@ class CheckResult(NamedTuple):
 
 
 def recreation_check(target_x, ensemble_x):
-    """Does the ensemble (n, 416) recreate the target (416,)? Member j is judged against the median of the other n - 1."""
+    """Does the ensemble (n, 416) recreate the target (416,)? Member j is judged against the median of the other n - 1.
+
+    With n = 50 the 0.95 quantile sits between the 47th and 48th member misfits, so a target that really is one more
+    member fails about 6% of the time, not 5% (measured on Gaussian vectors); the p-value is close to uniform."""
     ens = np.asarray(ensemble_x, dtype=np.float64)
     n = len(ens)
     if n < 3:
