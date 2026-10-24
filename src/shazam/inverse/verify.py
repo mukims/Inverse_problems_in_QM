@@ -7,6 +7,7 @@ misfit to the ensemble median is no larger than the 95th percentile of the ensem
 Simulation and statistics only: no model or torch imports.
 """
 import multiprocessing as mp
+from concurrent.futures import ProcessPoolExecutor
 from contextlib import nullcontext
 from typing import NamedTuple
 
@@ -14,6 +15,7 @@ import numpy as np
 
 from atlaslib.lookup import S0
 from shazam.arrangement import misfit
+from tbribbon import parent_data
 from tbribbon.parent_data import simulate_raw, to_input
 
 VERIFY_SEEDS = tuple(range(10**9, 10**9 + 50))             # the 50-seed check ensemble; never used in training or tuning
@@ -32,6 +34,7 @@ def _limit_blas():
 
 
 _LIMIT = None
+_HOST = None          # (ribbon, LeadCache) of the host being simulated: set in the parent before the workers fork
 
 
 def _init_worker():
@@ -41,21 +44,32 @@ def _init_worker():
 
 def _one(args):
     draw, n_imp, seed, n_cells = args
-    return to_input(simulate_raw(draw, n_imp, seed, n_cells=n_cells))
+    rb, lc = _HOST
+    return to_input(simulate_raw(draw, n_imp, seed, n_cells=n_cells, rb=rb, lc=lc))
 
 
 def simulate_inputs(draw, n_imp, seeds, n_jobs=1, n_cells=None):
     """v4 inputs (len(seeds), 416) float32 of the disordered device of `draw` with `n_imp` impurities, one per seed, in order.
 
-    n_cells None = the device length of the host (device_cells_for). n_jobs > 1 uses forked workers with one BLAS thread each.
+    n_cells None = the device length of the host (device_cells_for). The ribbon and its lead self-energies depend on the
+    host only, so they are built once per call (one BLAS thread, as in the workers: bit-identical to building them per
+    seed) and shared with the forked workers. n_jobs > 1 uses forked workers with one BLAS thread each; a worker that dies
+    raises BrokenProcessPool instead of hanging the call.
     """
+    global _HOST
     jobs = [(draw, int(n_imp), int(s), n_cells) for s in seeds]
-    if n_jobs <= 1 or len(jobs) <= 1:
-        with _limit_blas() or nullcontext():
-            rows = [_one(j) for j in jobs]
-    else:
-        with mp.get_context("fork").Pool(min(n_jobs, len(jobs)), initializer=_init_worker) as pool:
-            rows = pool.map(_one, jobs, chunksize=1)               # map keeps the order of `jobs`
+    with _limit_blas() or nullcontext():
+        _HOST = parent_data.host_leads(draw)
+    try:
+        if n_jobs <= 1 or len(jobs) <= 1:
+            with _limit_blas() or nullcontext():
+                rows = [_one(j) for j in jobs]
+        else:
+            with ProcessPoolExecutor(min(n_jobs, len(jobs)), mp_context=mp.get_context("fork"),
+                                     initializer=_init_worker) as pool:
+                rows = list(pool.map(_one, jobs))                      # map keeps the order of `jobs`
+    finally:
+        _HOST = None
     return np.asarray(rows, dtype=np.float32).reshape(len(jobs), -1)
 
 

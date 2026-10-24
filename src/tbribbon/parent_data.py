@@ -59,14 +59,27 @@ def n_impurities(draw, n_cells):
     return max(1, round(draw.density * n_cells * active_atoms_per_cell(draw.params, draw.edge, draw.width)))
 
 
-def simulate_raw(draw, n_imp, seed, n_cells=None):
-    """Raw Caroli transmission (416 values) of the disordered device on the v4 grid; n_cells None = device_cells_for."""
+def host_leads(draw):
+    """(ribbon, LeadCache) of the host of `draw`: the clean ribbon (parent_ribbon) and its lead self-energies on the v4
+    grid. Both depend on the host only (parameters, edge, width), not on the disorder seed or the device length."""
+    rb = parent_ribbon(draw.params, draw.edge, draw.width)
+    return rb, LeadCache(rb.H0, rb.H1, energies_model(draw.params.s), eta=LEAD_ETA)
+
+
+def simulate_raw(draw, n_imp, seed, n_cells=None, rb=None, lc=None):
+    """Raw Caroli transmission (416 values) of the disordered device on the v4 grid; n_cells None = device_cells_for.
+
+    rb, lc: the host's ribbon and LeadCache (host_leads(draw)); None builds them here. A caller simulating many seeds of
+    one host passes them in to build them once; the result is bit-identical either way."""
     if n_cells is None:
         n_cells = device_cells_for(draw.params, draw.edge)
-    rb = parent_ribbon(draw.params, draw.edge, draw.width)
+    if rb is None:
+        rb = parent_ribbon(draw.params, draw.edge, draw.width)
     E = energies_model(draw.params.s)
     shifts = impurity_shifts(n_cells, rb.H0.shape[0], n_imp, seed, IMPURITY_V)
-    return spectrum(rb.H0, rb.H1, E, shifts, LeadCache(rb.H0, rb.H1, E, eta=LEAD_ETA))
+    if lc is None:
+        lc = LeadCache(rb.H0, rb.H1, E, eta=LEAD_ETA)
+    return spectrum(rb.H0, rb.H1, E, shifts, lc)
 
 
 def to_input(raw):

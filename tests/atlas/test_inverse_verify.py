@@ -5,8 +5,9 @@ import pytest
 from shazam.inverse import verify
 from shazam.inverse.verify import (FINAL_SEEDS, OPT_SEEDS, VERIFY_SEEDS, CheckResult, log_likelihood,
                                    recreation_check, simulate_inputs)
-from tbribbon.parent import named_material
-from tbribbon.parent_data import n_impurities
+from tbribbon import parent_data
+from tbribbon.parent import HexParams, named_material
+from tbribbon.parent_data import n_impurities, simulate_raw, to_input
 from tbribbon.parent_prior import Draw
 
 # pytest's own process already runs BLAS threads, which makes fork() warn in the parallel test; test-process noise.
@@ -98,3 +99,65 @@ def test_log_likelihood_formula_and_spread_floor():
     want = float(np.sum(-0.5 * ((x - mu) / sig) ** 2 - np.log(sig)))
     assert log_likelihood(x, ens) == pytest.approx(want)
     assert np.isfinite(log_likelihood(x, ens))                           # channel 2 has zero spread: the floor keeps it finite
+
+
+# ------------------------------------------------------------------------------------------------- lead reuse and dead workers
+
+MIXED = Draw(HexParams(True, True, False, "H", 1.6, eps_C=0.3, eps_H_mean=-0.2, delta=0.4, t_CC=0.5, t_AB=1.0, t_CH=0.6),
+             "zigzag", 5, 0.02)
+
+
+def _per_seed(host, n_imp, seeds):
+    """The reference: every seed rebuilds the ribbon and the leads (simulate_raw's default), one BLAS thread."""
+    from threadpoolctl import threadpool_limits
+    with threadpool_limits(limits=1):
+        return np.asarray([to_input(simulate_raw(host, n_imp, s, n_cells=N_CELLS)) for s in seeds], np.float32)
+
+
+@pytest.mark.parametrize("host", [HOST, MIXED], ids=["graphene", "mixed"])
+def test_lead_reuse_is_bit_identical_to_the_per_seed_rebuild(host):
+    seeds, n_imp = (3, 1, 8), n_impurities(host, N_CELLS)
+    ref = _per_seed(host, n_imp, seeds)
+    assert np.array_equal(simulate_inputs(host, n_imp, seeds, n_cells=N_CELLS), ref)
+    assert np.array_equal(simulate_inputs(host, n_imp, seeds, n_jobs=2, n_cells=N_CELLS), ref)
+
+
+def test_the_leads_are_built_once_per_call_in_the_parent(monkeypatch):
+    import os
+    built, parent, real = [], os.getpid(), parent_data.LeadCache
+
+    def counting(*a, **k):
+        if os.getpid() != parent:
+            raise AssertionError("a worker rebuilt the leads")
+        built.append(1)
+        return real(*a, **k)
+
+    monkeypatch.setattr(parent_data, "LeadCache", counting)
+    simulate_inputs(HOST, N_IMP, (1, 2, 3), n_cells=N_CELLS)
+    assert len(built) == 1
+    simulate_inputs(HOST, N_IMP, (1, 2, 3, 4), n_jobs=2, n_cells=N_CELLS)    # a worker building one would raise
+    assert len(built) == 2
+
+
+def test_a_dead_worker_raises_instead_of_hanging(monkeypatch):
+    import os
+    import signal
+    from concurrent.futures.process import BrokenProcessPool
+
+    def die_on_seed_2(draw, n_imp, seed, *a, **k):
+        if seed == 2:
+            os._exit(3)
+        return np.zeros(416)
+
+    def too_slow(signum, frame):
+        raise TimeoutError("simulate_inputs hung after a worker died")
+
+    monkeypatch.setattr(verify, "simulate_raw", die_on_seed_2)
+    old = signal.signal(signal.SIGALRM, too_slow)
+    signal.alarm(60)
+    try:
+        with pytest.raises(BrokenProcessPool):
+            simulate_inputs(HOST, N_IMP, (1, 2, 3, 4), n_jobs=2, n_cells=N_CELLS)
+    finally:
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old)

@@ -35,3 +35,10 @@ def test_band_weights_put_a_decoupled_flat_band_on_its_own_type():
 
 def test_impurity_count_follows_the_density_over_the_whole_device():
     assert n_impurities(G, 125) == round(0.02 * 125 * 12) and n_impurities(Draw(G.params, "armchair", 6, 1e-6), 10) == 1
+
+
+def test_passing_the_ribbon_and_leads_gives_the_same_spectrum_bit_for_bit():
+    from tbribbon.parent_data import host_leads
+    rb, lc = host_leads(G)
+    for seed in (1, 5):
+        assert np.array_equal(simulate_raw(G, 6, seed, n_cells=20, rb=rb, lc=lc), simulate_raw(G, 6, seed, n_cells=20))
