@@ -24,6 +24,8 @@ from tbribbon.parent_prior import box_edge_warnings
 
 NO_UPDATE_WARNING = ("updated probabilities are renormalised over the returned candidates: "
                      "no fitted update (kappa, log_L0) was supplied")
+TOP_ONLY_WARNING = ("updated probabilities are not computed: only the top candidate was checked in the simulator "
+                    "(check='top')")
 _EV_FIELDS = ("eps_C", "eps_H_mean", "delta", "eps_K", "t_CC", "t_AB", "t_KK", "t_AA", "t_CH", "t_CK", "t_HK")
 
 
@@ -79,7 +81,7 @@ def _verdict(cand, target_x, n_imp, n_cells, n_jobs, refine_budget, seeds, rng):
     sims = simulate_inputs(cand.draw, n_imp, verify_seeds, n_jobs=n_jobs, n_cells=n_cells)
     check = recreation_check(target_x, sims)
     used = len(verify_seeds)
-    if check.recreated:
+    if check.recreated or refine_budget <= 0:                  # a budget of 0 means no refinement at all
         return _check_dict(check, "verify"), log_likelihood(target_x, sims), None, used
     res = refine(cand.draw, n_imp, target_x, check.threshold, budget=refine_budget, seeds=opt_seeds, n_jobs=n_jobs,
                  n_cells=n_cells, rng=rng)
@@ -94,14 +96,20 @@ def _verdict(cand, target_x, n_imp, n_cells, n_jobs, refine_budget, seeds, rng):
 
 
 def design(target_x, model, n_samples=1000, update=None, refine_budget=200, n_jobs=22, seed=0, n_cells=None,
-           seeds_override=None):
+           seeds_override=None, check="all"):
     """The report (a JSON-serialisable dict) for the v4 input `target_x` (416,): see the module docstring.
 
     update      {"kappa", "log_L0"} fitted on validation draws, or None: kappa = 1 and no background mass, so the
                 updated probabilities are renormalised over the returned candidates and the report says so.
     n_cells     device length of every simulation (None = the host's own, as in the data); seeds_override: use only the
                 first k seeds of each of VERIFY_SEEDS, FINAL_SEEDS and OPT_SEEDS. Both are for the tests only.
+    refine_budget  simulations per refinement; 0 = never refine (a failed check stays failed).
+    check       "all" (default): every realistic candidate is checked in the simulator; "top": only the rank-1 candidate
+                (a cheaper run when only the top candidate's verdict is scored). Unchecked candidates have check null and no
+                updated probability; with "top" no candidate has one, and the report says so.
     """
+    if check not in ("all", "top"):
+        raise ValueError(f"check must be 'all' or 'top', got {check!r}")
     t0 = time.time()
     target_x = np.asarray(target_x, dtype=np.float32)
     if target_x.shape != (416,) or not np.isfinite(target_x).all():
@@ -129,7 +137,7 @@ def design(target_x, model, n_samples=1000, update=None, refine_budget=200, n_jo
                "density_90": [float(v) for v in cand.intervals["c"]], "nearest_material": cand.nearest_material,
                "material_distance": float(cand.material_distance), "check": None, "log_likelihood": None,
                "refined_parameters": None}
-        if cand.realistic:
+        if cand.realistic and (check == "all" or rank == 1):
             rng = np.random.default_rng([seed, rank])
             row["check"], row["log_likelihood"], row["refined_parameters"], used = _verdict(
                 cand, target_x, n_imp, n_cells, n_jobs, refine_budget, seeds, rng)
@@ -138,23 +146,27 @@ def design(target_x, model, n_samples=1000, update=None, refine_budget=200, n_jo
                 row["box_edge_warning"] = sorted(set(row["box_edge_warning"]) | set(row["refined_parameters"]["box_edge_warning"]))
         rows.append(row)
 
-    real = [r for r in rows if r["realistic"]]
+    real = [r for r in rows if r["check"] is not None]
     p = np.array([r["model_probability"] for r in real])
     # R24: p0 is everything not returned as realistic: unassigned, unrealistic and clusters beyond the top 5.
     # R25: with a fitted update it is floored at 1 / (n_samples + 1); without one there is no background at all.
     p0 = background_mass(p, n_samples) if fitted else 1.0 - float(p.sum())
     log_L = np.array([r["log_likelihood"] for r in real])
-    if fitted:
-        updated = updated_probabilities(p, log_L, p0, kappa, log_L0)
-    else:                                                      # no fitted update: renormalise over the returned candidates
-        updated = updated_probabilities(p, log_L, 0.0, kappa, 0.0)
-    for r, u in zip(real, updated):
-        r["updated_probability"] = float(u)
+    if check == "all":
+        if fitted:
+            updated = updated_probabilities(p, log_L, p0, kappa, log_L0)
+        else:                                                  # no fitted update: renormalise over the returned candidates
+            updated = updated_probabilities(p, log_L, 0.0, kappa, 0.0)
+        for r, u in zip(real, updated):
+            r["updated_probability"] = float(u)
 
-    report = {"p_unassigned": float(p_unassigned), "p_background": max(p0, 0.0), "update_fitted": bool(fitted),
-              "update": {"kappa": kappa, "log_L0": log_L0} if fitted else None,
+    updated_ok = fitted and check == "all"
+    report = {"p_unassigned": float(p_unassigned), "p_background": max(p0, 0.0), "update_fitted": bool(updated_ok),
+              "update": {"kappa": kappa, "log_L0": log_L0} if updated_ok else None, "check": check,
               "n_samples": int(n_samples), "candidates": rows, "n_simulations": int(n_simulations),
               "seconds": time.time() - t0}
-    if not fitted:
+    if check == "top":
+        report["warning"] = TOP_ONLY_WARNING
+    elif not fitted:
         report["warning"] = NO_UPDATE_WARNING
     return report
