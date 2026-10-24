@@ -5,9 +5,9 @@ from pathlib import Path
 import numpy as np
 
 from tbribbon.parent import TYPES, HexParams
-from tbribbon.parent_prior import EDGES, Draw
+from tbribbon.parent_prior import EDGES, FIELDS, Draw
 
-PARAM_COLUMNS = ("s", "eps_C", "eps_H_mean", "delta", "eps_K", "t_CC", "t_AB", "t_KK", "t_AA", "t_CH", "t_CK", "t_HK")
+PARAM_COLUMNS = FIELDS                                     # the columns of the stored `params` array
 LEAD_CODES = {t: i for i, t in enumerate(TYPES)}          # C 0, H 1, K 2
 EDGE_CODES = {e: i for i, e in enumerate(EDGES)}          # armchair 0, zigzag 1
 SPLIT_MOD = 20

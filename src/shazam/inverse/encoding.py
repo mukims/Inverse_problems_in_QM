@@ -11,15 +11,13 @@ import numpy as np
 from scipy.special import expit, logit
 
 from tbribbon.parent import TYPES, HexParams
-from tbribbon.parent_prior import EDGES, PATTERNS, RANGES, Draw
+from tbribbon.parent_prior import CROSS, EDGES, EPS, FIELDS, PATTERNS, RANGES, WITHIN, Draw, delta_upper
 
 CONT = ("log_s", "eps_C", "eps_H_mean", "delta", "eps_K", "t_CC", "t_AB", "t_KK", "t_AA", "t_CH", "t_CK", "t_HK",
         "log_c", "w")
 SLOT = {name: i for i, name in enumerate(CONT)}
-EPS = {"C": "eps_C", "H": "eps_H_mean", "K": "eps_K"}
-WITHIN = {"C": "t_CC", "H": "t_AB", "K": "t_KK"}
-CROSS = ("t_CH", "t_CK", "t_HK")                                  # the (C-H, C-K, H-K) bonds, in the order of `cross`
-_PAIRS = (("C", "H"), ("C", "K"), ("H", "K"))
+_PAIRS = tuple(CROSS)                                             # (C-H, C-K, H-K): the order of DiscreteState.cross
+_CROSS_NAMES = tuple(CROSS.values())                              # (t_CH, t_CK, t_HK)
 W_BOUNDS = (RANGES["w"][0] - 0.5, RANGES["w"][1] + 0.5)           # continuous box for the integer width
 _EPS_LOGIT = 1e-9                                                 # logit arguments are clipped to [1e-9, 1 - 1e-9]
 
@@ -78,13 +76,9 @@ def active_slots(state):
             m[SLOT[WITHIN[t]]] = t != s.lead
     m[SLOT["delta"]] = s.pattern[1] and not s.delta_zero
     m[SLOT["t_AA"]] = s.t_AA_on
-    for name, on in zip(CROSS, s.cross):
+    for name, on in zip(_CROSS_NAMES, s.cross):
         m[SLOT[name]] = on
     return m
-
-
-def _delta_hi(eps_H_mean):
-    return RANGES["delta_min"][1] - abs(eps_H_mean)
 
 
 def _bounds(name, eps_H_mean=0.0):
@@ -98,7 +92,7 @@ def _bounds(name, eps_H_mean=0.0):
     if name in EPS.values():
         return RANGES["eps"]
     if name == "delta":
-        return RANGES["delta_min"][0], _delta_hi(eps_H_mean)
+        return RANGES["delta_min"][0], delta_upper(eps_H_mean)
     if name in WITHIN.values():
         return RANGES["t_within"]
     if name == "t_AA":
@@ -161,8 +155,7 @@ def decode(state, z):
         if name == "eps_H_mean":
             eps_H_mean = v[name]
     v[WITHIN[s.lead]] = 1.0                               # the lead's within-type hopping is fixed at 1
-    fields = {n: v[n] for n in ("eps_C", "eps_H_mean", "delta", "eps_K", "t_CC", "t_AB", "t_KK", "t_AA", "t_CH",
-                                "t_CK", "t_HK")}
+    fields = {n: v[n] for n in FIELDS[1:]}                # every HexParams value but s
     params = HexParams(*s.pattern, s.lead, s=float(np.clip(np.exp(v["log_s"]), *RANGES["s"])), **fields)
     width = int(np.clip(round(v["w"]), *RANGES["w"]))
     return Draw(params, s.edge, width, float(np.clip(np.exp(v["log_c"]), *RANGES["c"])))

@@ -10,10 +10,13 @@ RANGES = {"s": (0.7, 4.0), "eps": (-2.0, 2.0), "t_within": (0.2, 1.0), "t_AA": (
           "delta_min": (0.05, 2.0), "w": (4, 22), "c": (0.0025, 0.05)}     # delta_min: smallest nonzero Delta, and its cap
 PATTERNS = [tuple(bool(x) for x in p) for p in np.ndindex(2, 2, 2) if any(p)]
 EDGES = ("armchair", "zigzag")
+# The one definition of these names (shazam.inverse.encoding and .data import them): the cross-type bond of each type
+# pair, the within-type hopping and the on-site energy of each type.
 CROSS = {("C", "H"): "t_CH", ("C", "K"): "t_CK", ("H", "K"): "t_HK"}
 WITHIN = {"C": "t_CC", "H": "t_AB", "K": "t_KK"}
 EPS = {"C": "eps_C", "H": "eps_H_mean", "K": "eps_K"}
-# Free parameters in HexParams field order, then "w", then "c" (the order box_edge_warnings reports).
+# Free parameters in HexParams field order (box_edge_warnings reports them in this order, then "w", then "c"); also the
+# columns of the stored `params` array of the generated data (shazam.inverse.data.PARAM_COLUMNS).
 FIELDS = ("s", "eps_C", "eps_H_mean", "delta", "eps_K", "t_CC", "t_AB", "t_KK", "t_AA", "t_CH", "t_CK", "t_HK")
 
 
@@ -28,7 +31,8 @@ def _log_uniform(rng, lo, hi):
     return float(np.exp(rng.uniform(np.log(lo), np.log(hi))))
 
 
-def _delta_upper(eps_H_mean):
+def delta_upper(eps_H_mean):
+    """Upper end of the nonzero Delta interval [0.05, 2 - |eps_H_mean|] (empty when |eps_H_mean| > 1.95, ruling R11)."""
     return RANGES["delta_min"][1] - abs(eps_H_mean)
 
 
@@ -44,7 +48,7 @@ def sample_prior(rng):
             alone = len(active) == 1
             v[EPS[t]] = 0.0 if alone and rng.random() < 0.5 else float(rng.uniform(lo, hi))
         if t == "H" and "H" in active:
-            top = _delta_upper(v["eps_H_mean"])
+            top = delta_upper(v["eps_H_mean"])
             nonzero = rng.random() >= 0.5
             v["delta"] = float(rng.uniform(RANGES["delta_min"][0], top)) if nonzero and top > RANGES["delta_min"][0] else 0.0
     for t in active:
@@ -72,7 +76,7 @@ def _free_intervals(p):
         if t != p.lead:
             out.append((WITHIN[t], *RANGES["t_within"], False))
     if p.on_H:
-        out.append(("delta", RANGES["delta_min"][0], _delta_upper(p.eps_H_mean), False))
+        out.append(("delta", RANGES["delta_min"][0], delta_upper(p.eps_H_mean), False))
         out.append(("t_AA", *RANGES["t_AA"], False))
     for (a, b), name in CROSS.items():
         if a in p.active_types and b in p.active_types:
@@ -127,7 +131,7 @@ def in_prior(draw):
     if not (_in(p.s, *RANGES["s"]) and _in(p.eps_C, *RANGES["eps"]) and _in(p.eps_H_mean, *RANGES["eps"])
             and _in(p.eps_K, *RANGES["eps"])):
         return False
-    if p.delta != 0 and not _in(p.delta, RANGES["delta_min"][0], _delta_upper(p.eps_H_mean)):
+    if p.delta != 0 and not _in(p.delta, RANGES["delta_min"][0], delta_upper(p.eps_H_mean)):
         return False
     for t in p.active_types:
         if t != p.lead and not _in(getattr(p, WITHIN[t]), *RANGES["t_within"]):

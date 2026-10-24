@@ -27,6 +27,7 @@ import numpy as np
 
 import paths
 from shazam.inverse.data import EDGE_CODES, LEAD_CODES, PARAM_COLUMNS, load_manifest
+from shazam.inverse.runio import atomic_write_bytes
 from tbribbon import parent_data
 from tbribbon.parent import active_atoms_per_cell
 from tbribbon.parent_prior import RANGES, sample_prior
@@ -162,16 +163,6 @@ def _compute(indices, n_jobs, label="shard"):
     return sorted(got, key=lambda r: r["index"])
 
 
-def _atomic_bytes(path, write):
-    """Run write(file) into path.tmp, flush to disk and rename over path."""
-    tmp = path.with_name(path.name + ".tmp")
-    with open(tmp, "wb") as f:
-        write(f)
-        f.flush()
-        os.fsync(f.fileno())
-    os.replace(tmp, path)
-
-
 def _code_version():
     """git HEAD, with "-dirty" appended when tracked files have uncommitted changes (untracked files are ignored)."""
     def git(*args):
@@ -193,7 +184,7 @@ def _update_manifest(root, entry, shard_size):
         prior_ranges=RANGES, code_version=_code_version(), shard_size=shard_size, shards=shards,
         counts=dict(n_draws=sum(e["n_draws"] for e in shards), n_attempts=sum(e["n_attempts"] for e in shards),
                     rejections=rej, seconds=sum(e["seconds"] for e in shards)))
-    _atomic_bytes(Path(root) / "manifest.json", lambda f: f.write(json.dumps(manifest, indent=2).encode()))
+    atomic_write_bytes(Path(root) / "manifest.json", lambda f: f.write(json.dumps(manifest, indent=2).encode()))
 
 
 def write_shard(root, shard, indices, n_jobs, shard_size=None):
@@ -222,8 +213,8 @@ def write_shard(root, shard, indices, n_jobs, shard_size=None):
     rej = {r: sum(rec["reasons"][r] for rec in recs) for r in REASONS}
     name = f"shard_{shard:05d}"
     summary = dict(n_draws=len(recs), n_attempts=int(arrays["attempts"].sum()), rejections=rej)
-    _atomic_bytes(root / f"{name}_rejections.json", lambda f: f.write(json.dumps(summary, indent=2).encode()))
-    _atomic_bytes(root / f"{name}.npz", lambda f: np.savez(f, **arrays))
+    atomic_write_bytes(root / f"{name}_rejections.json", lambda f: f.write(json.dumps(summary, indent=2).encode()))
+    atomic_write_bytes(root / f"{name}.npz", lambda f: np.savez(f, **arrays))
     entry = dict(shard=shard, file=f"{name}.npz", start=indices[0], stop=indices[-1] + 1, **summary,
                  seconds=float(arrays["seconds"].sum()))
     _update_manifest(root, entry, shard_size or len(indices))

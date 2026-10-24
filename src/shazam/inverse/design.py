@@ -20,13 +20,13 @@ from shazam.inverse.verify import (FINAL_SEEDS, OPT_SEEDS, VERIFY_SEEDS, log_lik
                                    simulate_inputs)
 from tbribbon.parent import device_cells_for
 from tbribbon.parent_data import E_WINDOW, V4, n_impurities
-from tbribbon.parent_prior import box_edge_warnings
+from tbribbon.parent_prior import FIELDS, box_edge_warnings
 
 NO_UPDATE_WARNING = ("updated probabilities are renormalised over the returned candidates: "
                      "no fitted update (kappa, log_L0) was supplied")
 TOP_ONLY_WARNING = ("updated probabilities are not computed: only the top candidate was checked in the simulator "
                     "(check='top')")
-_EV_FIELDS = ("eps_C", "eps_H_mean", "delta", "eps_K", "t_CC", "t_AB", "t_KK", "t_AA", "t_CH", "t_CK", "t_HK")
+_EV_FIELDS = FIELDS[1:]                                    # energies and hoppings: in units of s, so times s gives eV
 
 
 def target_input(energies_ev, T):

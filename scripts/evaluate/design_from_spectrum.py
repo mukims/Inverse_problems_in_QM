@@ -15,7 +15,6 @@ edge, width, impurity count and density with their 90% intervals, and the neares
 """
 import argparse
 import json
-import os
 from pathlib import Path
 
 import numpy as np
@@ -23,15 +22,9 @@ import numpy as np
 import paths
 from shazam.inverse.design import design, target_input
 from shazam.inverse.model import InverseModel
+from shazam.inverse.runio import atomic_write_json
 
 DEFAULT_MODEL = paths.results_dir("inverse_design", "model_v1") / "model.pt"
-
-
-def write_json_atomic(path, obj):
-    path = Path(path)
-    tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(json.dumps(obj, indent=2, allow_nan=False))
-    os.replace(tmp, path)
 
 
 def main(argv=None):
@@ -65,7 +58,7 @@ def main(argv=None):
         raise SystemExit(f"--update file not found: {update_path}")
     report = design(x, InverseModel.load(a.model), n_samples=a.n_samples, update=update,
                     refine_budget=a.refine_budget, n_jobs=a.n_jobs, seed=a.seed)
-    write_json_atomic(out, report)
+    atomic_write_json(out, report, indent=2)
     print(f"[design] {len(report['candidates'])} candidates, p_unassigned {report['p_unassigned']:.3f}, "
           f"{report['n_simulations']} simulations, {report['seconds']:.0f} s -> {out}", flush=True)
     return report

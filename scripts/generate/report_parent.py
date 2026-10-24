@@ -20,7 +20,11 @@ PATTERNS = {(1, 0, 0): "C", (0, 1, 0): "H", (0, 0, 1): "K", (1, 1, 0): "C+H", (1
 def report(root: Path, project_draws: int = 300_000, n_jobs: int = 22, wall_seconds: float | None = None) -> dict:
     shards = sorted(root.glob("shard_*.npz"))
     cols = ("seconds", "attempts", "on", "width", "edge", "n_imp", "active_atoms")
-    a = {k: np.concatenate([np.load(p)[k] for p in shards]) for k in cols}
+    parts = []
+    for p in shards:
+        with np.load(p) as z:
+            parts.append({k: z[k] for k in cols})
+    a = {k: np.concatenate([part[k] for part in parts]) for k in cols}
     rejections = {}
     for p in sorted(root.glob("shard_*_rejections.json")):
         for reason, n in json.loads(p.read_text())["rejections"].items():

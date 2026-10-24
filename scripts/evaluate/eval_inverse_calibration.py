@@ -16,9 +16,6 @@ the draws already there (keyed by the test draw's index; each draw's randomness 
 is reproducible). Records written with other settings (model, samples, steps, seed) are refused: delete the file.
 """
 import argparse
-import json
-import os
-import time
 from pathlib import Path
 
 import numpy as np
@@ -27,6 +24,7 @@ import torch
 import paths
 from shazam.inverse import calibration, data
 from shazam.inverse.model import InverseModel
+from shazam.inverse.runio import RunLog, atomic_write_json
 
 DEFAULT_MODEL = paths.results_dir("inverse_design", "model_v1") / "model.pt"
 DEFAULT_DATA = paths.data_root() / "_generated" / "hexagonal_parent_v1"
@@ -56,28 +54,8 @@ def main(argv=None):
     print(f"[calibration] {len(rows)} of {n_rows} test rows, {a.n_samples} samples each", flush=True)
 
     cfg = dict(model=str(a.model), n_samples=a.n_samples, steps=a.steps, seed=a.seed)
-    log = out.with_name("calibration.jsonl")
-    done = {}
-    if log.exists():
-        for line in log.read_text().splitlines():
-            if not line.strip():
-                continue
-            try:
-                rec = json.loads(line)
-            except json.JSONDecodeError:               # a line cut short by a crash: that draw is simply redone
-                continue
-            if rec["cfg"] != cfg:
-                raise SystemExit(f"{log} was written with {rec['cfg']}, not {cfg}: delete it to start over")
-            done[rec["index"]] = rec["record"]
-        print(f"[calibration] resuming: {len(done)} draws already in {log.name}", flush=True)
-    log.parent.mkdir(parents=True, exist_ok=True)
-    fh = open(log, "a")
-    if log.stat().st_size and not log.read_text().endswith("\n"):
-        fh.write("\n")                                 # a crash cut the last line short: keep new records on their own lines
-
-    def on_record(index, record):
-        fh.write(json.dumps(dict(index=index, cfg=cfg, record=record)) + "\n")
-        fh.flush()
+    log = RunLog(out.with_name("calibration.jsonl"), cfg, key_field="index", tag="calibration")
+    done = dict(log.done)
 
     def progress(i, n, seconds):
         if i % 50 == 0 or i == n:
@@ -85,18 +63,16 @@ def main(argv=None):
 
     try:
         summary, seconds, _ = calibration.run(model, xs, draws, indices, a.n_samples, a.steps, a.seed, progress, done,
-                                              on_record)
+                                              log.add)
     finally:
-        fh.close()
+        log.close()
     n_new = len(rows) - sum(i in done for i in indices)
     manifest = data.load_manifest(a.data)
     report = dict(model=str(a.model), data=str(a.data), code_version=(manifest or {}).get("code_version"),
                   split="test", steps=a.steps, seed=a.seed, threads=torch.get_num_threads(), seconds=seconds,
                   resumed_draws=len(rows) - n_new, seconds_per_draw=seconds / max(n_new, 1) if n_new else None, **summary)
     out.parent.mkdir(parents=True, exist_ok=True)
-    tmp = out.with_name(out.name + ".tmp")
-    tmp.write_text(json.dumps(report, indent=1))
-    os.replace(tmp, out)
+    atomic_write_json(out, report, indent=1, allow_nan=True)
     verdict = ", ".join(f"{k} {'ok' if v else 'FAIL'}" for k, v in summary["gates"].items())
     print(f"[calibration] spec verdict {'PASS' if summary['pass'] else 'FAIL'}: {verdict}", flush=True)
     print(f"[calibration] noise-aware (reporting only): SBC after Bonferroni "

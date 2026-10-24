@@ -10,7 +10,6 @@ stopping either). Writes model.pt (best epoch) and history.json to --out.
 import argparse
 import copy
 import json
-import os
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -22,6 +21,7 @@ import paths
 from shazam.inverse import data
 from shazam.inverse.encoding import STATES, active_slots, encode
 from shazam.inverse.model import InverseModel
+from shazam.inverse.runio import atomic_save
 from tbribbon.parent_prior import excluded
 
 DEFAULT_DATA = paths.data_root() / "_generated" / "hexagonal_parent_v1"
@@ -133,13 +133,6 @@ def train(train_arrays, val_arrays, cfg, on_epoch=None):
     return model.eval(), history
 
 
-def _atomic(path, write):
-    """write(tmp) then rename onto path, so a reader or a crash never sees a half-written file."""
-    tmp = path.with_name(path.name + ".tmp")
-    write(tmp)
-    os.replace(tmp, path)
-
-
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--data", default=str(DEFAULT_DATA))
@@ -167,13 +160,13 @@ def main(argv=None):
         print(f"[inverse] epoch {e} train {history['train_loss'][e]:.4f} val {history['val_loss'][e]:.4f} "
               f"({history['seconds'][e]:.0f}s){' *' if improved else ''}", flush=True)
         if improved:                                  # the file always holds the best model so far
-            _atomic(out / "model.pt", lambda p: torch.save({"cfg": model.cfg, "state_dict": model.state_dict()}, p))
-        _atomic(out / "history.json", lambda p: p.write_text(json.dumps({**history, **extra}, indent=1)))
+            atomic_save(out / "model.pt", lambda p: torch.save({"cfg": model.cfg, "state_dict": model.state_dict()}, p))
+        atomic_save(out / "history.json", lambda p: p.write_text(json.dumps({**history, **extra}, indent=1)))
 
     cfg = TrainConfig(a.epochs, a.batch, a.lr, a.patience, a.seed, a.exclude)
     model, history = train(tr, va, cfg, on_epoch)
-    _atomic(out / "model.pt", model.save)
-    _atomic(out / "history.json", lambda p: p.write_text(json.dumps({**history, **extra}, indent=1)))
+    atomic_save(out / "model.pt", model.save)
+    atomic_save(out / "history.json", lambda p: p.write_text(json.dumps({**history, **extra}, indent=1)))
     print(f"[inverse] best epoch {history['best_epoch']} val {min(history['val_loss']):.4f}; wrote {out}", flush=True)
     return history
 

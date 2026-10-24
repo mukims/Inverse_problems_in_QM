@@ -86,3 +86,12 @@ def test_zero_points_encode_as_switches():
     d = sample_prior(np.random.default_rng(0))
     k, _, _ = encode(d)
     assert STATES[k].edge == d.edge and STATES[k].pattern == d.params.pattern and STATES[k].lead == d.params.lead
+
+
+def test_same_quantity_constants_are_defined_once():
+    from shazam.inverse import data, design, encoding
+    from tbribbon import parent_prior
+    assert data.PARAM_COLUMNS is parent_prior.FIELDS and design._EV_FIELDS == parent_prior.FIELDS[1:]
+    assert encoding.EPS is parent_prior.EPS and encoding.WITHIN is parent_prior.WITHIN and encoding.CROSS is parent_prior.CROSS
+    assert encoding.delta_upper is parent_prior.delta_upper
+    assert not hasattr(encoding, "_delta_hi") and not hasattr(parent_prior, "_delta_upper")

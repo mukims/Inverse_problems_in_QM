@@ -31,7 +31,6 @@ there (records written with other settings are refused: delete the file). The fi
 """
 import argparse
 import json
-import os
 import time
 from pathlib import Path
 
@@ -47,7 +46,8 @@ from shazam.inverse.data import PARAM_COLUMNS
 from shazam.inverse.design import background_mass, design, target_input
 from shazam.inverse.model import InverseModel
 from shazam.inverse.posterior import fit_update
-from shazam.inverse.verify import FINAL_SEEDS, OPT_SEEDS, VERIFY_SEEDS
+from shazam.inverse.runio import RunLog, atomic_write_json
+from shazam.inverse.verify import OPT_SEEDS, VERIFY_SEEDS
 from tbribbon.parent import named_material
 from tbribbon.parent_prior import Draw
 
@@ -121,41 +121,7 @@ def _clean(x):
 def _write_json(path, obj):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(json.dumps(_clean(obj), indent=1, allow_nan=False))
-    os.replace(tmp, path)
-
-
-class RunLog:
-    """Append-only .jsonl of finished targets: one line {"key", "cfg", "record"} each. Reading skips a line a crash cut short and
-    refuses records written with other settings (cfg)."""
-
-    def __init__(self, path, cfg):
-        self.path, self.cfg, self.done = Path(path), cfg, {}
-        if self.path.exists():
-            for line in self.path.read_text().splitlines():
-                if not line.strip():
-                    continue
-                try:
-                    rec = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                if rec["cfg"] != cfg:
-                    raise SystemExit(f"{self.path} was written with {rec['cfg']}, not {cfg}: delete it to start over")
-                self.done[rec["key"]] = rec["record"]
-            print(f"[{cfg['cmd']}] resuming: {len(self.done)} targets already in {self.path.name}", flush=True)
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.fh = open(self.path, "a")
-        if self.path.stat().st_size and not self.path.read_text().endswith("\n"):
-            self.fh.write("\n")
-
-    def add(self, key, record):
-        self.fh.write(json.dumps(dict(key=key, cfg=self.cfg, record=record)) + "\n")
-        self.fh.flush()
-        self.done[key] = record
-
-    def close(self):
-        self.fh.close()
+    atomic_write_json(path, _clean(obj), indent=1)
 
 
 class _Recorder:
