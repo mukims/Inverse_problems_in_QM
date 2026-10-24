@@ -128,6 +128,15 @@ def test_design_check_top_and_no_refinement():
     assert all(c["updated_probability"] is None for c in report["candidates"])
     assert report["update_fitted"] is False and "only the top candidate" in report["warning"]
     json.dumps(report, allow_nan=False)
+    assert report["updated_probabilities_computed"] is False
+    assert design_mod.design(sim_target(HOST), model, **kw)["updated_probabilities_computed"] is True
+    # R24/R25: the background mass counts the realistic candidates whether or not they were checked
+    report = design_mod.design(sim_target(HOST), model, check="top", update={"kappa": 1.0, "log_L0": -1e4}, **kw)
+    assert report["update_fitted"] is True and report["update"] == {"kappa": 1.0, "log_L0": -1e4}
+    assert report["updated_probabilities_computed"] is False and "only the top candidate" in report["warning"]
+    assert [c["model_probability"] for c in report["candidates"]] == pytest.approx([0.7, 0.3])
+    assert report["p_background"] == pytest.approx(1 / 101)                     # the floor 1 / (n_samples + 1), not 0.3
+    assert all(c["updated_probability"] is None for c in report["candidates"])
     # a target that is not this host fails the check: refine_budget 0 keeps the verify verdict and runs no refinement
     report = design_mod.design(sim_target(OTHER), StubModel([(HOST, 100)]), **(kw | {"refine_budget": 0}))
     top = report["candidates"][0]
@@ -183,6 +192,9 @@ def test_fit_update_writes_update_json_and_resumes(tmp_path, stub, data):
     lines = (out / "update.jsonl").read_text().splitlines()
     assert len(lines) == 2 and len(stub.calls) == 2
     first = json.loads(lines[0])
+    hits = [json.loads(line)["record"]["hits"] for line in lines]
+    assert [r["model_probability"] for r in first["record"]["report"]["candidates"]] == pytest.approx([0.7, 0.3])
+    assert hits == [[True, False], [False, True]]      # draw 0's truth is HOST (rank 1), draw 1's is OTHER (rank 2)
     assert first["record"]["report"]["update_fitted"] is False and len(first["record"]["hits"]) == len(
         first["record"]["report"]["candidates"])
     # resume: the two finished draws are not designed again, only the third is
@@ -193,6 +205,22 @@ def test_fit_update_writes_update_json_and_resumes(tmp_path, stub, data):
     # changed settings are refused rather than mixed
     with pytest.raises(SystemExit):
         ev.main(argv + ["--n", "3", "--n-samples", "50"])
+
+
+def test_fit_records_keep_only_checked_candidates():
+    def row(p, checked, log_L=-5.0):
+        return {"model_probability": p, "check": {"recreated": True} if checked else None,
+                "log_likelihood": log_L if checked else None}
+
+    rec = {"report": {"n_samples": 100, "candidates": [row(0.5, True, -3.0), row(0.2, False), row(0.1, True, -7.0)]},
+           "hits": [True, True, False]}
+    empty = {"report": {"n_samples": 100, "candidates": [row(0.4, False)]}, "hits": [False]}
+    out = ev.fit_records([rec, empty])
+    assert out[0]["p"] == [0.5, 0.1] and out[0]["log_L"] == [-3.0, -7.0] and out[0]["hits"] == [True, False]
+    assert out[0]["p0"] == pytest.approx(ev.background_mass([0.5, 0.1], 100)) and out[0]["p0"] == pytest.approx(0.4)
+    assert out[1]["p"] == [] and out[1]["p0"] == pytest.approx(1.0)
+    floor = ev.fit_records([{"report": {"n_samples": 100, "candidates": [row(1.0, True)]}, "hits": [True]}])
+    assert floor[0]["p0"] == pytest.approx(1 / 101)
 
 
 def test_fit_update_refuses_top_only_checks(tmp_path, stub, data):
@@ -224,7 +252,8 @@ def test_hidden_scores_the_catalogue_and_resumes(tmp_path, monkeypatch):
 def test_end_to_end_reports_both_calibrations(tmp_path, stub, data):
     out = tmp_path / "m"
     out.mkdir()
-    (out / "update.json").write_text(json.dumps({"kappa": 100.0, "log_L0": -5000.0}))
+    flags = {"no_refine": False, "refine_budget": 6, "n_samples": 100, "seeds": 3, "n_cells": 10}
+    (out / "update.json").write_text(json.dumps({"kappa": 100.0, "log_L0": -5000.0, "flags": flags}))
     argv = ["end-to-end", "--model", str(out / "model.pt"), "--data", str(data), *FAST]
     rep = ev.main(argv + ["--n", "3", "--limit", "2"])
     res = json.loads((out / "end_to_end.json").read_text())
@@ -236,6 +265,15 @@ def test_end_to_end_reports_both_calibrations(tmp_path, stub, data):
     assert len(lines) == 2 and json.loads(lines[0])["record"]["report"]["update_fitted"] is True
     ev.main(argv + ["--n", "3"])
     assert len(stub.calls) == 3
+    # the update was fitted under other check settings: refused, unless explicitly allowed
+    (out / "update.json").write_text(json.dumps({"kappa": 100.0, "log_L0": -5000.0, "flags": flags | {"refine_budget": 200}}))
+    with pytest.raises(SystemExit, match=r"other settings.*refine_budget"):
+        ev.main(argv + ["--n", "3", "--out", str(out / "other.json")])
+    (out / "update.json").write_text(json.dumps({"kappa": 100.0, "log_L0": -5000.0}))             # no flags recorded
+    with pytest.raises(SystemExit, match="other settings"):
+        ev.main(argv + ["--n", "3", "--out", str(out / "other.json")])
+    ev.main(argv + ["--n", "3", "--out", str(out / "other.json"), "--allow-update-mismatch", "--limit", "1"])
+    assert (out / "other.json").exists()
     (out / "update.json").unlink()
     with pytest.raises(SystemExit, match="fit-update"):
         ev.main(argv + ["--n", "3"])
@@ -254,10 +292,16 @@ def test_dry_run_projects_cost_and_touches_nothing(tmp_path, monkeypatch, capsys
     text = capsys.readouterr().out
     assert "dry run" in text and "simulations" in text and "hours" in text
     assert proj["seconds_per_simulation"] == pytest.approx(10.0)          # 60 s over 6 draws in the manifest
-    # 500 draws x 3 candidates x (50 verify + P(fail) 0.5 x (refine 200 + final 50)) = 500 x 3 x 175
-    assert proj["simulations"] == pytest.approx(500 * 3 * 175)
-    assert proj["wall_hours"] == pytest.approx(500 * 3 * 175 * 10.0 / 10 / 3600)
+    # per candidate on 10 jobs: 50 verify seeds = 5 rounds; P(refine) 0.5 x (10 evaluations of 20 seeds = 2 rounds each + final 5)
+    assert proj["simulations"] == pytest.approx(500 * 3 * 175)            # 50 + 0.5 x (200 + 50) simulations
+    assert proj["rounds_per_candidate"] == pytest.approx(5 + 0.5 * (10 * 2 + 5))
+    assert proj["wall_hours"] == pytest.approx(500 * 3 * 17.5 * 10.0 / 3600)
+    # rounds, not simulations / jobs: 50 seeds on 22 jobs take 3 rounds, 20 seeds 1
+    p22 = ev.project(1, "all", False, 1.0, 1.0, 200, 50, 20, 1.0, 22)
+    assert p22["rounds_per_candidate"] == 3 + (10 * 1 + 3) and p22["wall_hours"] == pytest.approx(16 / 3600)
+    assert ev.project(1, "all", True, 1.0, 1.0, 200, 50, 20, 1.0, 22)["rounds_per_candidate"] == 3
     cheap = ev.main(["hidden", "--material", "kagome", "--model", str(out / "model.pt"), "--dry-run", "--check", "top",
                      "--no-refine", "--limit", "10", "--data", str(data)])
     assert cheap["n_targets"] == 10 and cheap["simulations"] == pytest.approx(10 * 50)
+    assert cheap["rounds"] == pytest.approx(10 * 3)                      # 50 seeds on the default 22 jobs
     assert not list(out.iterdir())

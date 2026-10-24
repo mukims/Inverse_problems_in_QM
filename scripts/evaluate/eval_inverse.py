@@ -88,6 +88,7 @@ def catalogue_targets(model_id, seeds=TEST_SEEDS, store=None):
     `target_input` then builds the input; it equals the lookup's on_axis + window_inputs route (a test checks it)."""
     store = CloudStore(paths.data_root()) if store is None else store
     s = named_material(model_id.split("/")[0]).s
+    # CloudStore has no public accessor for a density's impurity count; _shown is the extra=False-aware view of meta.json
     counts = {v["density"]: int(v["n_impurities"]) for v in store._shown(model_id).values()}
     e_ev = np.asarray(store.read_pristine(model_id)[0], float) * s
     seeds = np.asarray(list(seeds))
@@ -226,28 +227,41 @@ def seconds_per_simulation(root):
                      "pass --seconds-per-sim")
 
 
-def project(n_targets, check, no_refine, expected_candidates, p_refine, refine_budget, n_seeds, seconds, n_jobs):
-    """Simulations and time of `n_targets` designs: per candidate n_seeds checks plus, with probability p_refine, a refinement
-    (its whole budget, a conservative figure) and the final check. Candidates: the expected number, or 1 for check=top."""
+def project(n_targets, check, no_refine, expected_candidates, p_refine, refine_budget, n_seeds, n_opt, seconds, n_jobs):
+    """Simulations and wall time of `n_targets` designs.
+
+    Per candidate: a check of n_seeds simulations plus, with probability p_refine, a refinement (its whole budget, a conservative
+    figure: budget // n_opt evaluations of n_opt simulations each) and the final check of n_seeds. Candidates: the expected
+    number, or 1 for check=top. Each call to the simulator runs its seeds on n_jobs workers, so it takes
+    ceil(seeds / n_jobs) rounds of one simulation time (50 seeds on 22 jobs = 3 rounds, 20 seeds = 1 round); wall time is the
+    sum of those rounds, not simulations / n_jobs."""
     n_candidates = 1.0 if check == "top" else float(expected_candidates)
-    per = n_seeds + (0.0 if no_refine else p_refine * (refine_budget // len(OPT_SEEDS) * len(OPT_SEEDS) + n_seeds))
-    sims = n_targets * n_candidates * per
+    rounds = lambda k: -(-k // n_jobs)
+    evals = refine_budget // n_opt
+    refine = 0.0 if no_refine else p_refine
+    per_sims = n_seeds + refine * (evals * n_opt + n_seeds)
+    per_rounds = rounds(n_seeds) + refine * (evals * rounds(n_opt) + rounds(n_seeds))
+    sims = n_targets * n_candidates * per_sims
+    n_rounds = n_targets * n_candidates * per_rounds
     return dict(n_targets=int(n_targets), check=check, no_refine=bool(no_refine), candidates_per_target=n_candidates,
-                simulations_per_candidate=per, simulations=sims, seconds_per_simulation=seconds, n_jobs=n_jobs,
-                cpu_hours=sims * seconds / 3600, wall_hours=sims * seconds / n_jobs / 3600)
+                simulations_per_candidate=per_sims, rounds_per_candidate=per_rounds, simulations=sims, rounds=n_rounds,
+                seconds_per_simulation=seconds, n_jobs=n_jobs, cpu_hours=sims * seconds / 3600,
+                wall_hours=n_rounds * seconds / 3600)
 
 
 def dry_run(a, tag, n_targets):
     seconds, source = (a.seconds_per_sim, "--seconds-per-sim") if a.seconds_per_sim else seconds_per_simulation(a.data)
-    n_seeds = a.seeds or len(VERIFY_SEEDS)
-    args = (a.expected_candidates, a.expected_refine_rate, a.refine_budget, n_seeds, seconds, a.n_jobs)
+    args = (a.expected_candidates, a.expected_refine_rate, a.refine_budget, a.seeds or len(VERIFY_SEEDS),
+            a.seeds or len(OPT_SEEDS), seconds, a.n_jobs)
     proj = project(n_targets, a.check, a.no_refine, *args)
     proj["source"] = source
     print(f"[dry run] {tag}: {proj['n_targets']} targets x {proj['candidates_per_target']:g} candidates x "
           f"{proj['simulations_per_candidate']:g} simulations = {proj['simulations']:,.0f} simulations", flush=True)
-    print(f"[dry run] {seconds:.1f} s per simulation ({source}) / {a.n_jobs} jobs = {proj['wall_hours']:.1f} wall hours "
+    print(f"[dry run] {seconds:.1f} s per simulation ({source}); every simulator call runs its seeds in rounds of {a.n_jobs} "
+          f"jobs ({proj['rounds_per_candidate']:g} rounds per candidate) = {proj['wall_hours']:.1f} wall hours "
           f"({proj['cpu_hours']:.0f} CPU hours); assumes {a.expected_candidates:g} candidates per target and "
-          f"{a.expected_refine_rate:.0%} of checks refined; a busy machine is slower. Nothing was run or written.", flush=True)
+          f"{a.expected_refine_rate:.0%} of checks refined (whole budget); a busy machine is slower. "
+          "Nothing was run or written.", flush=True)
     alts = []
     for check, no_refine in (("all", False), ("all", True), ("top", False), ("top", True)):
         alt = project(n_targets, check, no_refine, *args)
@@ -439,13 +453,31 @@ def summarize_end_to_end(records):
                 ece_updated=dict(value=ece(checked, "updated_probability"), n_candidates=len(checked)))
 
 
+UPDATE_SETTINGS = ("no_refine", "refine_budget", "n_samples", "seeds", "n_cells")      # what changes the checks' log-likelihoods
+
+
+def update_mismatch(fit_flags, a):
+    """{setting: (fit-update value, this run's value)} for the settings the update was fitted under that differ from this run's;
+    a fit without recorded flags is a mismatch of its own."""
+    if not fit_flags:
+        return {"flags": ("none recorded", "needed")}
+    return {k: (fit_flags.get(k), getattr(a, k)) for k in UPDATE_SETTINGS if fit_flags.get(k) != getattr(a, k)}
+
+
 def cmd_end_to_end(a, cfg):
     upath = Path(a.update) if a.update else Path(a.model).with_name("update.json")
     if a.dry_run:
         return dry_run(a, "end-to-end", min(a.n, a.limit) if a.limit else a.n)
     if not upath.exists():
         raise SystemExit(f"{upath} not found: run `fit-update` first (or pass --update)")
-    update = {k: json.loads(upath.read_text())[k] for k in ("kappa", "log_L0")}
+    fitted = json.loads(upath.read_text())
+    update = {k: fitted[k] for k in ("kappa", "log_L0")}
+    mismatch = update_mismatch(fitted.get("flags"), a)
+    if mismatch and not a.allow_update_mismatch:
+        raise SystemExit(f"{upath} was fitted with other settings than this run ({mismatch}): kappa and log_L0 depend on how the "
+                         "checks were made. Re-run fit-update with these settings, or pass --allow-update-mismatch")
+    if mismatch:
+        print(f"[end-to-end] WARNING: update fitted with other settings ({mismatch}); allowed by --allow-update-mismatch", flush=True)
     out = Path(a.out) if a.out else Path(a.model).with_name("end_to_end.json")
     model = InverseModel.load(a.model)
     records, seconds, new = _designs(model, a, "test", update, "end-to-end", out, cfg | dict(update=update))
@@ -500,6 +532,8 @@ def build_parser():
     p = sub.add_parser("end-to-end", parents=[common], help="top-5 capture, recreation and ECE on test draws")
     p.add_argument("--n", type=int, default=200)
     p.add_argument("--update", default=None, help="default: update.json next to the model")
+    p.add_argument("--allow-update-mismatch", action="store_true",
+                   help="run even though update.json was fitted with other check settings (no_refine, refine_budget, n_samples, ...)")
     p.set_defaults(run=cmd_end_to_end)
     return ap
 

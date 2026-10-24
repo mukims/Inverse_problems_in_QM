@@ -147,12 +147,14 @@ def design(target_x, model, n_samples=1000, update=None, refine_budget=200, n_jo
         rows.append(row)
 
     real = [r for r in rows if r["check"] is not None]
-    p = np.array([r["model_probability"] for r in real])
-    # R24: p0 is everything not returned as realistic: unassigned, unrealistic and clusters beyond the top 5.
+    # R24: p0 is everything not returned as realistic: unassigned, unrealistic and clusters beyond the top 5. It is taken over
+    # the realistic rows whether or not they were all checked (check="top" leaves the others unchecked, not background).
     # R25: with a fitted update it is floored at 1 / (n_samples + 1); without one there is no background at all.
-    p0 = background_mass(p, n_samples) if fitted else 1.0 - float(p.sum())
-    log_L = np.array([r["log_likelihood"] for r in real])
+    p_realistic = np.array([r["model_probability"] for r in rows if r["realistic"]])
+    p0 = background_mass(p_realistic, n_samples) if fitted else 1.0 - float(p_realistic.sum())
     if check == "all":
+        p = np.array([r["model_probability"] for r in real])
+        log_L = np.array([r["log_likelihood"] for r in real])
         if fitted:
             updated = updated_probabilities(p, log_L, p0, kappa, log_L0)
         else:                                                  # no fitted update: renormalise over the returned candidates
@@ -160,9 +162,9 @@ def design(target_x, model, n_samples=1000, update=None, refine_budget=200, n_jo
         for r, u in zip(real, updated):
             r["updated_probability"] = float(u)
 
-    updated_ok = fitted and check == "all"
-    report = {"p_unassigned": float(p_unassigned), "p_background": max(p0, 0.0), "update_fitted": bool(updated_ok),
-              "update": {"kappa": kappa, "log_L0": log_L0} if updated_ok else None, "check": check,
+    report = {"p_unassigned": float(p_unassigned), "p_background": max(p0, 0.0), "update_fitted": bool(fitted),
+              "update": {"kappa": kappa, "log_L0": log_L0} if fitted else None, "check": check,
+              "updated_probabilities_computed": check == "all",
               "n_samples": int(n_samples), "candidates": rows, "n_simulations": int(n_simulations),
               "seconds": time.time() - t0}
     if check == "top":
