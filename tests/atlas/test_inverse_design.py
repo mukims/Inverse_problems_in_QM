@@ -10,7 +10,7 @@ from shazam.inverse import design as design_mod
 from shazam.inverse import refine as refine_mod
 from shazam.inverse.design import background_mass, design, target_input
 from shazam.inverse.refine import RefineResult
-from shazam.inverse.verify import FINAL_SEEDS, VERIFY_SEEDS, log_likelihood
+from shazam.inverse.verify import FINAL_SEEDS, OPT_SEEDS, VERIFY_SEEDS, log_likelihood
 from shazam.inverse.encoding import encode
 from tbribbon.parent import HexParams, named_material
 from tbribbon.parent_data import V4, simulate_raw, to_input
@@ -172,13 +172,32 @@ def test_cli_writes_the_report_atomically_next_to_the_target(tmp_path, monkeypat
     monkeypatch.setattr(cli, "design", lambda *a, **k: design(*a, **(k | dict(n_cells=N_CELLS, seeds_override=SEEDS, refine_budget=6))))
     np.save(tmp_path / "T.npy", simulate_raw(HOST, 3, 1, n_cells=N_CELLS))
     np.save(tmp_path / "E.npy", V4.energies_t())
-    (tmp_path / "update.json").write_text(json.dumps({"kappa": 2.0, "log_L0": -1e9}))
+    from shazam.inverse.runio import sha256_of
     (tmp_path / "model.pt").write_text("stub")
-    cli.main(["--target", str(tmp_path / "T.npy"), "--energies", str(tmp_path / "E.npy"), "--model", str(tmp_path / "model.pt"),
-              "--n-samples", "100", "--n-jobs", "1"])
+    sha = sha256_of(tmp_path / "model.pt")
+    flags = {"no_refine": False, "refine_budget": 200, "n_samples": 100, "seeds": None, "n_cells": None}
+    (tmp_path / "update.json").write_text(json.dumps({"kappa": 2.0, "log_L0": -1e9, "flags": flags, "model_sha256": sha}))
+    threads = []
+    monkeypatch.setattr(cli.torch, "set_num_threads", threads.append)
+    base = ["--target", str(tmp_path / "T.npy"), "--energies", str(tmp_path / "E.npy"), "--model", str(tmp_path / "model.pt"),
+            "--n-samples", "100", "--n-jobs", "1"]
+    cli.main(base + ["--threads", "3"])
+    assert threads == [3]
     report = json.loads((tmp_path / "T_design.json").read_text())
     assert report["update_fitted"] is True and report["update"] == {"kappa": 2.0, "log_L0": -1e9}
+    prov = report["provenance"]
+    assert prov["model"] == str(tmp_path / "model.pt") and prov["model_sha256"] == sha
+    assert prov["update_file"] == str(tmp_path / "update.json") and prov["update_flags"] == flags
+    assert prov["update_mismatch"] == {}
     assert not list(tmp_path.glob("*.tmp"))
+    # M5: an update fitted under other settings, or on another model, is refused unless explicitly allowed
+    for other in ({"flags": flags | {"n_samples": 1000}, "model_sha256": sha}, {"flags": flags, "model_sha256": "0" * 64}, {}):
+        (tmp_path / "update.json").write_text(json.dumps({"kappa": 2.0, "log_L0": -1e9} | other))
+        with pytest.raises(SystemExit, match="other settings"):
+            cli.main(base)
+    cli.main(base + ["--allow-update-mismatch"])
+    prov = json.loads((tmp_path / "T_design.json").read_text())["provenance"]
+    assert set(prov["update_mismatch"]) == {"flags", "model_sha256"}
 
 
 def test_target_input_crops_a_grid_that_starts_below_zero():
@@ -268,6 +287,7 @@ def test_cli_fails_fast_on_a_bad_out_or_update(tmp_path, monkeypatch):
                                                                          "n_simulations": 0, "seconds": 0.0})
     np.save(tmp_path / "T.npy", simulate_raw(HOST, 3, 1, n_cells=N_CELLS))
     np.save(tmp_path / "E.npy", V4.energies_t())
+    (tmp_path / "model.pt").write_text("stub")
     base = ["--target", str(tmp_path / "T.npy"), "--energies", str(tmp_path / "E.npy"), "--model", str(tmp_path / "model.pt")]
     cli.main(base + ["--out", str(tmp_path / "new" / "dir" / "o.json")])          # a missing parent is created before design
     assert ran and (tmp_path / "new" / "dir" / "o.json").exists()
@@ -283,3 +303,40 @@ def test_cli_fails_fast_on_a_bad_out_or_update(tmp_path, monkeypatch):
     with pytest.raises(OSError):
         cli.main(["--target", base[1], "--energies", base[3], "--model", base[5], "--out", str(blocker / "o.json")])
     assert not ran                                                   # nothing was simulated
+
+
+def test_report_records_its_provenance_and_the_intervals():
+    from shazam.inverse.runio import code_version
+    report = run(sim_target(HOST), StubModel([(HOST, 70), (OTHER, 30)]), seed=4,
+                 provenance={"model": "m/model.pt", "model_sha256": "ab" * 32})
+    prov = report["provenance"]
+    assert prov["code_version"] == code_version() and prov["model"] == "m/model.pt" and prov["model_sha256"] == "ab" * 32
+    assert (prov["n_samples"], prov["seed"], prov["check"], prov["refine_budget"]) == (100, 4, "all", 6)
+    assert prov["seeds"] == {"verify": {"first": VERIFY_SEEDS[0], "n": SEEDS}, "final": {"first": FINAL_SEEDS[0], "n": SEEDS},
+                             "optimisation": {"first": OPT_SEEDS[0], "n": SEEDS}}
+    assert prov["update_file"] is None and prov["update_flags"] is None and prov["n_cells"] == N_CELLS
+    bare = run(sim_target(HOST), StubModel([(HOST, 100)]))["provenance"]
+    assert bare["model"] is None and bare["model_sha256"] is None
+    for row in report["candidates"]:
+        iv = row["intervals_90"]
+        assert {"s", "c", "w"} <= set(iv) and all(len(v) == 2 and v[0] <= v[1] for v in iv.values())
+        assert iv["c"] == row["density_90"]
+    json.dumps(report, allow_nan=False)
+
+
+def test_the_check_names_the_host_it_simulated(monkeypatch):
+    (c,) = run(sim_target(HOST), StubModel([(HOST, 100)]), refine_budget=0)["candidates"]
+    assert c["check"]["seeds"] == "verify" and c["check"]["host"] == "parameters"
+    _spied(monkeypatch, _refined_host(2.5), True)
+    (c,) = run(np.ones(416, np.float32), StubModel([(HOST, 100)]))["candidates"]
+    assert c["check"]["seeds"] == "final" and c["check"]["host"] == "refined_parameters"
+
+
+def test_update_mismatch_compares_the_settings_and_the_model():
+    flags = {"no_refine": False, "refine_budget": 200, "n_samples": 1000, "seeds": None, "n_cells": None}
+    fitted = {"kappa": 1.0, "log_L0": 0.0, "flags": flags, "model_sha256": "aa"}
+    assert design_mod.update_mismatch(fitted, flags, "aa") == {}
+    assert design_mod.update_mismatch(fitted, flags | {"refine_budget": 6}, "aa") == {"refine_budget": (200, 6)}
+    assert design_mod.update_mismatch(fitted, flags, "bb") == {"model_sha256": ("aa", "bb")}
+    assert design_mod.update_mismatch({"kappa": 1.0}, flags, "aa") == {"flags": ("none recorded", "needed"),
+                                                                      "model_sha256": ("none recorded", "aa")}

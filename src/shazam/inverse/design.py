@@ -16,6 +16,7 @@ from shazam.inverse import candidates as candidates_mod
 from shazam.inverse.encoding import STATES
 from shazam.inverse.posterior import updated_probabilities
 from shazam.inverse.refine import refine
+from shazam.inverse.runio import code_version
 from shazam.inverse.verify import (FINAL_SEEDS, OPT_SEEDS, VERIFY_SEEDS, log_likelihood, recreation_check,
                                    simulate_inputs)
 from tbribbon.parent import device_cells_for
@@ -26,6 +27,8 @@ NO_UPDATE_WARNING = ("updated probabilities are renormalised over the returned c
                      "no fitted update (kappa, log_L0) was supplied")
 TOP_ONLY_WARNING = ("updated probabilities are not computed: only the top candidate was checked in the simulator "
                     "(check='top')")
+# The settings an update (kappa, log_L0) depends on: they change how the checks behind its log-likelihoods were made.
+UPDATE_SETTINGS = ("no_refine", "refine_budget", "n_samples", "seeds", "n_cells")
 _EV_FIELDS = FIELDS[1:]                                    # energies and hoppings: in units of s, so times s gives eV
 
 
@@ -62,6 +65,23 @@ def background_mass(p_realistic, n_samples):
     return max(1.0 - float(np.sum(p_realistic)), 1.0 / (n_samples + 1))
 
 
+def update_mismatch(fitted, settings, model_sha256=None):
+    """{name: (update.json value, this run's value)} for what differs between the fitted update and this run.
+
+    fitted        the update.json dict (its "flags" are the fit-update run's settings, "model_sha256" the fitted model's hash)
+    settings      this run's values of UPDATE_SETTINGS
+    model_sha256  this run's model hash; None skips the model comparison
+    An update without recorded flags (or without a model hash, when one is compared) is a mismatch of its own."""
+    flags, out = fitted.get("flags"), {}
+    if not flags:
+        out["flags"] = ("none recorded", "needed")
+    else:
+        out.update({k: (flags.get(k), settings.get(k)) for k in UPDATE_SETTINGS if flags.get(k) != settings.get(k)})
+    if model_sha256 is not None and fitted.get("model_sha256") != model_sha256:
+        out["model_sha256"] = (fitted.get("model_sha256") or "none recorded", model_sha256)
+    return out
+
+
 def _parameters(draw):
     """The host as {"canonical": HexParams fields, "ev": s, energies and hoppings times s (eV)}."""
     p = draw.params
@@ -71,8 +91,11 @@ def _parameters(draw):
 
 
 def _check_dict(check, seeds):
+    """The check as JSON; `host` names the row key holding the host that was simulated (R29): the medoid's "parameters" for
+    the verification check, "refined_parameters" for the final check of an early-stopped refinement."""
     return {"p_value": float(check.p_value), "recreated": bool(check.recreated), "misfit": float(check.misfit),
-            "threshold": float(check.threshold), "seeds": seeds}
+            "threshold": float(check.threshold), "seeds": seeds,
+            "host": "refined_parameters" if seeds == "final" else "parameters"}
 
 
 def _verdict(cand, target_x, n_imp, n_cells, n_jobs, refine_budget, seeds, rng):
@@ -96,7 +119,7 @@ def _verdict(cand, target_x, n_imp, n_cells, n_jobs, refine_budget, seeds, rng):
 
 
 def design(target_x, model, n_samples=1000, update=None, refine_budget=200, n_jobs=22, seed=0, n_cells=None,
-           seeds_override=None, check="all"):
+           seeds_override=None, check="all", provenance=None):
     """The report (a JSON-serialisable dict) for the v4 input `target_x` (416,): see the module docstring.
 
     update      {"kappa", "log_L0"} fitted on validation draws, or None: kappa = 1 and no background mass, so the
@@ -107,6 +130,10 @@ def design(target_x, model, n_samples=1000, update=None, refine_budget=200, n_jo
     check       "all" (default): every realistic candidate is checked in the simulator; "top": only the rank-1 candidate
                 (a cheaper run when only the top candidate's verdict is scored). Unchecked candidates have check null and no
                 updated probability; with "top" no candidate has one, and the report says so.
+    provenance  what the caller knows about its inputs, merged into the report's `provenance`: "model" (path),
+                "model_sha256", "update_file", "update_flags" (the fit-update run's flags) and anything else. The report adds
+                the code version, the seeds used (first seed and count of each contiguous tuple), n_samples, seed, check,
+                refine_budget and n_cells.
     """
     if check not in ("all", "top"):
         raise ValueError(f"check must be 'all' or 'top', got {check!r}")
@@ -134,7 +161,9 @@ def design(target_x, model, n_samples=1000, update=None, refine_budget=200, n_jo
                "discrete_state": {k: (list(v) if isinstance(v, tuple) else v) for k, v in STATES[cand.state]._asdict().items()},
                "parameters": _parameters(draw), "edge": cand.edge, "width": int(draw.width), "impurity_count": int(n_imp),
                "impurity_count_90": [int(v) for v in cand.n_imp_interval], "density": float(draw.density),
-               "density_90": [float(v) for v in cand.intervals["c"]], "nearest_material": cand.nearest_material,
+               "density_90": [float(v) for v in cand.intervals["c"]],
+               "intervals_90": {k: [float(lo), float(hi)] for k, (lo, hi) in cand.intervals.items()},
+               "nearest_material": cand.nearest_material,
                "material_distance": float(cand.material_distance), "check": None, "log_likelihood": None,
                "refined_parameters": None}
         if cand.realistic and (check == "all" or rank == 1):
@@ -166,7 +195,12 @@ def design(target_x, model, n_samples=1000, update=None, refine_budget=200, n_jo
               "update": {"kappa": kappa, "log_L0": log_L0} if fitted else None, "check": check,
               "updated_probabilities_computed": check == "all",
               "n_samples": int(n_samples), "candidates": rows, "n_simulations": int(n_simulations),
-              "seconds": time.time() - t0}
+              "seconds": time.time() - t0,
+              "provenance": {"code_version": code_version(), "model": None, "model_sha256": None, "update_file": None,
+                             "update_flags": None, "n_samples": int(n_samples), "seed": int(seed), "check": check,
+                             "refine_budget": int(refine_budget), "n_cells": n_cells,
+                             "seeds": {name: {"first": int(t[0]) if t else None, "n": len(t)} for name, t in
+                                       zip(("verify", "final", "optimisation"), seeds)}} | dict(provenance or {})}
     if check == "top":
         report["warning"] = TOP_ONLY_WARNING
     elif not fitted:

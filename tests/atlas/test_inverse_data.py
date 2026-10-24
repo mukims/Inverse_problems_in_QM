@@ -154,3 +154,84 @@ def test_write_shard_keeps_the_shard_size_of_an_existing_data_set(tmp_path):
     with pytest.raises(ValueError, match="must start at 20"):
         gp.write_shard(tmp_path, 1, range(30, 40), n_jobs=2)
     assert not list(tmp_path.glob("shard_*"))
+
+
+# ------------------------------------------------------------------------------- provenance and backward compatibility
+
+REPO = Path(__file__).resolve().parents[2]
+BASE = "96d65f8f3"            # the last commit whose generator wrote shards without per-shard provenance
+report_parent = _load("report_parent")
+
+
+def _base_module(rel, name, folder):
+    res = subprocess.run(["git", "show", f"{BASE}:{rel}"], cwd=REPO, capture_output=True, text=True)
+    if res.returncode:
+        pytest.skip(f"base commit {BASE} is not available")
+    path = folder / f"{name}.py"
+    path.write_text(res.stdout)
+    spec = importlib.util.spec_from_file_location(name, path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+@pytest.fixture
+def old_gp(tmp_path_factory, monkeypatch):
+    """The generator and parent_data of the base commit (the code of the running data step), on the same small hosts."""
+    folder = tmp_path_factory.mktemp("base_code")
+    pd = _base_module("src/tbribbon/parent_data.py", "parent_data_base", folder)
+    g = _base_module("scripts/generate/generate_parent.py", "generate_parent_base", folder)
+    g.parent_data = pd
+    monkeypatch.setattr(pd, "device_cells_for", lambda params, edge: 10)
+    orig = g.sample_prior
+    monkeypatch.setattr(g, "sample_prior", lambda rng: (lambda d: d._replace(width=4 + d.width % 3))(orig(rng)))
+    return g
+
+
+def test_the_new_generator_writes_bit_identical_draws_and_only_adds_fields(tmp_path, old_gp):
+    old_gp.write_shard(tmp_path / "old", 0, range(12), n_jobs=2)
+    gp.write_shard(tmp_path / "new", 0, range(12), n_jobs=2)
+    with np.load(tmp_path / "old" / "shard_00000.npz") as a, np.load(tmp_path / "new" / "shard_00000.npz") as b:
+        assert set(b.files) == set(a.files) | {"code_version"}
+        for k in a.files:
+            assert b[k].dtype == a[k].dtype and b[k].shape == a[k].shape
+            if k != "seconds":                                          # wall time differs, nothing else may
+                assert np.array_equal(a[k], b[k]), k
+        assert b["code_version"].shape == () and str(b["code_version"]) == gp.CODE_VERSION
+    assert ((tmp_path / "old" / "shard_00000_rejections.json").read_text()
+            == (tmp_path / "new" / "shard_00000_rejections.json").read_text())
+    (eo,), (en,) = data.load_manifest(tmp_path / "old")["shards"], data.load_manifest(tmp_path / "new")["shards"]
+    assert set(en) == set(eo) | {"code_version"} and en["code_version"] == gp.CODE_VERSION
+    assert {k: v for k, v in en.items() if k not in ("seconds", "code_version")} == {k: v for k, v in eo.items() if k != "seconds"}
+
+
+def test_the_new_generator_extends_a_folder_the_old_one_started(tmp_path, old_gp):
+    argv = ["--out", str(tmp_path), "--shard-size", "2", "--n-jobs", "2"]
+    old_gp.main(argv + ["--n-draws", "4"])
+    old_files = sorted(tmp_path.glob("shard_*.npz"))
+    stamps = [p.stat().st_mtime_ns for p in old_files]
+    gp.main(argv + ["--n-draws", "6"])
+    assert [p.stat().st_mtime_ns for p in old_files] == stamps            # the old shards are kept as they are
+    m = data.load_manifest(tmp_path)
+    assert [e["shard"] for e in m["shards"]] == [0, 1, 2] and m["counts"]["n_draws"] == 6
+    assert "code_version" not in m["shards"][0] and "code_version" not in m["shards"][1]
+    assert m["shards"][2]["code_version"] == m["code_version"] == gp.CODE_VERSION
+    for split in ("train", "val", "test"):                             # every key: the 0-d code_version is not a column
+        got = data.load_split(tmp_path, split)
+        assert "code_version" not in got and all(len(v) == len(got["index"]) for v in got.values())
+    assert list(data.load_split(tmp_path, "train")["index"]) == list(range(6))
+    assert check_parent.check(tmp_path)["ok"] and report_parent.report(tmp_path)["n_draws"] == 6
+    prov = data.data_provenance(tmp_path)
+    assert prov["n_draws"] == 6 and set(prov["code_versions"]) == {"unknown", gp.CODE_VERSION}
+    assert prov["manifest_code_version"] == gp.CODE_VERSION and prov["root"] == str(tmp_path)
+
+
+def test_the_code_version_is_fixed_when_the_generator_starts(tmp_path, monkeypatch):
+    """A commit made while a multi-day run is going must not relabel the shards it writes afterwards."""
+    monkeypatch.setattr(gp, "CODE_VERSION", "0123abc-at-start")
+    gp.main(["--out", str(tmp_path), "--n-draws", "2", "--shard-size", "2", "--n-jobs", "2"])
+    m = data.load_manifest(tmp_path)
+    assert m["code_version"] == m["shards"][0]["code_version"] == "0123abc-at-start"
+    with np.load(tmp_path / "shard_00000.npz") as z:
+        assert str(z["code_version"]) == "0123abc-at-start"
+    assert data.data_provenance(tmp_path)["code_versions"] == ["0123abc-at-start"]

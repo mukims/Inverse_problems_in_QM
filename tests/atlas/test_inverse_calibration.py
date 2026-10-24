@@ -130,6 +130,11 @@ def test_cli_writes_a_well_formed_calibration_json(tmp_path, monkeypatch):
     assert set(r["coverage"]) >= {"per_parameter", "pooled"} and "value" in r["top5_recall"] and "value" in r["ece"]
     assert isinstance(r["pass"], bool) and r["pass"] == all(r["gates"].values())
     assert {"sbc_unconditional", "coverage", "top5_recall", "ece"} <= set(r["gates"])
+    from shazam.inverse.runio import code_version, sha256_of
+    assert r["code_version"] == code_version() and r["model_sha256"] == sha256_of(tmp_path / "model.pt")
+    assert r["data_provenance"]["code_versions"] == ["unknown"] and r["failed_draws"] == {"n": 0, "indices": [], "errors": {}}
+    cfg = json.loads((tmp_path / "calibration.jsonl").read_text().splitlines()[0])["cfg"]
+    assert cfg["model_sha256"] == r["model_sha256"] and cfg["n_rows"] == 4 and cfg["data_draws"] is None
 
 
 def test_sbc_rank_needs_an_explicit_rng():
@@ -227,3 +232,36 @@ def test_cli_resumes_from_the_jsonl_and_gives_the_same_result(tmp_path, monkeypa
     assert not calls
     with pytest.raises(SystemExit):
         ev.main(args[:args.index("--n-samples")] + ["--n-samples", "50"] + args[args.index("--n-samples") + 2:])
+    # a data extension changes the test rows the seeded choice draws from: refused, not silently mixed
+    (tmp_path / "manifest.json").write_text(json.dumps({"counts": {"n_draws": 80}, "shards": []}))
+    with pytest.raises(SystemExit, match="data_draws"):
+        ev.main(args)
+
+
+def test_cli_records_a_failing_draw_and_goes_on(tmp_path, monkeypatch):
+    ev = _load("evaluate", "eval_inverse_calibration")
+    torch.manual_seed(0)
+    InverseModel(len(STATES), state_masks=np.stack([active_slots(s) for s in STATES])).save(tmp_path / "model.pt")
+    np.savez(tmp_path / "shard_00000.npz", **_arrays(4))
+    args = ["--model", str(tmp_path / "model.pt"), "--data", str(tmp_path), "--n-test", "4", "--n-samples", "60",
+            "--steps", "4", "--threads", "2", "--out", str(tmp_path / "calibration.json")]
+    orig, calls = cal.evaluate_draw, []
+
+    def flaky(model, x, draw, *a, **k):
+        calls.append(1)
+        if draw.width == FLAKY_WIDTH[0]:
+            raise ValueError("bad draw")
+        return orig(model, x, draw, *a, **k)
+
+    monkeypatch.setattr(cal, "evaluate_draw", flaky)
+    arrays = data.load_split(tmp_path, "test")
+    FLAKY_WIDTH = [int(arrays["width"][1])]                                    # the second test draw (index 39)
+    first = ev.main(args)
+    bad = [int(i) for i, w in zip(arrays["index"], arrays["width"]) if w == FLAKY_WIDTH[0]]
+    assert first["failed_draws"] == {"n": len(bad), "indices": bad, "errors": {str(i): "ValueError('bad draw')" for i in bad}}
+    assert first["n_test"] == 4 - len(bad)
+    calls.clear()
+    assert ev.main(args)["failed_draws"]["indices"] == bad and not calls       # recorded errors are not retried
+    monkeypatch.setattr(cal, "evaluate_draw", orig)
+    again = ev.main(args + ["--retry-errors"])
+    assert again["failed_draws"]["n"] == 0 and again["n_test"] == 4

@@ -17,7 +17,6 @@ import argparse
 import json
 import multiprocessing as mp
 import queue
-import subprocess
 import sys
 import time
 import traceback
@@ -27,7 +26,7 @@ import numpy as np
 
 import paths
 from shazam.inverse.data import EDGE_CODES, LEAD_CODES, PARAM_COLUMNS, load_manifest
-from shazam.inverse.runio import atomic_write_bytes
+from shazam.inverse.runio import atomic_write_bytes, code_version
 from tbribbon import parent_data
 from tbribbon.parent import active_atoms_per_cell
 from tbribbon.parent_prior import RANGES, sample_prior
@@ -37,6 +36,9 @@ MAX_ATTEMPTS = 100          # redraws allowed per index; the prior rejects a sma
 REASONS = ("invisible_type", "no_channel", "few_channels")      # in the order they are checked (cheapest first)
 N_CHANNELS = 416
 DEFAULT_OUT = paths.data_root() / "_generated" / "hexagonal_parent_v1"
+# Fixed once, when the process starts: a commit made while a multi-day run is going must not relabel the shards it writes
+# afterwards. Stored per shard (manifest entry and the shard file's 0-d `code_version`) and as the manifest's top-level field.
+CODE_VERSION = code_version()
 
 
 def draw_with_resampling(index):
@@ -163,16 +165,6 @@ def _compute(indices, n_jobs, label="shard"):
     return sorted(got, key=lambda r: r["index"])
 
 
-def _code_version():
-    """git HEAD, with "-dirty" appended when tracked files have uncommitted changes (untracked files are ignored)."""
-    def git(*args):
-        return subprocess.run(["git", *args], cwd=paths.repo_root(), capture_output=True, text=True, check=True).stdout.strip()
-    try:
-        return git("rev-parse", "HEAD") + ("-dirty" if git("status", "--porcelain", "--untracked-files=no") else "")
-    except (OSError, subprocess.CalledProcessError):
-        return "unknown"
-
-
 def _update_manifest(root, entry, shard_size):
     """Add or replace the entry of one finished shard; counts are recomputed from the entries."""
     m = load_manifest(root) or {}
@@ -181,7 +173,7 @@ def _update_manifest(root, entry, shard_size):
     shards = [shards[k] for k in sorted(shards)]
     rej = {r: sum(e["rejections"][r] for e in shards) for r in REASONS}
     manifest = dict(
-        prior_ranges=RANGES, code_version=_code_version(), shard_size=shard_size, shards=shards,
+        prior_ranges=RANGES, code_version=CODE_VERSION, shard_size=shard_size, shards=shards,
         counts=dict(n_draws=sum(e["n_draws"] for e in shards), n_attempts=sum(e["n_attempts"] for e in shards),
                     rejections=rej, seconds=sum(e["seconds"] for e in shards)))
     atomic_write_bytes(Path(root) / "manifest.json", lambda f: f.write(json.dumps(manifest, indent=2).encode()))
@@ -209,14 +201,15 @@ def write_shard(root, shard, indices, n_jobs, shard_size=None):
         params=col("params", np.float64), on=col("on", np.int8), lead=col("lead", np.int8), edge=col("edge", np.int8),
         width=col("width", np.int16), density=col("density", np.float64), n_imp=col("n_imp", np.int32),
         n_cells=col("n_cells", np.int32), active_atoms=col("active_atoms", np.int32),
-        seconds=col("seconds", np.float32), attempts=col("attempts", np.int16))
+        seconds=col("seconds", np.float32), attempts=col("attempts", np.int16),
+        code_version=np.array(CODE_VERSION))                    # 0-d: per shard, not a column (data.SHARD_META)
     rej = {r: sum(rec["reasons"][r] for rec in recs) for r in REASONS}
     name = f"shard_{shard:05d}"
     summary = dict(n_draws=len(recs), n_attempts=int(arrays["attempts"].sum()), rejections=rej)
     atomic_write_bytes(root / f"{name}_rejections.json", lambda f: f.write(json.dumps(summary, indent=2).encode()))
     atomic_write_bytes(root / f"{name}.npz", lambda f: np.savez(f, **arrays))
     entry = dict(shard=shard, file=f"{name}.npz", start=indices[0], stop=indices[-1] + 1, **summary,
-                 seconds=float(arrays["seconds"].sum()))
+                 seconds=float(arrays["seconds"].sum()), code_version=CODE_VERSION)
     _update_manifest(root, entry, shard_size or len(indices))
     return root / f"{name}.npz"
 

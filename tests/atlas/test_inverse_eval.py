@@ -13,6 +13,7 @@ from atlaslib.lookup import window_inputs
 from atlaslib.store import CloudStore
 from shazam.inverse import design as design_mod
 from shazam.inverse.model import InverseModel
+from shazam.inverse.runio import code_version, sha256_of
 from tbribbon.materials import make_model
 from tbribbon.parent import TYPES, named_material
 from tbribbon.parent_data import V4
@@ -164,7 +165,8 @@ def make_data(root):
         density=np.array([h.density for _, h in rows]))
     root.mkdir(parents=True)
     np.savez(root / "shard_00000.npz", **arrays)
-    (root / "manifest.json").write_text(json.dumps({"shards": [{"n_draws": 6, "n_attempts": 6, "seconds": 60.0}]}))
+    (root / "manifest.json").write_text(json.dumps({"shards": [{"n_draws": 6, "n_attempts": 6, "seconds": 60.0}],
+                                                    "counts": {"n_draws": 6}}))
     return root
 
 
@@ -180,16 +182,31 @@ def data(tmp_path):
     return make_data(tmp_path / "data")
 
 
+def model_file(folder, content=b"stub weights", hide=None):
+    """A model.pt for the stub to stand in for (its bytes are hashed), and the history.json of a --exclude <hide> run."""
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "model.pt").write_bytes(content)
+    if hide is not None:
+        (folder / "history.json").write_text(json.dumps({"excluded": {"hide": hide, "train": 1, "val": 0}}))
+    return folder / "model.pt"
+
+
 def test_fit_update_writes_update_json_and_resumes(tmp_path, stub, data):
     out = tmp_path / "m"
-    out.mkdir()
-    argv = ["fit-update", "--model", str(out / "model.pt"), "--data", str(data), *FAST]
+    model = model_file(out)
+    argv = ["fit-update", "--model", str(model), "--data", str(data), *FAST]
     rep = ev.main(argv + ["--n", "3", "--limit", "2"])
     update = json.loads((out / "update.json").read_text())
     assert {"kappa", "log_L0", "ece", "ece_model", "kappa_at_edge", "n"} <= set(update)
     assert update["n"] == 2 and rep["n"] == 2 and np.isfinite(update["kappa"]) and np.isfinite(update["log_L0"])
     assert update["flags"]["limit"] == 2 and update["flags"]["check"] == "all" and update["flags"]["no_refine"] is False
+    assert update["model_sha256"] == sha256_of(model) and update["code_version"] == code_version()
+    assert update["data_provenance"]["n_draws"] == 6 and update["failed_targets"] == {"n": 0, "keys": [], "errors": {}}
+    assert isinstance(update["log_L0_at_edge"], bool)
     lines = (out / "update.jsonl").read_text().splitlines()
+    assert json.loads(lines[0])["cfg"]["model_sha256"] == sha256_of(model) and json.loads(lines[0])["cfg"]["data_draws"] == 6
+    report = json.loads(lines[0])["record"]["report"]
+    assert report["provenance"]["model_sha256"] == sha256_of(model) and report["provenance"]["model"] == str(model)
     assert len(lines) == 2 and len(stub.calls) == 2
     first = json.loads(lines[0])
     hits = [json.loads(line)["record"]["hits"] for line in lines]
@@ -202,9 +219,17 @@ def test_fit_update_writes_update_json_and_resumes(tmp_path, stub, data):
     assert len(stub.calls) == 3 and len((out / "update.jsonl").read_text().splitlines()) == 3
     assert json.loads((out / "update.json").read_text())["n"] == 3
     assert not list(out.glob("*.tmp"))
-    # changed settings are refused rather than mixed
+    # changed settings are refused rather than mixed: other samples, a retrained model, an extended data set
     with pytest.raises(SystemExit):
         ev.main(argv + ["--n", "3", "--n-samples", "50"])
+    model.write_bytes(b"retrained weights")
+    with pytest.raises(SystemExit, match="model_sha256"):
+        ev.main(argv + ["--n", "3"])
+    model.write_bytes(b"stub weights")
+    m = json.loads((data / "manifest.json").read_text())
+    (data / "manifest.json").write_text(json.dumps(m | {"counts": {"n_draws": 12}}))
+    with pytest.raises(SystemExit, match="data_draws"):
+        ev.main(argv + ["--n", "3"])
 
 
 def test_fit_records_keep_only_checked_candidates():
@@ -225,15 +250,46 @@ def test_fit_records_keep_only_checked_candidates():
 
 def test_fit_update_refuses_top_only_checks(tmp_path, stub, data):
     with pytest.raises(SystemExit, match="every realistic candidate"):
-        ev.main(["fit-update", "--model", str(tmp_path / "model.pt"), "--data", str(data), "--check", "top", *FAST])
+        ev.main(["fit-update", "--model", str(model_file(tmp_path)), "--data", str(data), "--check", "top", *FAST])
+
+
+def test_a_failing_target_is_recorded_and_the_run_goes_on(tmp_path, stub, data, monkeypatch):
+    real, bad = ev.design_record, ev._seed(0, 38)                     # the second validation draw (index 38)
+    tried = []
+
+    def flaky(model, x, truth, seed, a, update, provenance=None):
+        tried.append(seed)
+        if seed == bad:
+            raise RuntimeError("worker died")
+        return real(model, x, truth, seed, a, update, provenance)
+
+    monkeypatch.setattr(ev, "design_record", flaky)
+    out = tmp_path / "m"
+    argv = ["fit-update", "--model", str(model_file(out)), "--data", str(data), *FAST, "--n", "3"]
+    rep = ev.main(argv)
+    assert rep["n"] == 2 and rep["failed_targets"] == {"n": 1, "keys": ["38"], "errors": {"38": "RuntimeError('worker died')"}}
+    lines = [json.loads(line) for line in (out / "update.jsonl").read_text().splitlines()]
+    assert [line["key"] for line in lines] == ["18", "38", "58"] and lines[1]["error"] == "RuntimeError('worker died')"
+    assert "record" not in lines[1]
+    tried.clear()
+    assert ev.main(argv)["failed_targets"]["keys"] == ["38"] and tried == []        # a rerun does not retry recorded errors
+    monkeypatch.setattr(ev, "design_record", real)
+    again = ev.main(argv + ["--retry-errors"])
+    assert again["n"] == 3 and again["failed_targets"]["n"] == 0
+    assert json.loads((out / "update.json").read_text())["n"] == 3
 
 
 def test_hidden_scores_the_catalogue_and_resumes(tmp_path, monkeypatch):
     model = StubModel([(HBN10, 100)])
     monkeypatch.setattr(InverseModel, "load", classmethod(lambda cls, path: model))
-    argv = ["hidden", "--material", "hbn", "--model", str(tmp_path / "model.pt"), "--check", "top", "--no-refine", *FAST]
+    path = model_file(tmp_path, hide="hbn")
+    argv = ["hidden", "--material", "hbn", "--model", str(path), "--check", "top", "--no-refine", *FAST]
     rep = ev.main(argv + ["--limit", "2"])
     out = json.loads((tmp_path / "hidden_hbn.json").read_text())
+    assert out["model_sha256"] == sha256_of(path) and out["code_version"] == code_version()
+    assert out["model_excluded"]["hide"] == "hbn" and out["failed_targets"]["n"] == 0
+    assert set(out["model_training"]) == {"code_version", "data", "data_provenance"}      # from the model's history.json
+    assert json.loads((tmp_path / "hidden_hbn.jsonl").read_text().splitlines()[0])["cfg"]["model_sha256"] == sha256_of(path)
     assert out["material"] == "hbn" and out["n"] == 2 and rep["n"] == 2 and len(model.calls) == 2
     assert set(out["marks"]) == {"key", "params", "count_interval", "recreated"}
     for mark in out["marks"].values():
@@ -249,27 +305,48 @@ def test_hidden_scores_the_catalogue_and_resumes(tmp_path, monkeypatch):
         ev.main(["hidden", "--material", "graphene", "--model", str(tmp_path / "model.pt")])
 
 
+@pytest.mark.parametrize("hide", ["none", "kagome", None])
+def test_hidden_refuses_a_model_that_saw_the_material(tmp_path, monkeypatch, hide):
+    def boom(cls, path):
+        raise AssertionError("the model must not be loaded")
+
+    monkeypatch.setattr(InverseModel, "load", classmethod(boom))
+    path = model_file(tmp_path, hide=hide)
+    with pytest.raises(SystemExit, match="exclude"):
+        ev.main(["hidden", "--material", "hbn", "--model", str(path), *FAST])
+    assert not (tmp_path / "hidden_hbn.jsonl").exists()
+
+
 def test_end_to_end_reports_both_calibrations(tmp_path, stub, data):
     out = tmp_path / "m"
-    out.mkdir()
+    model = model_file(out)
+    sha = sha256_of(model)
     flags = {"no_refine": False, "refine_budget": 6, "n_samples": 100, "seeds": 3, "n_cells": 10}
-    (out / "update.json").write_text(json.dumps({"kappa": 100.0, "log_L0": -5000.0, "flags": flags}))
-    argv = ["end-to-end", "--model", str(out / "model.pt"), "--data", str(data), *FAST]
+    (out / "update.json").write_text(json.dumps({"kappa": 100.0, "log_L0": -5000.0, "flags": flags, "model_sha256": sha}))
+    argv = ["end-to-end", "--model", str(model), "--data", str(data), *FAST]
     rep = ev.main(argv + ["--n", "3", "--limit", "2"])
     res = json.loads((out / "end_to_end.json").read_text())
     assert {"top5_capture", "recreated", "ece_model", "ece_updated", "n", "flags", "update"} <= set(res)
     assert res["n"] == 2 and rep["n"] == 2 and res["update"]["kappa"] == 100.0
     assert 0.0 <= res["top5_capture"]["value"] <= 1.0 and 0.0 <= res["recreated"]["value"] <= 1.0
     assert res["ece_model"]["value"] is None or 0.0 <= res["ece_model"]["value"] <= 1.0
+    assert res["model_sha256"] == sha and res["update_sha256"] == sha256_of(out / "update.json")
+    assert res["code_version"] == code_version() and res["data_provenance"]["n_draws"] == 6
     lines = (out / "end_to_end.jsonl").read_text().splitlines()
     assert len(lines) == 2 and json.loads(lines[0])["record"]["report"]["update_fitted"] is True
+    prov = json.loads(lines[0])["record"]["report"]["provenance"]
+    assert prov["update_file"] == str(out / "update.json") and prov["update_flags"] == flags and prov["model_sha256"] == sha
     ev.main(argv + ["--n", "3"])
     assert len(stub.calls) == 3
     # the update was fitted under other check settings: refused, unless explicitly allowed
-    (out / "update.json").write_text(json.dumps({"kappa": 100.0, "log_L0": -5000.0, "flags": flags | {"refine_budget": 200}}))
+    (out / "update.json").write_text(json.dumps({"kappa": 100.0, "log_L0": -5000.0, "flags": flags | {"refine_budget": 200},
+                                                 "model_sha256": sha}))
     with pytest.raises(SystemExit, match=r"other settings.*refine_budget"):
         ev.main(argv + ["--n", "3", "--out", str(out / "other.json")])
-    (out / "update.json").write_text(json.dumps({"kappa": 100.0, "log_L0": -5000.0}))             # no flags recorded
+    (out / "update.json").write_text(json.dumps({"kappa": 100.0, "log_L0": -5000.0, "flags": flags, "model_sha256": "0" * 64}))
+    with pytest.raises(SystemExit, match=r"other settings.*model_sha256"):           # fitted on another model
+        ev.main(argv + ["--n", "3", "--out", str(out / "other.json")])
+    (out / "update.json").write_text(json.dumps({"kappa": 100.0, "log_L0": -5000.0}))             # no flags, no model hash
     with pytest.raises(SystemExit, match="other settings"):
         ev.main(argv + ["--n", "3", "--out", str(out / "other.json")])
     ev.main(argv + ["--n", "3", "--out", str(out / "other.json"), "--allow-update-mismatch", "--limit", "1"])

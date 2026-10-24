@@ -26,7 +26,10 @@ top candidate; not for the update fit) and --no-refine (a failed check stays fai
 follow the spec. The flags used are recorded in every output JSON.
 
 Every finished target is appended to <output>.jsonl, so a crash does not lose hours; a restart skips the targets already
-there (records written with other settings are refused: delete the file). The final JSON is written atomically.
+there (records written with other settings, another model.pt (sha256) or another data size are refused: delete the file).
+A target whose design raises is recorded in the .jsonl as an error and skipped; the final JSON lists it under
+`failed_targets`, and a restart does not retry it unless --retry-errors is passed. The final JSON is written atomically
+and records the code version of this run, the model's sha256 and the data's provenance.
 `--n-cells` and `--seeds` shorten the devices and the checks and exist for the tests only.
 """
 import argparse
@@ -43,10 +46,11 @@ from shazam.inverse import candidates as candidates_mod
 from shazam.inverse import data
 from shazam.inverse.calibration import captures, expected_calibration_error
 from shazam.inverse.data import PARAM_COLUMNS
-from shazam.inverse.design import background_mass, design, target_input
+from shazam.inverse.design import UPDATE_SETTINGS, background_mass, design, target_input
+from shazam.inverse.design import update_mismatch as _update_mismatch
 from shazam.inverse.model import InverseModel
 from shazam.inverse.posterior import fit_update
-from shazam.inverse.runio import RunLog, atomic_write_json
+from shazam.inverse.runio import RunLog, atomic_write_json, code_version, sha256_of
 from shazam.inverse.verify import OPT_SEEDS, VERIFY_SEEDS
 from tbribbon.parent import named_material
 from tbribbon.parent_prior import Draw
@@ -141,12 +145,13 @@ def _seed(base, index):
     return int(np.random.default_rng([int(base), int(index)]).integers(2 ** 31))
 
 
-def design_record(model, x, truth, seed, a, update):
+def design_record(model, x, truth, seed, a, update, provenance=None):
     """{"report", "hits"} of one target: the `design` report and, per returned candidate, whether it captures `truth`
-    (None when the truth is unknown)."""
+    (None when the truth is unknown). `provenance` goes into the report's provenance (model, update file, ...)."""
     rec = _Recorder(model)
     report = design(x, rec, n_samples=a.n_samples, update=update, refine_budget=0 if a.no_refine else a.refine_budget,
-                    n_jobs=a.n_jobs, seed=seed, n_cells=a.n_cells, seeds_override=a.seeds, check=a.check)
+                    n_jobs=a.n_jobs, seed=seed, n_cells=a.n_cells, seeds_override=a.seeds, check=a.check,
+                    provenance=provenance)
     cands, _ = candidates_mod.candidates(np.asarray(rec.states), np.asarray(rec.z))
     rows = report["candidates"]
     if len(cands) != len(rows) or any(abs(c.probability - r["model_probability"]) > 1e-12 for c, r in zip(cands, rows)):
@@ -155,21 +160,59 @@ def design_record(model, x, truth, seed, a, update):
     return {"report": report, "hits": hits}
 
 
-def run_targets(items, log, work, tag):
-    """Records, in order, of the (key, payload) items: finished ones from the log, the rest from `work(payload, position)`."""
-    records, t0, new = [], time.time(), 0
+def run_targets(items, log, work, tag, retry_errors=False):
+    """(records, seconds, new, failed) of the (key, payload) items: the records, in order, of the finished ones from the log
+    and of the rest from `work(payload, position)`; `failed` maps key -> repr of the error of each target that raised.
+
+    A target whose `work` raises is recorded in the log as an error and skipped (the run goes on); a target recorded as an
+    error before is skipped too, unless retry_errors. Failed targets are not in the records."""
+    records, t0, new, failed = [], time.time(), 0, {}
     for j, (key, payload) in enumerate(items):
         if key in log.done:
             records.append(log.done[key])
             continue
+        if key in log.errors and not retry_errors:
+            failed[key] = log.errors[key]
+            continue
         t1 = time.time()
-        rec = work(payload, j)
+        try:
+            rec = work(payload, j)
+        except Exception as err:                       # recorded and skipped; KeyboardInterrupt still stops the run
+            log.add_error(key, err)
+            failed[key] = repr(err)
+            print(f"[{tag}] {j + 1}/{len(items)} FAILED after {time.time() - t1:.0f} s: {err!r}", flush=True)
+            continue
         log.add(key, rec)
         records.append(rec)
         new += 1
         print(f"[{tag}] {j + 1}/{len(items)} done in {time.time() - t1:.0f} s "
               f"({(time.time() - t0) / new:.0f} s per new target)", flush=True)
-    return records, time.time() - t0, new
+    return records, time.time() - t0, new, failed
+
+
+def failed_summary(failed):
+    """The final JSON's `failed_targets`: how many targets raised, their keys (in run order) and errors."""
+    return dict(n=len(failed), keys=list(failed), errors=dict(failed))
+
+
+def _provenance(a, model_sha256, records=()):
+    """What every output JSON records: this run's code version, the model's sha256, the data's provenance (not for
+    `hidden`, which reads no generated data) and the code versions behind the records (a resumed run may span several)."""
+    out = dict(code_version=code_version(), model_sha256=model_sha256,
+               record_code_versions=sorted({r["report"].get("provenance", {}).get("code_version", "unknown")
+                                            for r in records}))
+    if a.cmd != "hidden":
+        out["data_provenance"] = data.data_provenance(a.data)
+    return out
+
+
+def _resume_cfg(a, cfg, model_sha256):
+    """The run log's cfg: the settings, the model's sha256 and (for the generated-data commands) the data's draw count, so
+    a retrained model or an extended data set is refused on resume instead of mixed in."""
+    cfg = cfg | dict(model_sha256=model_sha256)
+    if a.cmd != "hidden":
+        cfg["data_draws"] = data.data_provenance(a.data)["n_draws"]
+    return cfg
 
 
 # ---------------------------------------------------------------------------------------------------------------- dry run
@@ -304,6 +347,21 @@ def score_hidden(material, records):
                 **{"pass": bool(marks and all(m["pass"] for m in marks.values()))})
 
 
+def trained_without(model_path, material):
+    """The history.json next to the model, after checking that the model was trained with --exclude <material>
+    (SystemExit otherwise: scoring a model that saw the material would be meaningless)."""
+    path = Path(model_path).with_name("history.json")
+    if not path.exists():
+        raise SystemExit(f"{path} not found: `hidden` needs the history.json that train_inverse.py --exclude {material} "
+                         "writes next to the model")
+    history = json.loads(path.read_text())
+    excluded = history.get("excluded") or {}
+    if excluded.get("hide") != material:
+        raise SystemExit(f"{model_path} was trained with --exclude {excluded.get('hide')}, not --exclude {material} "
+                         f"({path}): train it with scripts/build/train_inverse.py --exclude {material}")
+    return history
+
+
 def cmd_hidden(a, cfg):
     model_id = CATALOGUE[a.material]
     targets = catalogue_targets(model_id)
@@ -311,22 +369,30 @@ def cmd_hidden(a, cfg):
         targets = targets[:a.limit]
     if a.dry_run:
         return dry_run(a, f"hidden {a.material}", len(targets))
+    history = trained_without(a.model, a.material)
     out = Path(a.out) if a.out else Path(a.model).with_name(f"hidden_{a.material}.json")
-    log = RunLog(out.with_suffix(".jsonl"), cfg | dict(material=a.material))
+    sha = sha256_of(a.model)
+    log = RunLog(out.with_suffix(".jsonl"), _resume_cfg(a, cfg, sha) | dict(material=a.material))
     model = InverseModel.load(a.model)
     print(f"[hidden] {a.material}: {len(targets)} catalogue targets of {model_id}", flush=True)
+    prov = dict(model=str(a.model), model_sha256=sha)
 
     def work(target, i):
         x, count, density = target
-        rec = design_record(model, x, None, _seed(a.seed, i), a, None)
+        rec = design_record(model, x, None, _seed(a.seed, i), a, None, prov)
         return dict(density=density, true_count=count, report=rec["report"])
 
     try:
-        records, seconds, new = run_targets([(str(i), t) for i, t in enumerate(targets)], log, work, "hidden")
+        records, seconds, new, failed = run_targets([(str(i), t) for i, t in enumerate(targets)], log, work, "hidden",
+                                                    a.retry_errors)
     finally:
         log.close()
-    result = score_hidden(a.material, records) | dict(model=str(a.model), flags=_flags(a), seconds=seconds,
-                                                      resumed_targets=len(records) - new)
+    result = score_hidden(a.material, records) | dict(model=str(a.model), model_excluded=history["excluded"],
+                                                      model_training={k: history.get(k) for k in ("code_version", "data",
+                                                                                                  "data_provenance")},
+                                                      flags=_flags(a),
+                                                      seconds=seconds, resumed_targets=len(records) - new,
+                                                      failed_targets=failed_summary(failed)) | _provenance(a, sha, records)
     _write_json(out, result)
     print(f"[hidden] {a.material} " + ", ".join(f"{k} {m['value']:.3f} (>= {m['threshold']}) {'ok' if m['pass'] else 'FAIL'}"
                                                  for k, m in result["marks"].items()) + f"; wrote {out}", flush=True)
@@ -347,14 +413,15 @@ def _load_draws(a, split):
     return arrays["x"][rows], data.draws(arrays, rows), [int(i) for i in arrays["index"][rows]]
 
 
-def _designs(model, a, split, update, tag, out, cfg):
-    """Records of design() on the draws of the split, resumable. Returns (records, seconds, new)."""
+def _designs(model, a, split, update, tag, out, cfg, provenance):
+    """Records of design() on the draws of the split, resumable. Returns (records, seconds, new, failed)."""
     xs, draws, indices = _load_draws(a, split)
     print(f"[{tag}] {len(draws)} {split} draws", flush=True)
     log = RunLog(out.with_suffix(".jsonl"), cfg)
     try:
         return run_targets([(str(i), (x, d, i)) for x, d, i in zip(xs, draws, indices)], log,
-                           lambda p, j: design_record(model, p[0], p[1], _seed(a.seed, p[2]), a, update), tag)
+                           lambda p, j: design_record(model, p[0], p[1], _seed(a.seed, p[2]), a, update, provenance), tag,
+                           a.retry_errors)
     finally:
         log.close()
 
@@ -378,8 +445,10 @@ def cmd_fit_update(a, cfg):
     if a.dry_run:
         return dry_run(a, "fit-update", min(a.n, a.limit) if a.limit else a.n)
     out = Path(a.out) if a.out else Path(a.model).with_name("update.json")
+    sha = sha256_of(a.model)
     model = InverseModel.load(a.model)
-    records, seconds, new = _designs(model, a, "val", None, "fit-update", out, cfg)
+    records, seconds, new, failed = _designs(model, a, "val", None, "fit-update", out, _resume_cfg(a, cfg, sha),
+                                             dict(model=str(a.model), model_sha256=sha))
     recs = fit_records(records)
     try:
         fit = fit_update(recs)
@@ -388,7 +457,7 @@ def cmd_fit_update(a, cfg):
                          f"{sum(len(r['p']) for r in recs)} checked candidates")
     result = fit | dict(n=len(records), n_candidates=sum(len(r["p"]) for r in recs), n_hits=int(sum(sum(r["hits"]) for r in recs)),
                         model=str(a.model), data=str(a.data), split="val", flags=_flags(a), seconds=seconds,
-                        resumed_draws=len(records) - new)
+                        resumed_draws=len(records) - new, failed_targets=failed_summary(failed)) | _provenance(a, sha, records)
     _write_json(out, result)
     print(f"[fit-update] kappa {fit['kappa']:.4g}, log_L0 {fit['log_L0']:.4g}: ECE {fit['ece']:.4f} updated vs "
           f"{fit['ece_model']:.4f} model" + (" (kappa at the edge of its grid)" if fit["kappa_at_edge"] else "")
@@ -419,15 +488,11 @@ def summarize_end_to_end(records):
                 ece_updated=dict(value=ece(checked, "updated_probability"), n_candidates=len(checked)))
 
 
-UPDATE_SETTINGS = ("no_refine", "refine_budget", "n_samples", "seeds", "n_cells")      # what changes the checks' log-likelihoods
-
-
-def update_mismatch(fit_flags, a):
-    """{setting: (fit-update value, this run's value)} for the settings the update was fitted under that differ from this run's;
-    a fit without recorded flags is a mismatch of its own."""
-    if not fit_flags:
-        return {"flags": ("none recorded", "needed")}
-    return {k: (fit_flags.get(k), getattr(a, k)) for k in UPDATE_SETTINGS if fit_flags.get(k) != getattr(a, k)}
+def update_mismatch(fitted, a, model_sha256):
+    """{name: (update.json value, this run's value)} for the check settings (design.UPDATE_SETTINGS: what changes the checks'
+    log-likelihoods) and the model hash that differ between the fitted update and this run; an update without recorded
+    flags or model hash is a mismatch of its own."""
+    return _update_mismatch(fitted, {k: getattr(a, k) for k in UPDATE_SETTINGS}, model_sha256)
 
 
 def cmd_end_to_end(a, cfg):
@@ -438,7 +503,8 @@ def cmd_end_to_end(a, cfg):
         raise SystemExit(f"{upath} not found: run `fit-update` first (or pass --update)")
     fitted = json.loads(upath.read_text())
     update = {k: fitted[k] for k in ("kappa", "log_L0")}
-    mismatch = update_mismatch(fitted.get("flags"), a)
+    sha = sha256_of(a.model)
+    mismatch = update_mismatch(fitted, a, sha)
     if mismatch and not a.allow_update_mismatch:
         raise SystemExit(f"{upath} was fitted with other settings than this run ({mismatch}): kappa and log_L0 depend on how the "
                          "checks were made. Re-run fit-update with these settings, or pass --allow-update-mismatch")
@@ -446,10 +512,15 @@ def cmd_end_to_end(a, cfg):
         print(f"[end-to-end] WARNING: update fitted with other settings ({mismatch}); allowed by --allow-update-mismatch", flush=True)
     out = Path(a.out) if a.out else Path(a.model).with_name("end_to_end.json")
     model = InverseModel.load(a.model)
-    records, seconds, new = _designs(model, a, "test", update, "end-to-end", out, cfg | dict(update=update))
-    result = summarize_end_to_end(records) | dict(update=update, update_file=str(upath), model=str(a.model), data=str(a.data),
+    prov = dict(model=str(a.model), model_sha256=sha, update_file=str(upath), update_flags=fitted.get("flags"),
+                update_mismatch=mismatch)
+    records, seconds, new, failed = _designs(model, a, "test", update, "end-to-end", out,
+                                             _resume_cfg(a, cfg, sha) | dict(update=update), prov)
+    result = summarize_end_to_end(records) | dict(update=update, update_file=str(upath), update_sha256=sha256_of(upath),
+                                                  update_mismatch=mismatch, model=str(a.model), data=str(a.data),
                                                   split="test", flags=_flags(a), seconds=seconds,
-                                                  resumed_draws=len(records) - new)
+                                                  resumed_draws=len(records) - new,
+                                                  failed_targets=failed_summary(failed)) | _provenance(a, sha, records)
     if a.check != "all":
         result["warning"] = "check=top: no updated probabilities, ece_updated is null"
     _write_json(out, result)
@@ -477,6 +548,8 @@ def build_parser():
     common.add_argument("--n-jobs", type=int, default=22, help="worker processes per simulation batch")
     common.add_argument("--seed", type=int, default=0)
     common.add_argument("--dry-run", action="store_true", help="print the projected simulations and wall time and exit")
+    common.add_argument("--retry-errors", action="store_true",
+                        help="retry the targets the .jsonl records as failed (default: they stay skipped)")
     common.add_argument("--n-samples", type=int, default=1000)
     common.add_argument("--refine-budget", type=int, default=200)
     common.add_argument("--threads", type=int, default=None, help="torch intra-op threads")
@@ -511,6 +584,7 @@ def main(argv=None):
         if a.cmd == "hidden":
             ap.error("hidden needs --model: the model trained with --exclude <material>")
         a.model = str(DEFAULT_MODEL)
+    code_version()                                  # this run's code version: fixed now, when it starts
     if a.threads:
         torch.set_num_threads(a.threads)
     cfg = dict(cmd=a.cmd, model=str(a.model), n_samples=a.n_samples, seed=a.seed, check=a.check, no_refine=a.no_refine,

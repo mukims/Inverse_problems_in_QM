@@ -5,7 +5,9 @@
 Reads the train and validation splits (draw index % 20 in 0-17 and 18; the test split is never read here), encodes each
 draw once, and trains with Adam and early stopping on the mean validation loss. `--exclude {hbn,kagome,silicene}` drops
 the rows near that material from the training AND the validation rows (the hidden material must not steer early
-stopping either). Writes model.pt (best epoch) and history.json to --out.
+stopping either). Writes model.pt (best epoch) and history.json to --out: by default model_v1 for --exclude none and
+hidden_<material> otherwise (an excluded run never writes into model_v1). history.json records this run's code version and
+the data's provenance.
 """
 import argparse
 import copy
@@ -21,11 +23,16 @@ import paths
 from shazam.inverse import data
 from shazam.inverse.encoding import STATES, active_slots, encode
 from shazam.inverse.model import InverseModel
-from shazam.inverse.runio import atomic_save
+from shazam.inverse.runio import atomic_save, code_version
 from tbribbon.parent_prior import excluded
 
 DEFAULT_DATA = paths.data_root() / "_generated" / "hexagonal_parent_v1"
 DEFAULT_OUT = paths.results_dir("inverse_design", "model_v1")
+
+
+def default_out(exclude):
+    """model_v1 for the full model, hidden_<material> for a run with --exclude <material>."""
+    return DEFAULT_OUT if exclude == "none" else paths.results_dir("inverse_design", f"hidden_{exclude}")
 
 
 @dataclass
@@ -136,7 +143,7 @@ def train(train_arrays, val_arrays, cfg, on_epoch=None):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--data", default=str(DEFAULT_DATA))
-    ap.add_argument("--out", default=str(DEFAULT_OUT))
+    ap.add_argument("--out", default=None, help="default: results/inverse_design/model_v1, or hidden_<material> with --exclude")
     ap.add_argument("--exclude", choices=("none", "hbn", "kagome", "silicene"), default="none")
     ap.add_argument("--epochs", type=int, default=200)
     ap.add_argument("--batch", type=int, default=512)
@@ -145,12 +152,15 @@ def main(argv=None):
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--threads", type=int, default=None, help="torch intra-op threads (default: torch's own)")
     a = ap.parse_args(argv)
+    code_version()                                     # this run's code version: fixed now, when it starts
+    out = Path(a.out) if a.out else default_out(a.exclude)
+    if a.exclude != "none" and out.resolve() == Path(DEFAULT_OUT).resolve():
+        raise SystemExit(f"--exclude {a.exclude} would overwrite the full model in {out} (model_v1): use another --out")
     if a.threads:
         torch.set_num_threads(a.threads)
-    out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
-    manifest = data.load_manifest(a.data)
-    extra = dict(data=str(a.data), code_version=(manifest or {}).get("code_version"), threads=torch.get_num_threads())
+    extra = dict(data=str(a.data), code_version=code_version(), data_provenance=data.data_provenance(a.data),
+                 threads=torch.get_num_threads())
     t0 = time.time()
     tr, va = data.load_split(a.data, "train", NEEDED), data.load_split(a.data, "val", NEEDED)
     print(f"[inverse] {len(tr['x']):,} train / {len(va['x']):,} val rows loaded ({time.time() - t0:.0f}s)", flush=True)

@@ -59,7 +59,10 @@ def test_training_on_smoke_shards_lowers_the_validation_loss(shard, tmp_path):
     assert h["val_loss"][-1] < h["val_loss"][0]
     assert h["n_train"] == 180 and h["n_val"] == 10 and h["excluded"] == {"hide": "none", "train": 0, "val": 0}
     assert h["best_epoch"] in (0, 1, 2) and h["val_loss"][h["best_epoch"]] == min(h["val_loss"])
-    assert h["cfg"]["batch"] == 512 and h["code_version"] == data.load_manifest(shard)["code_version"]
+    from shazam.inverse.runio import code_version
+    assert h["cfg"]["batch"] == 512 and h["code_version"] == code_version()            # the trainer's own version
+    assert h["data_provenance"]["code_versions"] == [data.load_manifest(shard)["code_version"]]   # and the data's
+    assert h["data_provenance"]["n_draws"] == 200
     model = InverseModel.load(tmp_path / "model.pt")
     assert model.cfg["masks_fixed"] and bool(model.mask_known.all())
 
@@ -133,3 +136,17 @@ def test_a_non_finite_loss_stops_the_run_and_bad_epochs_are_refused():
     tr["x"][0, 0] = np.nan
     with pytest.raises(FloatingPointError, match="epoch 0"):
         ti.train(tr, va, ti.TrainConfig(epochs=2, batch=64))
+
+
+def test_an_excluded_run_never_writes_into_model_v1(shard, tmp_path, monkeypatch):
+    import paths
+    assert ti.default_out("none") == ti.DEFAULT_OUT == paths.results_dir("inverse_design", "model_v1")
+    assert ti.default_out("kagome") == paths.results_dir("inverse_design", "hidden_kagome")
+    monkeypatch.setattr(ti.paths, "results_dir", lambda *parts: tmp_path.joinpath(*parts))
+    monkeypatch.setattr(ti, "DEFAULT_OUT", tmp_path / "inverse_design" / "model_v1")
+    ti.main(["--data", str(shard), "--exclude", "hbn", "--epochs", "1", "--threads", "2"])        # no --out
+    h = json.loads((tmp_path / "inverse_design" / "hidden_hbn" / "history.json").read_text())
+    assert h["excluded"]["hide"] == "hbn" and not (tmp_path / "inverse_design" / "model_v1").exists()
+    with pytest.raises(SystemExit, match="model_v1"):
+        ti.main(["--data", str(shard), "--exclude", "hbn", "--epochs", "1", "--out", str(ti.DEFAULT_OUT)])
+    assert not (tmp_path / "inverse_design" / "model_v1").exists()

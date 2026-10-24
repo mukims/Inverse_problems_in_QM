@@ -236,22 +236,36 @@ def summarize(records, n_samples, seed=0):
                          note="reporting only: Bonferroni-adjusted p > alpha for every KS gate / every coverage parameter"))
 
 
-def run(model, xs, draws, indices=None, n_samples=1000, steps=64, seed=0, progress=None, done=None, on_record=None):
+def run(model, xs, draws, indices=None, n_samples=1000, steps=64, seed=0, progress=None, done=None, on_record=None,
+        failed=None, on_error=None):
     """Evaluate the (spectrum, draw) pairs and summarise. Returns (summary, seconds, records).
 
     Each pair has an index (default its position; the CLI passes the test draw's own index); its torch seed and its
     tie-breaking rng derive from (seed, index) alone, so a draw's record does not depend on which others were run.
     `done` maps index -> an already computed record (resume: those are not recomputed); `on_record(index, record)` is
-    called for each newly computed one."""
+    called for each newly computed one. `failed` maps index -> the error of a draw that failed before: it is skipped,
+    not retried. With `on_error`, a draw whose evaluation raises is skipped and `on_error(index, error)` is called (and it
+    is added to `failed`); without it the error propagates. Skipped draws are not in the records or the summary."""
     indices = list(range(len(draws))) if indices is None else [int(i) for i in indices]
     done = {} if done is None else done
+    failed = {} if failed is None else failed
     t0, records, new = time.time(), [], 0
     for j, (x, d, i) in enumerate(zip(xs, draws, indices)):
         if i in done:
             records.append(done[i])
             continue
+        if i in failed:
+            continue
         rng = np.random.default_rng([seed, i])
-        records.append(evaluate_draw(model, x, d, n_samples, steps, int(rng.integers(2 ** 31)), rng))
+        try:
+            rec = evaluate_draw(model, x, d, n_samples, steps, int(rng.integers(2 ** 31)), rng)
+        except Exception as err:
+            if on_error is None:
+                raise
+            failed[i] = repr(err)
+            on_error(i, err)
+            continue
+        records.append(rec)
         new += 1
         if on_record:
             on_record(i, records[-1])
