@@ -49,16 +49,22 @@ def main(argv=None):
 
     target = Path(a.target)
     x = target_input(np.load(a.energies), np.load(target))
+    out = Path(a.out) if a.out else target.with_name(target.stem + "_design.json")
+    out.parent.mkdir(parents=True, exist_ok=True)                  # a bad --out fails now, not after the simulations
     update_path = Path(a.update) if a.update else Path(a.model).with_name("update.json")
     update = None
     if update_path.exists():
-        update = json.loads(update_path.read_text())
-        update = {"kappa": float(update["kappa"]), "log_L0": float(update["log_L0"])}
+        raw = json.loads(update_path.read_text())
+        missing = [k for k in ("kappa", "log_L0") if k not in raw]
+        if missing:
+            raise SystemExit(f"{update_path} lacks {', '.join(missing)}: expected a JSON object with kappa and log_L0")
+        update = {"kappa": float(raw["kappa"]), "log_L0": float(raw["log_L0"])}
+        if not (np.isfinite(update["kappa"]) and update["kappa"] > 0 and np.isfinite(update["log_L0"])):
+            raise SystemExit(f"{update_path}: kappa must be finite and > 0 and log_L0 finite, got {update}")
     elif a.update:
         raise SystemExit(f"--update file not found: {update_path}")
     report = design(x, InverseModel.load(a.model), n_samples=a.n_samples, update=update,
                     refine_budget=a.refine_budget, n_jobs=a.n_jobs, seed=a.seed)
-    out = Path(a.out) if a.out else target.with_name(target.stem + "_design.json")
     write_json_atomic(out, report)
     print(f"[design] {len(report['candidates'])} candidates, p_unassigned {report['p_unassigned']:.3f}, "
           f"{report['n_simulations']} simulations, {report['seconds']:.0f} s -> {out}", flush=True)

@@ -8,7 +8,9 @@ import torch
 from shazam.inverse import candidates as candidates_mod
 from shazam.inverse import design as design_mod
 from shazam.inverse import refine as refine_mod
-from shazam.inverse.design import design, target_input
+from shazam.inverse.design import background_mass, design, target_input
+from shazam.inverse.refine import RefineResult
+from shazam.inverse.verify import FINAL_SEEDS, VERIFY_SEEDS, log_likelihood
 from shazam.inverse.encoding import encode
 from tbribbon.parent import HexParams, named_material
 from tbribbon.parent_data import V4, simulate_raw, to_input
@@ -177,3 +179,107 @@ def test_cli_writes_the_report_atomically_next_to_the_target(tmp_path, monkeypat
     report = json.loads((tmp_path / "T_design.json").read_text())
     assert report["update_fitted"] is True and report["update"] == {"kappa": 2.0, "log_L0": -1e9}
     assert not list(tmp_path.glob("*.tmp"))
+
+
+def test_target_input_crops_a_grid_that_starts_below_zero():
+    reference = target_input(np.linspace(0.0, 9.0, 451), np.linspace(0.0, 3.0, 451))
+    e = np.arange(-1.01, 9.0, 0.02)                                  # no grid point at 0: the value there is interpolated
+    got = target_input(e, np.interp(e, np.linspace(0.0, 9.0, 451), np.linspace(0.0, 3.0, 451), left=0.0))
+    assert got.shape == (416,) and np.allclose(got, reference, atol=0.02)
+    with pytest.raises(ValueError, match="full 0-8.3 eV window required"):
+        target_input(np.linspace(-1.0, 6.0, 400), np.linspace(0.0, 3.0, 400))
+    with pytest.raises(ValueError, match="increasing"):
+        target_input(np.array([0.0, 2.0, 1.0, 9.0]), np.ones(4))
+
+
+def test_non_finite_update_is_rejected():
+    for bad in ({"kappa": 1.0, "log_L0": -np.inf}, {"kappa": np.nan, "log_L0": 0.0}, {"kappa": 0.0, "log_L0": 0.0}):
+        with pytest.raises(ValueError, match="finite"):
+            run(sim_target(HOST), StubModel([(HOST, 100)]), update=bad)
+
+
+def test_background_mass_has_an_add_one_floor():
+    assert background_mass([0.4, 0.5], 1000) == pytest.approx(0.1)
+    assert background_mass([0.7, 0.3], 1000) == pytest.approx(1 / 1001)
+    assert background_mass([], 1000) == 1.0
+
+
+def test_a_badly_fitting_lone_candidate_is_not_renormalised_to_one_under_a_fitted_update():
+    report = run(np.ones(416, np.float32), StubModel([(HOST, 100)]), update={"kappa": 1.0, "log_L0": 0.0})
+    (c,) = report["candidates"]
+    assert c["model_probability"] == pytest.approx(1.0) and report["p_background"] == pytest.approx(1 / 101)
+    assert c["updated_probability"] < 0.01
+
+
+def _refined_host(s):
+    import dataclasses
+    return HOST._replace(params=dataclasses.replace(HOST.params, s=s))
+
+
+def _spied(monkeypatch, refined, stopped_early):
+    """Real simulations through a spy; `refine` replaced by one that returns `refined`."""
+    calls, real = [], design_mod.simulate_inputs
+
+    def spy(draw, n_imp, seeds, n_jobs=1, n_cells=None):
+        out = real(draw, n_imp, seeds, n_jobs=n_jobs, n_cells=n_cells)
+        calls.append((draw, n_imp, tuple(seeds), n_cells, out))
+        return out
+
+    monkeypatch.setattr(design_mod, "simulate_inputs", spy)
+    monkeypatch.setattr(design_mod, "refine", lambda *a, **k: RefineResult(refined, 0.0, 6, stopped_early))
+    return calls
+
+
+def test_an_early_stopped_refinement_is_rechecked_on_the_final_seeds(monkeypatch):
+    refined = _refined_host(2.5)
+    calls = _spied(monkeypatch, refined, True)
+    target = np.ones(416, np.float32)
+    report = run(target, StubModel([(HOST, 100)]))
+    (c,) = report["candidates"]
+    (d0, n0, s0, nc0, _), (d1, n1, s1, nc1, final) = calls
+    assert s0 == VERIFY_SEEDS[:SEEDS] and s1 == FINAL_SEEDS[:SEEDS]
+    assert d1 == refined and d0 != refined and n1 == n0 == c["impurity_count"] and nc0 == nc1 == N_CELLS
+    assert c["check"]["seeds"] == "final" and c["refined_parameters"]["stopped_early"] is True
+    assert c["log_likelihood"] == pytest.approx(log_likelihood(target, final))
+    assert report["n_simulations"] == SEEDS + 6 + SEEDS
+
+
+def test_a_refined_host_at_the_box_edge_is_warned_about(monkeypatch):
+    for stopped in (True, False):
+        _spied(monkeypatch, _refined_host(3.99), stopped)
+        (c,) = run(np.ones(416, np.float32), StubModel([(HOST, 100)]))["candidates"]
+        assert "s" in c["refined_parameters"]["box_edge_warning"]
+        if stopped:                                                   # the refined host is the verdict: warning at candidate level
+            assert c["check"]["seeds"] == "final" and "s" in c["box_edge_warning"]
+        else:                                                         # the original verify check stands: its host has no warning
+            assert c["check"]["seeds"] == "verify" and c["box_edge_warning"] == []
+
+
+def test_cli_fails_fast_on_a_bad_out_or_update(tmp_path, monkeypatch):
+    import importlib.util
+    from pathlib import Path
+    spec = importlib.util.spec_from_file_location(
+        "design_from_spectrum2", Path(__file__).resolve().parents[2] / "scripts/evaluate/design_from_spectrum.py")
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+    ran = []
+    monkeypatch.setattr(cli.InverseModel, "load", lambda path: StubModel([(HOST, 100)]))
+    monkeypatch.setattr(cli, "design", lambda *a, **k: ran.append(1) or {"candidates": [], "p_unassigned": 1.0,
+                                                                         "n_simulations": 0, "seconds": 0.0})
+    np.save(tmp_path / "T.npy", simulate_raw(HOST, 3, 1, n_cells=N_CELLS))
+    np.save(tmp_path / "E.npy", V4.energies_t())
+    base = ["--target", str(tmp_path / "T.npy"), "--energies", str(tmp_path / "E.npy"), "--model", str(tmp_path / "model.pt")]
+    cli.main(base + ["--out", str(tmp_path / "new" / "dir" / "o.json")])          # a missing parent is created before design
+    assert ran and (tmp_path / "new" / "dir" / "o.json").exists()
+    ran.clear()
+    (tmp_path / "update.json").write_text(json.dumps({"kappa": 2.0}))
+    with pytest.raises(SystemExit, match="log_L0"):
+        cli.main(base)
+    (tmp_path / "update.json").write_text('{"kappa": 2.0, "log_L0": -Infinity}')
+    with pytest.raises(SystemExit, match="finite"):
+        cli.main(base)
+    blocker = tmp_path / "file"
+    blocker.write_text("x")
+    with pytest.raises(OSError):
+        cli.main(["--target", base[1], "--energies", base[3], "--model", base[5], "--out", str(blocker / "o.json")])
+    assert not ran                                                   # nothing was simulated
