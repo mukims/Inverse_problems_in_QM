@@ -2396,6 +2396,34 @@ the projection is draws x mean(seconds) / workers.
 **Reading.** The rejection rules cost little (2.3% of attempts). The run is dominated by wide, many-site hosts. The
 full-run size is the user's decision (spec section 5). Report: `results/inverse_design/smoke_report.json`.
 
+### [2026-10-25] INV-FULL: Inverse-Design Training Data, Full Run (grown in 75k steps)
+
+**Plan.** The full hexagonal-parent training set is generated in steps of 75,000 draws into
+`$TRANSMISSION_DATA/_generated/hexagonal_parent_v1/` (5,000-draw shards, so each step ends on a shard boundary), with a
+validity check after every step before extending (user's decision). Target: 300,000 draws.
+
+**Step 1 (draws 0 to 74,999).** Generated 2026-10-23 22:45 to 2026-10-25 00:47 (93,731 s on 22 workers) by the code at
+commit 7e09a87e8. Its manifest's top-level `code_version` and the per-shard value (absent, read as "unknown") are wrong
+for these shards, because that process re-read git HEAD at each write; 7e09a87e8 is the version that ran.
+* Cost: 27.3 s per draw (median 12.1, 95th percentile 108), 4.7 s at w = 4-8 to 64 s at w = 19-22; 6 s for C alone to
+  70 s for all three types. Projection for 300,000 draws: 103-104 h in total.
+* Rejections: 1,576 of 76,576 attempts (2.1%): invisible type 1,238, too few channels 259, no channel 79.
+* Patterns 13.9-14.5% each (1/7 = 14.3%); zigzag 49.7%.
+* Validity: no duplicate spectra, no draw above its clean channel count. Two draws (43316: all three types, zigzag
+  w = 6, 3.14 eV; 74382: triangular, zigzag w = 19, 1.32 eV) each had one NaN channel.
+
+**The NaN: root cause and fix.** The Sancho-Rubio decimation of the lead surface Green's function
+(`src/tbribbon/leads.py`, eta = 1.2e-5) overflowed at that single energy, for one lead. Fix: `LeadCache` retries only
+an energy whose leads are not finite, with both leads at the same small shift (1e-8 to 1e-5), accepting a shift only
+when both decimations converged and are causal (i(g - g^dagger) positive semidefinite); `transport.spectrum` evaluates
+the device at the shifted energy too. Two simpler fallbacks were tried and rejected: shifting one lead only (mixing it
+with an unshifted device gives T of order -1e9), and accepting any converged shift (for draw 43316 a 1e-8 shift
+converges to a non-causal lead and T = -1,138). Every finite result is bit-identical to the old code (tested against
+the previous `leads.py`/`transport.py`). The two draws were regenerated from their indices with
+`scripts/generate/repair_parent.py` (every other stored field must come out identical, and did) and patched in place:
+T = 4.850 (neighbours 4.809, 4.864) and 9.237 (neighbours 9.177, 9.668). Their manifest entries record the patch.
+After the patch `check_parent`: ok (finite, unique, 0 over tolerance). Report: `results/inverse_design/full_step1_report.json`.
+
 ---
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
