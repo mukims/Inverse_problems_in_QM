@@ -2424,6 +2424,43 @@ the previous `leads.py`/`transport.py`). The two draws were regenerated from the
 T = 4.850 (neighbours 4.809, 4.864) and 9.237 (neighbours 9.177, 9.668). Their manifest entries record the patch.
 After the patch `check_parent`: ok (finite, unique, 0 over tolerance). Report: `results/inverse_design/full_step1_report.json`.
 
+**Steps 2 to 4 (draws 75,000 to 299,999).** All three steps ran at commit 1b0d82389 (the lead fix) on 22 workers, so
+shards 15 to 59 record that version per shard; the run resumed from the existing shards each time. Step 2 ran by hand,
+steps 3 and 4 by `chain_steps.sh` (in the data folder), which checked each step before extending and would have stopped
+on a failed check.
+* Wall time: step 2 2026-10-25 09:47 to 10-26 11:40 (25.9 h), step 3 10-26 11:42 to 10-27 13:12 (25.5 h), step 4
+  10-27 13:12 to 10-28 15:25 (26.2 h). With step 1, about 104 h in total, as the smoke run projected.
+* Rejections per step: 1,557, 1,518 and 1,471 of about 76,500 attempts (2.0%), almost all invisible type.
+* All 300,000 draws: 27.2 s per draw (median 12.0, 95th percentile 107, max 347); 306,122 attempts, rejections
+  invisible type 4,787, too few channels 1,018, no channel 317. Patterns 14.0-14.5% each; zigzag 49.9%.
+* Validity after every step: `check_parent` ok (finite, unique, 0 over tolerance); after step 4 the largest seed
+  excess is 0.0015. No new NaN channels after the fix; the two patched step-1 draws (shards 8 and 14) are unchanged.
+* Provenance: the data's code versions read `1b0d82389` (shards 15-59) and "unknown" (shards 0-14, which ran at
+  7e09a87e8, see step 1). Outputs that record `data_provenance` therefore list both.
+Reports: `results/inverse_design/full_step{2,3,4}_report.json`; checks and logs `check_step*.txt`, `run_step*.log`,
+`chain.log` in the data folder.
+
+### [2026-10-28] INV-TRAIN: Inverse Model `model_v1` (nothing held out)
+
+**Setup.** `scripts/build/train_inverse.py --exclude none --threads 16` at commit 1b0d82389 (clean tree), CPU, on the
+INV-FULL data: 270,000 train and 15,000 validation draws (index % 20 in 0-17 and 18; the test split is not read).
+Defaults: Adam, lr 1e-3, batch 512, up to 200 epochs, early stopping on mean validation loss with patience 10, seed 0.
+Model: 1D-conv encoder, a classifier over the 156 discrete states, and a flow-matching field for the 14 continuous
+slots (512,810 weights).
+
+**Result.**
+* Stopped after 34 epochs (12.6 min, 22 s per epoch); best epoch 23, validation loss 3.390 = cross-entropy 1.876 +
+  flow 1.513 (epoch 0: 2.750 + 2.225). Train loss at the best epoch 2.991 (1.514 + 1.477).
+* The two parts peak at different times: validation cross-entropy is lowest at epoch 19 (1.866) and rises to 1.940 by
+  epoch 33 while train cross-entropy keeps falling (1.365), so the classifier starts to overfit; the flow part still
+  improves on validation at epoch 31 (1.491). Early stopping on the sum stops when the two balance.
+* For scale: a classifier that knew only how often each state occurs scores about 4.4; e^1.876 is about 6.5 equally
+  likely states.
+
+**Reading.** Training is cheap at this size. Whether the probabilities are usable is decided by the calibration gate
+(INV-CAL), not by the loss; the hyperparameters stay at the plan's defaults until then. Outputs:
+`results/inverse_design/model_v1/history.json` (committed) and `model.pt` (git-ignored, sha256 starts 8a4ba393d2aa).
+
 ---
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
