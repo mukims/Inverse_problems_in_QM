@@ -1,0 +1,21 @@
+60 test draws
+  true host recreated (ceiling):   0.967
+  found in top 5:                  0.000   top 1: 0.000
+  no candidate with right edge + site types: 3
+
+misfit / threshold of checked candidates (<= 1 passes); true host median 0.65
+  right edge + site types          n  60  median  10.9  min  1.52  d_clean median 0.380
+  + full structure                 n  28  median   7.4  min  1.52  d_clean median 0.247
+  + full structure + exact width   n  13  median   2.9  min  1.52  d_clean median 0.161
+  + full structure, wrong width    n  15  median  12.6  min  2.68  d_clean median 0.271
+
+best candidate per draw (lowest misfit/threshold), by site types:
+  C    n   9  median   3.5  min  1.52
+  H    n   4  median   8.0  min  2.37
+  K    n  10  median   3.9  min  2.04
+  CH   n   6  median  16.7  min  3.65
+  CK   n   5  median  35.9  min  8.54
+  HK   n  16  median  13.0  min  3.84
+  CHK  n   7  median  32.6  min  7.38
+
+d_clean vs misfit/threshold: Spearman +0.42

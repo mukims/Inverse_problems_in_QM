@@ -2488,6 +2488,39 @@ early stopping on the summed loss ended the run while the flow part was still im
 on the test split; the next step is the user's decision. Outputs: `results/inverse_design/model_v1/calibration.json`
 (committed) and `calibration.jsonl` (per-draw records).
 
+### [2026-10-28] INV-STEP1: Step-1 Baseline of `model_v1` (host, width and edge; concentration profiled out)
+
+**Question.** Step 1 of the two-step design: is the true host (full structure and host values, plus width and edge) among
+`model_v1`'s top 5 candidates? Step 2 (concentration, from the spectrum divided by the predicted pristine spectrum, as
+STAGE3-1 / BUILD-13) is out of scope. "Found" is judged two ways: inside the candidate's 99% region, and by the
+recreation check of spec section 8 at the candidate's medoid, with the density fixed at the true value.
+
+**Setup.** `model_v1` (sha256 8a4ba393d2aa), the same 2,000 test rows as INV-CAL, 1,000 samples per spectrum, seeded by
+draw index. Scripts in `results/inverse_design/model_v1/host_capture/`: `host_capture.py` (2,000 draws),
+`near_identical.py` (708 misses and 300 found draws, clean spectra), `recreation_baseline.py` (a seeded random 150 of
+the 2,000; stopped by the user at 60, 1.4 min per draw, 22 workers). No retraining, nothing tuned.
+
+**Result.**
+* Top 5 (top 1): edge + site types 0.972 (0.772); + full structure 0.618 (0.511); + host values 0.614; + host values
+  + width inside the 99% region 0.612 (0.508). With the right structure, host values are inside 99.4% of the time.
+* By site types (host + width): C 0.91, K 0.94, CK 0.79, H 0.72, HK 0.43, CH 0.39, CHK 0.03. Wrong field in misses:
+  lead 44%, Delta = 0 40%, t_AA on 36%, cross bonds 25%.
+* Width of the right-structure medoid: exact 0.413, within 1 0.780, within 2 0.897 (mean -0.27, too narrow); width and
+  density errors correlate +0.46.
+* Misses are near-degenerate: clean-spectrum distance to the truth 0.40 (found 0.18, random same-type host 0.85); 93% of
+  misses are closer than a random host; wrong Delta = 0 and t_AA switches sit near the boundary (true Delta median
+  0.18, true t_AA median 0.073).
+* Recreation check (60 draws): the true host recreates in 0.967 (58 of 60; about 0.95 expected). **No top-5 medoid
+  recreates (0.000)**. Misfit / threshold (<= 1 passes; truth median 0.65): right edge + site types median 10.9, right
+  full structure 7.4, right structure and exact width 2.9, right structure and wrong width 12.6; closest 1.52.
+* Clean-spectrum distance vs misfit / threshold: Spearman +0.42 (too weak to stand in for the simulation).
+
+**Reading.** The candidate cloud usually contains the truth once the structure is right, but its medoid is not a fit:
+the seed-to-seed spread is much tighter than the medoid-to-truth gap. The baseline measures the unrefined medoid; the
+spec's refinement (`refine.py`) was not run, and it keeps the structure and width fixed, so it cannot repair the
+59% wrong widths or any wrong structure. Report with what went right and wrong:
+`results/inverse_design/model_v1/report.md`.
+
 ---
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
