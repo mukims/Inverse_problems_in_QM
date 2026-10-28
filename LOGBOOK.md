@@ -2461,6 +2461,33 @@ slots (512,810 weights).
 (INV-CAL), not by the loss; the hyperparameters stay at the plan's defaults until then. Outputs:
 `results/inverse_design/model_v1/history.json` (committed) and `model.pt` (git-ignored, sha256 starts 8a4ba393d2aa).
 
+### [2026-10-28] INV-CAL: Calibration Gate of `model_v1`: FAIL
+
+**Setup.** `scripts/evaluate/eval_inverse_calibration.py --threads 16` at commit cf12f4424 on `model_v1` (sha256 starts
+8a4ba393d2aa): 2,000 seeded rows of the test split (index % 20 == 19, 15,000 rows), 1,000 samples per spectrum, 64 flow
+steps, seed 0. 699 s (0.35 s per draw), no failed draws.
+
+**Result: spec verdict FAIL** (SBC unconditional FAIL, SBC conditional FAIL, coverage FAIL, top-5 recall ok, ECE ok).
+* Top-5 recall 0.974 (>= 0.95, ok). Candidate ECE 0.023 (<= 0.05, ok); the reliability curve follows the diagonal.
+* SBC unconditional: log_s p = 0.17 ok; **log_c p = 3e-24, w p = 2e-12**.
+* SBC with the true state fixed: **log_c p = 7e-31, w p = 1.5e-7, t_HK p = 1.3e-4, t_CH p = 7.6e-3**; every other active
+  parameter p >= 0.01 (delta 0.018, t_CK 0.010 at the edge).
+* Direction: the mean rank of the truth among the samples is 0.575 (log_c) and 0.548 (w) unconditionally, 0.584 and
+  0.542 with the state fixed (0.5 if calibrated); the truth is above 90% of the samples in 15-16% of draws for log_c.
+  The model **underestimates impurity density and width**. t_HK and t_CH lean the same way (0.548, 0.542).
+* Coverage of the 90% intervals (1,468 draws whose top candidate has the true edge and pattern and is nearest): pooled
+  0.912. Outside 0.87-0.93: **delta 0.960 (n 346), t_AA 0.948 (388), t_AB 0.930 (230, at the edge)**, all too wide;
+  none too narrow. w 0.953 (reported, not gated).
+* Noise-aware (reporting only): SBC after Bonferroni FAIL (log_c, w, t_HK); coverage after Bonferroni FAIL (delta
+  p = 9e-4; t_AA 0.012 just passes).
+
+**Reading.** The discrete part is usable as it is: the right structure is in the top 5 in 97% of draws and its
+probabilities are honest. The continuous part is not yet calibrated: a systematic low bias on the two disorder-related
+slots (log_c, w) and over-wide intervals on the H-site parameters (delta, t_AA). It fits the INV-TRAIN curves, where
+early stopping on the summed loss ended the run while the flow part was still improving. Per the plan, nothing is tuned
+on the test split; the next step is the user's decision. Outputs: `results/inverse_design/model_v1/calibration.json`
+(committed) and `calibration.jsonl` (per-draw records).
+
 ---
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
