@@ -2521,6 +2521,37 @@ spec's refinement (`refine.py`) was not run, and it keeps the structure and widt
 59% wrong widths or any wrong structure. Report with what went right and wrong:
 `results/inverse_design/model_v1/report.md`.
 
+### [2026-10-28] INV-PROBE: Where `model_v1` Loses the Answer (input, encoder, or after the samples)
+
+**Question.** Is the right structure and width lost in the input (the fixed eV grid squeezes low-s spectra into a few
+channels), in the encoder (pooling to 13 buckets of 0.64 eV), or later? Measured on the validation split, not test.
+
+**Setup.** All 15,000 validation draws (index % 20 == 18) against the 270,000 training draws. For each, the nearest
+training draw (L2) in the raw 416-channel input x and in the 128-number embedding (standardised per dimension;
+unstandardised gives the same within 0.01). Same structure / width / edge + site types as the neighbour, at k = 1 and
+"any of 10". Reference: the model itself, classifier argmax and the mode / membership over 200 posterior samples (seed =
+draw index). Scripts and per-draw records in `results/inverse_design/model_v1/info_flow/` (`nn_probe.py`,
+`nn_probe_summary.py`, `info_flow.py` for the two figures). About 7.5 min on CPU, no retraining, nothing tuned.
+
+**Result.**
+* Nearest neighbour, k = 1 (any of 10), raw input -> embedding: edge + site types 0.429 (0.762) -> 0.699 (0.944); full
+  structure 0.292 (0.531) -> 0.464 (0.746); exact width 0.261 (0.624) -> 0.295 (0.752); structure and width 0.164 ->
+  0.200.
+* Model: structure argmax 0.520, width sample mode 0.350; truth anywhere in 200 samples: structure 0.927, width 0.992.
+* By s, flat: width raw 0.25-0.27, embedding 0.28-0.31, model 0.32-0.38 across s 0.7-4; structure likewise. The low-s
+  squeeze does not show up as a loss.
+* By width, the model's exact width falls from 0.531 (w 4-7) to 0.276 (w 18-22).
+* By site types, structure (raw / embedding / model): C 0.68 / 0.84 / 0.88, K 0.75 / 0.89 / 0.91, H 0.36 / 0.57 / 0.65,
+  CK 0.16 / 0.52 / 0.63, HK 0.05 / 0.24 / 0.30, CH 0.05 / 0.18 / 0.25, CHK 0.002 / 0.016 / 0.027.
+
+**Reading.** The embedding beats the raw input everywhere, so the encoder (including the 13-bucket pooling) is not where
+the answer is lost. Nearest neighbour in x is a crude reader of the input, so this does not prove the encoder keeps
+everything. The spectrum itself is ambiguous: nearest raw spectra mostly disagree on width, more so for wide ribbons
+(closer subband steps smeared by disorder), and mixed H hosts (CH, HK, CHK) barely separate. The truth is in the samples
+93% / 99% of the time; the drop comes after them, in `candidates()` and the medoid (INV-STEP1: 0.618 / 0.413 / 0.000,
+test split, so not like-for-like). Open: this run's 0.927 "true structure in the samples" differs from the 80% quoted
+earlier in the session from the test split; not reconciled.
+
 ---
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes

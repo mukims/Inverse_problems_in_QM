@@ -1,0 +1,28 @@
+Nearest neighbour (k=1) vs model, validation split
+all:
+  state  raw@1 0.292  emb@1 0.464  emb_unstd@1 0.464   raw@10 0.531  emb@10 0.746
+  width  raw@1 0.261  emb@1 0.295  emb_unstd@1 0.308   raw@10 0.624  emb@10 0.752
+  key    raw@1 0.429  emb@1 0.699  emb_unstd@1 0.703   raw@10 0.762  emb@10 0.944
+  both   raw@1 0.164  emb@1 0.200  emb_unstd@1 0.208   raw@10 0.282  emb@10 0.434
+  model: state argmax 0.520  state mode 0.519  width mode 0.350  state in 200 samples 0.927  width in samples 0.992
+
+by s:
+s 0.7-1.2    n  4591 | state: raw 0.279 emb 0.449 model 0.508 | width: raw 0.250 emb 0.278 model 0.332 | both: raw 0.154 emb 0.186
+s 1.2-2      n  4405 | state: raw 0.305 emb 0.488 model 0.552 | width: raw 0.273 emb 0.307 model 0.381 | both: raw 0.175 emb 0.215
+s 2-3        n  3527 | state: raw 0.292 emb 0.471 model 0.528 | width: raw 0.257 emb 0.298 model 0.356 | both: raw 0.163 emb 0.206
+s 3-4.01     n  2477 | state: raw 0.294 emb 0.441 model 0.476 | width: raw 0.266 emb 0.300 model 0.321 | both: raw 0.166 emb 0.194
+
+by pattern:
+C            n  2155 | state: raw 0.682 emb 0.841 model 0.882 | width: raw 0.613 emb 0.647 model 0.584 | both: raw 0.515 emb 0.574
+H            n  2205 | state: raw 0.364 emb 0.567 model 0.647 | width: raw 0.190 emb 0.240 model 0.311 | both: raw 0.113 emb 0.159
+K            n  2087 | state: raw 0.747 emb 0.887 model 0.907 | width: raw 0.532 emb 0.541 model 0.490 | both: raw 0.480 emb 0.498
+CH           n  2179 | state: raw 0.046 emb 0.184 model 0.251 | width: raw 0.137 emb 0.150 model 0.244 | both: raw 0.006 emb 0.020
+CK           n  2143 | state: raw 0.157 emb 0.522 model 0.628 | width: raw 0.154 emb 0.211 model 0.349 | both: raw 0.034 emb 0.117
+HK           n  2079 | state: raw 0.052 emb 0.238 model 0.304 | width: raw 0.111 emb 0.150 model 0.236 | both: raw 0.009 emb 0.039
+CHK          n  2152 | state: raw 0.002 emb 0.016 model 0.027 | width: raw 0.099 emb 0.128 model 0.238 | both: raw 0.000 emb 0.001
+
+by width:
+w 4-7        n  3165 | state: raw 0.269 emb 0.398 model 0.432 | width: raw 0.397 emb 0.429 model 0.531 | both: raw 0.210 emb 0.262
+w 8-12       n  3910 | state: raw 0.285 emb 0.447 model 0.520 | width: raw 0.254 emb 0.299 model 0.355 | both: raw 0.169 emb 0.209
+w 13-17      n  3934 | state: raw 0.300 emb 0.499 model 0.549 | width: raw 0.216 emb 0.241 model 0.273 | both: raw 0.151 emb 0.180
+w 18-22      n  3991 | state: raw 0.310 emb 0.500 model 0.563 | width: raw 0.206 emb 0.236 model 0.276 | both: raw 0.136 emb 0.163
