@@ -1,0 +1,914 @@
+<title>Spectrum to Host</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Spectral:ital,wght@0,500;0,600;1,500&display=swap">
+<style>
+/* Layout: one reading column (66ch) with figures allowed to run wider (to 1040px); each figure is a framed instrument panel with a numbered caption underneath. */
+:root {
+  --paper: #f5f7f9;
+  --panel: #ffffff;
+  --ink: #142231;
+  --muted: #586779;
+  --rule: #d6dde5;
+  --soft: #e9eef3;
+  --accent: #1d3f8f;
+  --accent-soft: #e2e9f8;
+  --c-C: #0b7f78;
+  --c-A: #3567d6;
+  --c-B: #8b48c9;
+  --c-H: #4a5fd0;
+  --c-K: #c0581a;
+  --good: #1f7a3c;
+  --warn: #a0620a;
+  --bad: #b3261e;
+  --font-display: "Spectral", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e141b; --panel: #141c26; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #283545; --soft: #1b2531;
+    --accent: #8fb0ff; --accent-soft: #1d2a44;
+    --c-C: #3cc2b8; --c-A: #7ea2ff; --c-B: #c194f0; --c-H: #95a6ff; --c-K: #f0915a;
+    --good: #5cc97f; --warn: #e3a64b; --bad: #f2867f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e141b; --panel: #141c26; --ink: #e5ebf2; --muted: #9aa8b8; --rule: #283545; --soft: #1b2531;
+  --accent: #8fb0ff; --accent-soft: #1d2a44;
+  --c-C: #3cc2b8; --c-A: #7ea2ff; --c-B: #c194f0; --c-H: #95a6ff; --c-K: #f0915a;
+  --good: #5cc97f; --warn: #e3a64b; --bad: #f2867f;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.page { max-width: 1040px; margin: 0 auto; padding-block: 40px 80px; display: grid; gap: 56px; }
+.prose { max-width: 66ch; }
+.prose > * + * { margin-top: 0.9em; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.55rem, 3vw, 2rem); }
+h3 { font-size: 1.15rem; }
+p { margin: 0; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 1.15rem; color: var(--ink); }
+.muted { color: var(--muted); }
+code, .mono { font-family: var(--font-mono); font-size: 0.88em; }
+a { color: var(--accent); }
+section { display: grid; gap: 22px; scroll-margin-top: 16px; }
+.section-head { display: grid; gap: 6px; }
+ul.plain { margin: 0; padding-left: 1.2em; }
+ul.plain li + li { margin-top: 0.35em; }
+.math { font-family: var(--font-display); font-style: italic; }
+
+/* figures */
+figure { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; min-width: 0; }
+figcaption { font-size: 0.9rem; color: var(--muted); max-width: 80ch; }
+figcaption b { color: var(--ink); font-weight: 600; }
+.figno { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin-right: 6px; }
+.scroll-x { overflow-x: auto; }
+svg text { font-family: var(--font-mono); }
+
+/* controls */
+.controls { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.group-label { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-right: 2px; }
+button {
+  font: 500 0.88rem/1 var(--font-body); color: var(--ink); background: var(--panel);
+  border: 1px solid var(--rule); border-radius: 999px; padding: 8px 13px; cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+button.primary { background: var(--accent); color: var(--panel); border-color: var(--accent); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+label.check { display: inline-flex; gap: 6px; align-items: center; font-size: 0.88rem; cursor: pointer; }
+input[type="range"] { accent-color: var(--accent); width: 100%; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; margin-right: 5px; }
+
+/* hero pipeline */
+.pipeline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; }
+.stage { position: relative; padding: 14px 18px 14px 14px; border-top: 3px solid var(--accent); display: grid; gap: 6px; align-content: start; }
+.stage + .stage { border-left: 1px solid var(--rule); }
+.stage .n { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); }
+.stage h3 { font-size: 1.02rem; }
+.stage p { font-size: 0.86rem; color: var(--muted); }
+.stage a { text-decoration: none; color: inherit; }
+.stage a:hover h3 { color: var(--accent); }
+@media (max-width: 760px) {
+  .pipeline { grid-template-columns: 1fr; }
+  .stage + .stage { border-left: 0; }
+  .stage { border-top: 0; border-left: 3px solid var(--accent) !important; }
+}
+
+/* two-column figure bodies */
+.split { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 820px) { .split { grid-template-columns: 1fr; } }
+.readout { display: grid; gap: 8px; font-size: 0.9rem; min-width: 0; }
+.readout dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; }
+.readout dt { color: var(--muted); font-family: var(--font-mono); font-size: 0.8rem; padding-top: 2px; }
+.readout dd { margin: 0; font-variant-numeric: tabular-nums; min-width: 0; overflow-wrap: anywhere; }
+.chip { display: inline-block; font-family: var(--font-mono); font-size: 0.78rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--rule); background: var(--soft); }
+.chip.warn { color: var(--warn); border-color: var(--warn); background: transparent; }
+.chip.good { color: var(--good); border-color: var(--good); background: transparent; }
+.chip.bad { color: var(--bad); border-color: var(--bad); background: transparent; }
+.chip.run { color: var(--accent); border-color: var(--accent); background: transparent; }
+
+/* tables */
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+td.num { font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: 0.85rem; }
+
+/* step flow */
+.flow { display: grid; gap: 0; }
+.step { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px dashed var(--rule); }
+.step:last-child { border-bottom: 0; }
+.dot { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--accent); display: grid; place-items: center; font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); background: var(--panel); }
+.step h3 { font-family: var(--font-body); font-size: 0.98rem; font-weight: 600; }
+.step p { font-size: 0.88rem; color: var(--muted); }
+.step .cost { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); text-align: right; white-space: nowrap; }
+@media (max-width: 560px) { .step { grid-template-columns: 34px minmax(0, 1fr); } .step .cost { grid-column: 2; text-align: left; } }
+
+/* model diagram */
+.model { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1.2fr); gap: 8px; align-items: center; }
+.block { border: 1px solid var(--rule); border-radius: 8px; padding: 12px; background: var(--soft); display: grid; gap: 4px; }
+.block h3 { font-family: var(--font-body); font-size: 0.95rem; font-weight: 600; }
+.block p { font-size: 0.83rem; color: var(--muted); }
+.block .mono { font-size: 0.78rem; }
+.arrow { text-align: center; color: var(--muted); font-size: 1.2rem; }
+.heads { display: grid; gap: 8px; }
+@media (max-width: 760px) { .model { grid-template-columns: 1fr; } .arrow { transform: rotate(90deg); } }
+
+/* bars */
+.bars { display: grid; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: 132px minmax(0, 1fr) 64px; gap: 10px; align-items: center; font-size: 0.86rem; }
+.bar-track { position: relative; height: 18px; background: var(--soft); border-radius: 4px; overflow: hidden; }
+.bar { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; transition: width 0.25s ease; }
+.bar.model { background: var(--rule); height: 7px; top: auto; bottom: 0; }
+.bar.updated { background: var(--accent); height: 11px; }
+.bar-val { font-family: var(--font-mono); font-size: 0.8rem; text-align: right; font-variant-numeric: tabular-nums; }
+@media (max-width: 520px) { .bar-row { grid-template-columns: 96px minmax(0, 1fr) 54px; } }
+
+.cand { display: grid; grid-template-columns: 132px minmax(0, 1fr) 64px; gap: 10px; align-items: center; font-size: 0.86rem; }
+@media (max-width: 520px) { .cand { grid-template-columns: 96px minmax(0, 1fr) 54px; } }
+
+/* progress */
+.phases { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 860px) { .phases { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .phases { grid-template-columns: 1fr; } }
+.phase { display: grid; gap: 8px; align-content: start; }
+.phase h3 { font-family: var(--font-body); font-size: 0.92rem; font-weight: 600; }
+.task { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; font-size: 0.84rem; align-items: start; }
+.task .st { width: 14px; height: 14px; border-radius: 50%; margin-top: 4px; border: 2px solid var(--rule); }
+.task.done .st { background: var(--good); border-color: var(--good); }
+.task.run .st { border-color: var(--accent); background: var(--accent-soft); }
+.task.done { color: var(--ink); }
+.task.todo { color: var(--muted); }
+
+.stats { display: flex; flex-wrap: wrap; gap: 10px 26px; }
+.stat { display: grid; }
+.stat b { font-family: var(--font-display); font-size: 1.6rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 0.8rem; color: var(--muted); }
+
+details { border-top: 1px solid var(--rule); padding-top: 10px; }
+details summary { cursor: pointer; font-weight: 500; }
+details[open] summary { margin-bottom: 8px; }
+.lessons { display: grid; gap: 14px; }
+.lesson h3 { font-family: var(--font-body); font-size: 0.98rem; font-weight: 600; margin-bottom: 4px; }
+.lesson p { font-size: 0.92rem; }
+
+@media (prefers-reduced-motion: reduce) { .bar { transition: none; } }
+</style>
+
+<div class="page">
+
+<header class="prose" style="display:grid; gap:14px">
+  <div class="eyebrow">Inverse design · hexagonal parent lattice · branch feat/inverse-design</div>
+  <h1>Given a transmission spectrum, which material made it?</h1>
+  <p class="lede">Today our Shazam lookup answers with the closest material already in the catalogue. This project replaces that with a model that proposes <b>tight-binding hosts</b> from a continuous family, says how many impurities each would need, gives every answer a probability, and then <b>checks each answer by simulating it</b>.</p>
+  <p class="muted">This page walks through the whole process with live figures. Every figure has a numbered caption that says what it shows and how to read it. The spectra in Figure 2 are real catalogue data; numbers marked "illustrative" are for explanation only.</p>
+</header>
+
+<figure>
+  <div class="panel" style="padding:0; overflow:hidden">
+    <div class="pipeline">
+      <div class="stage"><a href="#spectrum"><span class="n">input</span><h3>Target spectrum</h3><p>One disordered ribbon's T(E), 416 channels from 0 to 8.3 eV.</p></a></div>
+      <div class="stage"><a href="#model"><span class="n">model</span><h3>Generative model</h3><p>Draws 1,000 plausible (host, edge, width, density) samples.</p></a></div>
+      <div class="stage"><a href="#answers"><span class="n">group</span><h3>Five candidates</h3><p>Samples clustered into hosts; each cluster's share is its probability.</p></a></div>
+      <div class="stage"><a href="#answers"><span class="n">simulate</span><h3>Simulator check</h3><p>50 fresh disorder seeds per candidate; refine locally if it fails.</p></a></div>
+      <div class="stage"><a href="#answers"><span class="n">output</span><h3>Updated probabilities</h3><p>Model belief combined with how well each simulation fits.</p></a></div>
+    </div>
+  </div>
+  <figcaption><span class="figno">Figure 1</span><b>The pipeline in five stages.</b> A spectrum goes in on the left; a ranked list of at most five hosts comes out on the right, each with a model probability, a simulation check and an updated probability. Click a stage to jump to its section.</figcaption>
+</figure>
+
+<!-- 1 -->
+<section id="spectrum">
+  <div class="section-head">
+    <div class="eyebrow">1 · The input</div>
+    <h2>What a transmission spectrum tells us</h2>
+  </div>
+  <div class="prose">
+    <p>A ribbon connected to two leads transmits electrons through a number of open channels at each energy. A clean ribbon gives a staircase: each step is a new band opening up. Impurities scatter electrons, so the disordered spectrum sits below the staircase and becomes ragged. The shape of the staircase is a fingerprint of the host lattice; how far the spectrum falls below it carries the impurity density.</p>
+  </div>
+  <figure>
+    <div class="panel" style="display:grid; gap:12px">
+      <div class="controls">
+        <div class="group" role="group" aria-label="Spectra to show">
+          <span class="group-label">Show</span>
+          <button type="button" class="sp-toggle" data-key="pristine" aria-pressed="true"><span class="swatch" style="background:var(--ink)"></span>hBN clean</button>
+          <button type="button" class="sp-toggle" data-key="d0.0048" aria-pressed="false"><span class="swatch" style="background:var(--c-A)"></span>hBN, 0.48% impurities</button>
+          <button type="button" class="sp-toggle" data-key="d0.0400" aria-pressed="true"><span class="swatch" style="background:var(--c-K)"></span>hBN, 4% impurities</button>
+          <button type="button" class="sp-toggle" data-key="d0.0400_med" aria-pressed="false"><span class="swatch" style="background:var(--c-K); opacity:.5"></span>4%, median of 200 seeds</button>
+          <button type="button" class="sp-toggle" data-key="graphene" aria-pressed="false"><span class="swatch" style="background:var(--c-C)"></span>graphene clean</button>
+        </div>
+      </div>
+      <div class="scroll-x"><svg id="spec" viewBox="0 0 760 320" role="img" aria-label="Transmission versus energy for hBN armchair N10" style="width:100%; min-width:520px; height:auto"></svg></div>
+    </div>
+    <figcaption><span class="figno">Figure 2</span><b>Real spectra from the catalogue: hBN armchair ribbon, width N10, 125 cells long.</b> Horizontal axis: energy in eV (the 416-channel v4 grid). Vertical axis: transmission, which equals the number of open channels for a clean ribbon. The black staircase is the clean ribbon; the coloured curves are single disorder seeds with 12 impurities (0.48%) and 100 impurities (4%). hBN has a gap at low energy because its two sublattices have different on-site energies; switch on graphene's staircase to see a gapless host with different step positions. The inverse problem is to read the host and the impurity count back from one ragged curve.</figcaption>
+  </figure>
+</section>
+
+<!-- 2 -->
+<section id="lattice">
+  <div class="section-head">
+    <div class="eyebrow">2 · The host space</div>
+    <h2>One parent lattice that contains many materials</h2>
+  </div>
+  <div class="prose">
+    <p>To let the model say "a host like hBN, but with a smaller gap", the hosts must live in a continuous space with physical axes. We use a <b>hexagonal parent lattice</b> with six sites per cell, in three types:</p>
+    <ul class="plain">
+      <li><span class="swatch" style="background:var(--c-C)"></span><b>C</b>, one site at each hexagon centre. Alone, these form the triangular lattice.</li>
+      <li><span class="swatch" style="background:var(--c-H)"></span><b>H</b>, the two honeycomb sites A and B. Alone, these form graphene, silicene, germanene, and hBN when A and B have different energies.</li>
+      <li><span class="swatch" style="background:var(--c-K)"></span><b>K</b>, three sites at the midpoints of the honeycomb bonds. Alone, these form the kagome lattice.</li>
+    </ul>
+    <p>Each type can be switched on or off, giving 7 patterns. Hoppings are identified by the pair of site types and their distance. Inactive types have no sites at all, so switching a type off is exact rather than approximate.</p>
+  </div>
+  <figure>
+    <div class="panel split">
+      <div style="display:grid; gap:12px; min-width:0">
+        <div class="controls">
+          <div class="group" role="group" aria-label="Site types">
+            <span class="group-label">Types</span>
+            <button type="button" class="lt-type" data-t="C" aria-pressed="false"><span class="swatch" style="background:var(--c-C)"></span>C</button>
+            <button type="button" class="lt-type" data-t="H" aria-pressed="true"><span class="swatch" style="background:var(--c-H)"></span>H (A, B)</button>
+            <button type="button" class="lt-type" data-t="K" aria-pressed="false"><span class="swatch" style="background:var(--c-K)"></span>K</button>
+          </div>
+        </div>
+        <div class="controls">
+          <label class="check"><input type="checkbox" id="lt-delta"> A/B energy split (Δ ≠ 0)</label>
+          <label class="check"><input type="checkbox" id="lt-aa"> second-neighbour t<sub>AA</sub></label>
+          <label class="check"><input type="checkbox" id="lt-cross" checked> hoppings between types</label>
+        </div>
+        <div class="controls">
+          <div class="group" role="group" aria-label="Named materials">
+            <span class="group-label">Presets</span>
+            <button type="button" class="lt-preset" data-p="graphene">graphene</button>
+            <button type="button" class="lt-preset" data-p="hbn">hBN</button>
+            <button type="button" class="lt-preset" data-p="triangular">triangular</button>
+            <button type="button" class="lt-preset" data-p="kagome">kagome</button>
+            <button type="button" class="lt-preset" data-p="full">all six sites</button>
+          </div>
+        </div>
+        <div class="scroll-x"><svg id="lattice" viewBox="0 0 520 320" role="img" aria-label="Patch of the hexagonal parent lattice" style="width:100%; min-width:360px; height:auto"></svg></div>
+      </div>
+      <div class="readout" aria-live="polite">
+        <div class="eyebrow">This host</div>
+        <div id="lt-name" style="font-family:var(--font-display); font-size:1.35rem; font-weight:600"></div>
+        <dl id="lt-dl"></dl>
+        <p class="muted" style="font-size:0.84rem">Bond families drawn: solid lines are hoppings within one type; dashed lines are optional hoppings (between types, or A–A second neighbours). Distances are in units of the honeycomb bond length.</p>
+      </div>
+    </div>
+    <figcaption><span class="figno">Figure 3</span><b>The hexagonal parent lattice, interactive.</b> Toggle site types or pick a preset. The four named materials are single points of this family: graphene is H alone with equal A and B energies; hBN is H alone with Δ = 1.576 (in units of its hopping); triangular is C alone; kagome is K alone. Mixed hosts, such as all six sites, have no existing builder and exist only in the parent. The bond rules are the same table the code asserts at import time.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="panel scroll-x">
+      <table>
+        <thead><tr><th>Material</th><th>Active types</th><th>Non-zero parameters (units of s)</th><th>Energy scale s</th></tr></thead>
+        <tbody>
+          <tr><td>graphene</td><td>H</td><td class="num">t_AB = 1</td><td class="num">2.70 eV</td></tr>
+          <tr><td>silicene</td><td>H</td><td class="num">t_AB = 1</td><td class="num">1.067 eV</td></tr>
+          <tr><td>germanene</td><td>H</td><td class="num">t_AB = 1</td><td class="num">0.991 eV</td></tr>
+          <tr><td>hBN</td><td>H</td><td class="num">t_AB = 1, Δ = 1.576 (ε_A = +1.576, ε_B = −1.576)</td><td class="num">2.30 eV</td></tr>
+          <tr><td>triangular</td><td>C</td><td class="num">t_CC = 1</td><td class="num">1.0 eV</td></tr>
+          <tr><td>kagome</td><td>K</td><td class="num">t_KK = 1</td><td class="num">1.0 eV</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figcaption><span class="figno">Table 1</span><b>Known materials as points in the parameter space.</b> Every energy is written in units of an overall scale s, and the "lead" type's own hopping is fixed at 1. This canonical form removes a symmetry: doubling every energy and halving s gives the same spectrum, so only one of those copies is kept. Graphene, silicene and germanene differ only in s.</figcaption>
+  </figure>
+</section>
+
+<!-- 3 -->
+<section id="prior">
+  <div class="section-head">
+    <div class="eyebrow">3 · The prior</div>
+    <h2>Which hosts the model is trained on</h2>
+  </div>
+  <div class="prose">
+    <p>The training set is drawn at random from a <b>prior</b>: a recipe that says how likely each pattern, energy and hopping is before we see any spectrum. Several choices in it are deliberate:</p>
+    <ul class="plain">
+      <li>The 7 patterns are equally likely, so the model sees mixed hosts as often as simple ones.</li>
+      <li>Half of the honeycomb hosts get Δ = 0 exactly, and half of single-type hosts get on-site energy 0 exactly. This puts graphene-like and kagome-like materials on high-probability points instead of on a line of zero width.</li>
+      <li>Optional hoppings are either exactly off or at least 0.05 (0.03 for t<sub>AA</sub>), so "off" and "almost off" are not confused.</li>
+      <li>Mixed hosts must be connected: the active types are linked by inter-type hoppings, so no part of the ribbon floats free.</li>
+    </ul>
+  </div>
+  <figure>
+    <div class="panel split">
+      <div style="display:grid; gap:14px; min-width:0">
+        <div class="controls">
+          <button type="button" class="primary" id="pr-one">Draw a host</button>
+          <button type="button" id="pr-many">Draw 1,000 more</button>
+          <button type="button" id="pr-reset">Reset tally</button>
+        </div>
+        <div class="readout">
+          <dl id="pr-dl"></dl>
+          <div id="pr-warn"></div>
+        </div>
+      </div>
+      <div style="display:grid; gap:8px; min-width:0">
+        <div class="eyebrow">Pattern tally <span id="pr-n" class="mono"></span></div>
+        <svg id="pr-hist" viewBox="0 0 360 230" role="img" aria-label="Histogram of sampled patterns" style="width:100%; height:auto"></svg>
+      </div>
+    </div>
+    <figcaption><span class="figno">Figure 4</span><b>The prior, running in your browser.</b> "Draw a host" samples one training host exactly as the generator does: pattern, lead type, energy scale, on-site energies with their point masses at zero, hoppings, edge, width and impurity density. The impurity count and device length follow from the width and the active atoms. A box-edge warning appears when a parameter sits within 2% of its range limit; the real pipeline shows the same warning next to answers piled against the edge of the training region. The tally on the right should settle near the dashed line at 1/7 for every pattern.</figcaption>
+  </figure>
+</section>
+
+<!-- 4 -->
+<section id="gate">
+  <div class="section-head">
+    <div class="eyebrow">4 · The builder gate</div>
+    <h2>Proving the parent reproduces today's builders</h2>
+  </div>
+  <div class="prose">
+    <p>Before generating any data, the new builder had to reproduce the existing graphene, hBN, triangular and kagome builders <b>exactly</b>. If it did not, every training example would describe slightly different physics from the catalogue the model is later tested on.</p>
+  </div>
+  <figure>
+    <div class="panel scroll-x">
+      <table>
+        <thead><tr><th>Check</th><th>Result</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Clean spectra, parent vs existing builder (graphene and hBN on both edges, kagome and triangular on zigzag, widths 5 and 10)</td><td class="num">equal to 1e-10</td><td><span class="chip good">pass</span></td></tr>
+          <tr><td>Disordered spectra with the same impurity atoms (sites matched by position)</td><td class="num">equal to 1e-10</td><td><span class="chip good">pass</span></td></tr>
+          <tr><td>Hamiltonian blocks after relabelling sites</td><td class="num">identical</td><td><span class="chip good">pass</span></td></tr>
+          <tr><td>Device length (graphene, hBN / kagome / triangular)</td><td class="num">125 / 83 / 250 cells</td><td><span class="chip good">pass</span></td></tr>
+          <tr><td>Ribbon bands inside the bulk-band projection, 200 random hosts</td><td class="num">6.1% outside (limit 8%)</td><td><span class="chip good">pass</span></td></tr>
+          <tr><td>Energy units vs the catalogue pipeline (graphene)</td><td class="num">difference 0.0</td><td><span class="chip good">pass</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figcaption><span class="figno">Table 2</span><b>What the builder gate established.</b> Six special cases were compared with the builders that produced the catalogue. The 6.1% of ribbon states outside the bulk bands are edge states of narrow ribbons; a deliberately wrong geometry gives 22.7%, so the check does catch mistakes.</figcaption>
+  </figure>
+</section>
+
+<!-- 5 -->
+<section id="data">
+  <div class="section-head">
+    <div class="eyebrow">5 · Training data</div>
+    <h2>From one random draw to one training example</h2>
+  </div>
+  <div class="prose">
+    <p>Each training example is one host from the prior, one impurity count and one disorder seed, simulated into a 416-channel spectrum. Draws that the spectrum could not possibly identify are rejected and redrawn. The checks run cheapest first, so a rejected draw usually costs milliseconds instead of a minute.</p>
+  </div>
+  <figure>
+    <div class="panel flow">
+      <div class="step"><div class="dot">1</div><div><h3>Draw a host from the prior</h3><p>Draw j for index i uses random stream (i, j), so every example can be regenerated from its index alone.</p></div><div class="cost">&lt; 1 ms</div></div>
+      <div class="step"><div class="dot">2</div><div><h3>Band weight check</h3><p>Reject if an active type carries under 1% of the bulk band weight between 0 and 8.3 eV. That type would be in the Hamiltonian but invisible in the spectrum.</p></div><div class="cost">~ 6 ms</div></div>
+      <div class="step"><div class="dot">3</div><div><h3>Clean channel count</h3><p>Count the open channels of the clean ribbon on the v4 grid. Reject if it is zero everywhere: nothing would be transmitted.</p></div><div class="cost">0.1 to 7 s</div></div>
+      <div class="step"><div class="dot">4</div><div><h3>Simulate the disordered ribbon</h3><p>Impurities shift the on-site energy of n random atoms by 0.5 s. Transmission comes from the recursive Green's function with the Caroli formula. Reject if fewer than 10 channels are non-zero after rounding.</p></div><div class="cost">1.5 to 61 s</div></div>
+      <div class="step"><div class="dot">5</div><div><h3>Store</h3><p>The spectrum, the clean channel count, every parameter, impurity count, density, device length, active atoms, time taken and number of attempts. Files of 10,000 draws; split by index into 90% train, 5% validation, 5% test.</p></div><div class="cost">—</div></div>
+    </div>
+    <figcaption><span class="figno">Figure 5</span><b>The life of one training draw.</b> Costs on the right are measured on one core. The simulation cost ranges from 1.5 s (graphene, width 10) to 61 s (all six sites, width 22), because wider ribbons with more sites per cell have much larger matrices to invert.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="panel split">
+      <div style="display:grid; gap:14px; min-width:0">
+        <div>
+          <label for="cc-draws" class="group-label">Draws in the full run: <b id="cc-draws-v" class="mono" style="color:var(--ink)"></b></label>
+          <input type="range" id="cc-draws" min="50000" max="400000" step="10000" value="300000">
+        </div>
+        <div>
+          <label for="cc-sec" class="group-label">Mean seconds per draw, rejected attempts included: <b id="cc-sec-v" class="mono" style="color:var(--ink)"></b></label>
+          <input type="range" id="cc-sec" min="1" max="40" step="0.1" value="27.9">
+        </div>
+        <div>
+          <label for="cc-jobs" class="group-label">Parallel workers: <b id="cc-jobs-v" class="mono" style="color:var(--ink)"></b></label>
+          <input type="range" id="cc-jobs" min="4" max="24" step="1" value="22">
+        </div>
+      </div>
+      <div class="readout">
+        <div class="eyebrow">Projected wall time</div>
+        <div id="cc-out" style="font-family:var(--font-display); font-size:2rem; font-weight:600; font-variant-numeric:tabular-nums"></div>
+        <div id="cc-sub" class="muted"></div>
+        <div><span class="chip good">measured by the smoke run</span></div>
+        <p class="muted" style="font-size:0.84rem">The 2,000-draw smoke run took 43 minutes on 22 workers: 27.9 s per draw on average (median 12.6 s, 95th percentile 103 s), with 2.3% of attempts rejected. All 2,000 spectra passed the validity checks.</p>
+      </div>
+    </div>
+    <figcaption><span class="figno">Figure 6</span><b>How big a training set we can afford.</b> Wall time = draws × mean seconds per draw ÷ workers. The slider starts at the smoke run's measured mean of 27.9 s. The mean is dominated by wide ribbons with many sites per cell: 4.6 s at widths 4–8 against 65 s at widths 19–22. The design's default full run is 300,000 draws, about 4.5 days.</figcaption>
+  </figure>
+</section>
+
+<!-- 6 -->
+<section id="model">
+  <div class="section-head">
+    <div class="eyebrow">6 · The generative model</div>
+    <h2>Learning the probability of a host given a spectrum</h2>
+  </div>
+  <div class="prose">
+    <p>A regression model would return one best guess. A spectrum can be explained by several different hosts, so we want the whole distribution <span class="math">p(host, edge, width, density | spectrum)</span>. The model splits that into a discrete part (which pattern, which edge, which switches) and a continuous part (the energies and hoppings), because the two need different tools.</p>
+  </div>
+  <figure>
+    <div class="panel model">
+      <div class="block">
+        <span class="eyebrow">Encoder</span>
+        <h3>1D convolutional network</h3>
+        <p>Reads the 416-channel spectrum and compresses it to 128 numbers.</p>
+        <span class="mono muted">416 → 128</span>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="block">
+        <span class="eyebrow">Discrete head</span>
+        <h3>Classifier over valid states</h3>
+        <p>Edge (2) × pattern and lead (12) × the switches: Δ = 0, ε = 0, t<sub>AA</sub> on, and which inter-type hoppings are on.</p>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="block">
+        <span class="eyebrow">Continuous head</span>
+        <h3>Conditional flow matching</h3>
+        <p>Given the discrete state, generates log s, the active energies and hoppings, log density and width. Each is mapped through a logit of its prior range, so every sample stays inside the training region.</p>
+      </div>
+    </div>
+    <figcaption><span class="figno">Figure 7</span><b>The model's three parts.</b> Sampling goes left to right: encode the spectrum, draw a discrete state from the classifier, then draw the continuous values from the flow for that state. Repeating this 1,000 times gives a cloud of plausible hosts. Encoder and both heads are trained together; training stops when the validation split stops improving.</figcaption>
+  </figure>
+</section>
+
+<!-- 7 -->
+<section id="answers">
+  <div class="section-head">
+    <div class="eyebrow">7 · From samples to answers</div>
+    <h2>Five candidates, each checked by simulation</h2>
+  </div>
+  <div class="prose">
+    <p>The 1,000 samples are grouped by edge and pattern, then clustered. Each cluster holding at least 20 samples is a candidate, represented by its medoid (the real sample nearest the cluster centre). Its <b>model probability</b> is the share of samples in its cluster. The top five are returned.</p>
+    <p>Each realistic candidate is then <b>simulated on 50 fresh disorder seeds</b> that were never used in training. It "recreates" the target when the target's misfit to the median simulated spectrum is no worse than the 95th percentile of the simulations' own misfits. If it fails, a local optimiser tunes its parameters with a budget of 200 simulations and then re-checks on 50 new seeds. Finally the model probability is combined with how well the simulations fit:</p>
+    <p class="math" style="font-size:1.1rem; text-align:center">p<sub>i</sub><sup>updated</sup> = p<sub>i</sub> L<sub>i</sub><sup>1/κ</sup> ÷ ( Σ<sub>j</sub> p<sub>j</sub> L<sub>j</sub><sup>1/κ</sup> + p<sub>0</sub> L<sub>0</sub><sup>1/κ</sup> )</p>
+    <p>Here L<sub>i</sub> is the likelihood of the target under candidate i's simulations, and p<sub>0</sub> is the probability of everything not returned, paired with a background likelihood L<sub>0</sub>. Because of that background term, when every candidate fits badly all the updated probabilities fall toward zero instead of being forced to add up to 100%.</p>
+  </div>
+  <figure>
+    <div class="panel" style="display:grid; gap:16px">
+      <div class="controls">
+        <div class="group" role="group" aria-label="Scenarios">
+          <span class="group-label">Scenario</span>
+          <button type="button" class="up-preset" data-s="clear">one clear winner</button>
+          <button type="button" class="up-preset" data-s="flip">simulation overturns the model</button>
+          <button type="button" class="up-preset" data-s="none">nothing fits</button>
+        </div>
+        <div style="flex:1 1 220px; min-width:200px">
+          <label for="up-kappa" class="group-label">Temperature κ: <b id="up-kappa-v" class="mono" style="color:var(--ink)"></b></label>
+          <input type="range" id="up-kappa" min="1" max="20" step="0.5" value="4">
+        </div>
+      </div>
+      <div class="bars" id="up-rows"></div>
+      <div class="muted" style="font-size:0.84rem; display:flex; gap:18px; flex-wrap:wrap">
+        <span><span class="swatch" style="background:var(--rule); border-radius:2px"></span>model probability p<sub>i</sub></span>
+        <span><span class="swatch" style="background:var(--accent); border-radius:2px"></span>updated probability</span>
+        <span>Slider under each candidate: fit to the target, as log(L<sub>i</sub> / L<sub>0</sub>)</span>
+      </div>
+    </div>
+    <figcaption><span class="figno">Figure 8</span><b>How simulation evidence moves the probabilities (illustrative numbers).</b> Five candidates arrive with model probabilities that sum to 0.90; the remaining 0.10 is p<sub>0</sub>. Drag a candidate's fit slider to the right if its simulations match the target better than background, or left if worse. κ softens the evidence; in the real pipeline κ and L<sub>0</sub> are fitted once on 500 validation draws so that a 60% answer is right about 60% of the time. Try "nothing fits": every bar collapses and the background row takes the probability.</figcaption>
+  </figure>
+</section>
+
+<!-- 8 -->
+<section id="progress">
+  <div class="section-head">
+    <div class="eyebrow">8 · Where we are</div>
+    <h2>Build progress</h2>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>6 / 17</b><span>tasks complete and reviewed</span></div>
+    <div class="stat"><b>533</b><span>tests passing</span></div>
+    <div class="stat"><b>13</b><span>design rulings recorded</span></div>
+    <div class="stat"><b>2,000</b><span>smoke-run draws, all valid</span></div>
+  </div>
+  <figure>
+    <div class="panel phases" id="phases"></div>
+    <figcaption><span class="figno">Figure 9</span><b>The 17 tasks of the implementation plan, by phase.</b> Green: implemented, independently reviewed and committed. Blue: running now. Grey: not started. Each task is written by one agent and checked by a separate reviewer before the next starts. The full-size data run waits for your decision on its size after the smoke run.</figcaption>
+  </figure>
+
+  <div class="prose lessons">
+    <h3 style="font-family:var(--font-display); font-size:1.3rem">What building it taught us</h3>
+    <div class="lesson"><h3>Two builders can store the same atom in different cells.</h3><p>A ribbon repeats along its length, so an atom can be listed in any copy of the repeating cell. The kagome builder placed some sites up to nine cells away from where the parent put them. The clean spectra still agreed only to 1e-5, not 1e-10, until the parent folded every site into one standard strip.</p></div>
+    <div class="lesson"><h3>Counting neighbours needs care on a periodic ribbon.</h3><p>On the zigzag edge the ribbon period is exactly twice the kagome spacing, so one kagome site bonds to the same partner twice: once in its own cell and once in the next. Counting partners undercounts; counting bonds gives the right four.</p></div>
+    <div class="lesson"><h3>Units were checked against the catalogue, not assumed.</h3><p>A graphene ribbon built by the new code and by the old catalogue pipeline gives identical spectra, clean and disordered. A slip here would have made every training example wrong.</p></div>
+    <div class="lesson"><h3>A multi-day job must fail loudly.</h3><p>Review found that the first version of the generator could report an error and then never exit, and could take hours to notice a crashed worker. Both are fixed and tested: a failure now stops the run within seconds.</p></div>
+  </div>
+</section>
+
+</div>
+
+<script id="spectra-data" type="application/json">{"hbn": {"e": [0.0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.22, 0.24, 0.26, 0.28, 0.3, 0.32, 0.34, 0.36, 0.38, 0.4, 0.42, 0.44, 0.46, 0.48, 0.5, 0.52, 0.54, 0.56, 0.58, 0.6, 0.62, 0.64, 0.66, 0.68, 0.7, 0.72, 0.74, 0.76, 0.78, 0.8, 0.82, 0.84, 0.86, 0.88, 0.9, 0.92, 0.94, 0.96, 0.98, 1.0, 1.02, 1.04, 1.06, 1.08, 1.1, 1.12, 1.14, 1.16, 1.18, 1.2, 1.22, 1.24, 1.26, 1.28, 1.3, 1.32, 1.34, 1.36, 1.38, 1.4, 1.42, 1.44, 1.46, 1.48, 1.5, 1.52, 1.54, 1.56, 1.58, 1.6, 1.62, 1.64, 1.66, 1.68, 1.7, 1.72, 1.74, 1.76, 1.78, 1.8, 1.82, 1.84, 1.86, 1.88, 1.9, 1.92, 1.94, 1.96, 1.98, 2.0, 2.02, 2.04, 2.06, 2.08, 2.1, 2.12, 2.14, 2.16, 2.18, 2.2, 2.22, 2.24, 2.26, 2.28, 2.3, 2.32, 2.34, 2.36, 2.38, 2.4, 2.42, 2.44, 2.46, 2.48, 2.5, 2.52, 2.54, 2.56, 2.58, 2.6, 2.62, 2.64, 2.66, 2.68, 2.7, 2.72, 2.74, 2.76, 2.78, 2.8, 2.82, 2.84, 2.86, 2.88, 2.9, 2.92, 2.94, 2.96, 2.98, 3.0, 3.02, 3.04, 3.06, 3.08, 3.1, 3.12, 3.14, 3.16, 3.18, 3.2, 3.22, 3.24, 3.26, 3.28, 3.3, 3.32, 3.34, 3.36, 3.38, 3.4, 3.42, 3.44, 3.46, 3.48, 3.5, 3.52, 3.54, 3.56, 3.58, 3.6, 3.62, 3.64, 3.66, 3.68, 3.7, 3.72, 3.74, 3.76, 3.78, 3.8, 3.82, 3.84, 3.86, 3.88, 3.9, 3.92, 3.94, 3.96, 3.98, 4.0, 4.02, 4.04, 4.06, 4.08, 4.1, 4.12, 4.14, 4.16, 4.18, 4.2, 4.22, 4.24, 4.26, 4.28, 4.3, 4.32, 4.34, 4.36, 4.38, 4.4, 4.42, 4.44, 4.46, 4.48, 4.5, 4.52, 4.54, 4.56, 4.58, 4.6, 4.62, 4.64, 4.66, 4.68, 4.7, 4.72, 4.74, 4.76, 4.78, 4.8, 4.82, 4.84, 4.86, 4.88, 4.9, 4.92, 4.94, 4.96, 4.98, 5.0, 5.02, 5.04, 5.06, 5.08, 5.1, 5.12, 5.14, 5.16, 5.18, 5.2, 5.22, 5.24, 5.26, 5.28, 5.3, 5.32, 5.34, 5.36, 5.38, 5.4, 5.42, 5.44, 5.46, 5.48, 5.5, 5.52, 5.54, 5.56, 5.58, 5.6, 5.62, 5.64, 5.66, 5.68, 5.7, 5.72, 5.74, 5.76, 5.78, 5.8, 5.82, 5.84, 5.86, 5.88, 5.9, 5.92, 5.94, 5.96, 5.98, 6.0, 6.02, 6.04, 6.06, 6.08, 6.1, 6.12, 6.14, 6.16, 6.18, 6.2, 6.22, 6.24, 6.26, 6.28, 6.3, 6.32, 6.34, 6.36, 6.38, 6.4, 6.42, 6.44, 6.46, 6.48, 6.5, 6.52, 6.54, 6.56, 6.58, 6.6, 6.62, 6.64, 6.66, 6.68, 6.7, 6.72, 6.74, 6.76, 6.78, 6.8, 6.82, 6.84, 6.86, 6.88, 6.9, 6.92, 6.94, 6.96, 6.98, 7.0, 7.02, 7.04, 7.06, 7.08, 7.1, 7.12, 7.14, 7.16, 7.18, 7.2, 7.22, 7.24, 7.26, 7.28, 7.3, 7.32, 7.34, 7.36, 7.38, 7.4, 7.42, 7.44, 7.46, 7.48, 7.5, 7.52, 7.54, 7.56, 7.58, 7.6, 7.62, 7.64, 7.66, 7.68, 7.7, 7.72, 7.74, 7.76, 7.78, 7.8, 7.82, 7.84, 7.86, 7.88, 7.9, 7.92, 7.94, 7.96, 7.98, 8.0, 8.02, 8.04, 8.06, 8.08, 8.1, 8.12, 8.14, 8.16, 8.18, 8.2, 8.22, 8.24, 8.26, 8.28, 8.3], "pristine": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "d0.0048": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.548, 0.594, 0.868, 0.808, 1.023, 1.088, 1.13, 1.413, 1.723, 1.66, 1.766, 1.705, 1.711, 1.572, 1.742, 2.784, 2.976, 2.625, 2.694, 2.765, 2.926, 2.832, 2.696, 2.408, 2.779, 2.903, 3.025, 3.063, 2.885, 2.695, 3.215, 2.988, 3.161, 3.039, 2.96, 2.878, 2.888, 3.27, 3.116, 3.425, 3.288, 3.318, 3.33, 2.988, 3.018, 3.105, 3.199, 3.595, 3.581, 3.428, 3.569, 3.635, 2.704, 1.836, 1.188, 1.942, 1.509, 1.577, 1.371, 1.714, 1.809, 2.294, 2.143, 2.104, 2.224, 2.429, 2.609, 2.759, 2.484, 2.655, 2.83, 2.472, 2.744, 2.575, 2.65, 2.408, 2.353, 2.398, 2.24, 2.248, 2.482, 2.679, 2.724, 2.888, 2.973, 2.978, 2.521, 2.255, 2.321, 2.356, 2.533, 2.551, 2.736, 2.568, 2.549, 1.898, 1.892, 1.673, 1.551, 1.963, 1.368, 1.723, 1.868, 1.974, 1.703, 1.652, 2.01, 1.798, 2.063, 1.862, 2.007, 1.84, 1.794, 2.181, 2.3, 1.869, 1.636, 2.295, 2.42, 2.041, 1.871, 1.884, 2.0, 2.02, 1.99, 1.983, 1.976, 1.873, 2.435, 1.819, 2.337, 1.993, 2.108, 1.739, 1.748, 1.902, 1.542, 1.588, 1.609, 1.565, 0.798, 0.185, 0.696, 0.93, 0.956, 1.265, 1.864, 1.72, 1.383, 1.414, 1.469, 1.491, 1.285, 1.365, 1.381, 1.272, 1.24, 1.719, 1.256, 1.213, 1.678, 1.802, 1.339, 1.527, 1.4, 1.278, 1.295, 1.542, 1.425, 1.181, 1.028, 1.145, 0.897, 1.208, 1.128, 0.004, 0.458, 0.863, 0.876, 0.953, 0.967, 0.616, 0.402, 0.258, 0.295, 0.166, 0.206, 0.678, 0.604, 0.986, 0.156, 0.66, 0.066, 0.29, 0.333, 0.845, 0.152, 0.004, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "d0.0048_med": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.152, 0.503, 0.566, 0.839, 0.982, 1.103, 1.193, 1.293, 1.395, 1.481, 1.501, 1.576, 1.659, 1.704, 1.801, 1.884, 2.498, 1.967, 1.917, 1.98, 2.007, 2.137, 2.149, 2.17, 2.222, 2.307, 2.463, 2.635, 2.476, 2.442, 2.58, 2.599, 2.546, 2.626, 2.653, 2.706, 2.76, 2.767, 2.723, 2.758, 2.768, 2.79, 2.824, 2.812, 2.806, 2.804, 2.816, 2.841, 2.871, 2.893, 2.955, 2.418, 2.315, 1.969, 1.812, 1.673, 1.628, 1.593, 1.63, 1.653, 1.697, 1.715, 1.791, 1.884, 1.95, 1.948, 1.98, 2.033, 2.059, 2.148, 2.152, 2.143, 2.145, 2.216, 2.195, 2.245, 2.284, 2.274, 2.266, 2.297, 2.244, 2.245, 2.251, 2.27, 2.292, 2.325, 2.275, 2.282, 2.253, 2.246, 2.208, 2.214, 2.209, 2.149, 2.144, 1.686, 1.456, 1.311, 1.209, 1.014, 1.053, 1.227, 1.3, 1.419, 1.461, 1.489, 1.541, 1.668, 1.639, 1.723, 1.675, 1.693, 1.754, 1.746, 1.753, 1.769, 1.757, 1.762, 1.793, 1.782, 1.82, 1.811, 1.789, 1.816, 1.749, 1.73, 1.767, 1.77, 1.723, 1.674, 1.701, 1.694, 1.61, 1.635, 1.609, 1.57, 1.527, 1.468, 1.363, 0.936, 0.873, 0.473, 0.51, 0.729, 0.792, 0.928, 0.965, 1.03, 1.082, 1.099, 1.146, 1.141, 1.151, 1.107, 1.179, 1.17, 1.174, 1.153, 1.121, 1.109, 1.124, 1.109, 1.099, 1.074, 1.045, 1.041, 1.029, 1.007, 0.978, 0.951, 0.922, 0.874, 0.839, 0.753, 0.707, 0.291, 0.029, 0.084, 0.003, 0.088, 0.222, 0.276, 0.362, 0.379, 0.388, 0.428, 0.366, 0.379, 0.401, 0.364, 0.326, 0.334, 0.278, 0.22, 0.165, 0.131, 0.06, 0.023, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "d0.0400": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.444, 0.0, 0.767, 0.002, 0.092, 0.079, 0.308, 0.115, 0.077, 0.106, 0.534, 1.174, 1.17, 0.647, 0.684, 0.33, 0.216, 0.053, 0.972, 0.94, 0.344, 0.333, 0.881, 0.8, 0.434, 0.817, 0.911, 0.073, 0.344, 0.536, 0.509, 1.199, 0.122, 0.327, 0.42, 0.119, 0.318, 0.484, 0.299, 0.864, 1.02, 0.664, 1.442, 0.542, 0.407, 0.604, 0.83, 1.234, 0.227, 0.702, 0.951, 0.815, 0.326, 0.654, 0.693, 0.058, 0.006, 0.043, 0.217, 0.56, 0.892, 0.081, 0.089, 0.349, 0.761, 0.271, 1.233, 0.176, 0.342, 0.341, 0.355, 0.269, 0.836, 0.432, 0.17, 0.827, 0.164, 0.512, 0.298, 0.24, 0.705, 0.688, 1.008, 0.142, 0.674, 0.71, 0.252, 0.687, 0.392, 0.734, 0.539, 1.098, 0.78, 0.474, 0.228, 0.102, 0.871, 0.117, 0.015, 0.058, 0.003, 0.399, 0.479, 0.027, 0.137, 0.025, 0.29, 0.093, 0.06, 0.059, 0.045, 0.188, 0.225, 0.129, 0.167, 0.294, 0.196, 0.242, 0.256, 0.94, 0.936, 0.707, 0.547, 0.502, 0.101, 0.538, 0.697, 0.198, 0.689, 0.05, 0.102, 0.187, 0.543, 0.996, 0.279, 0.019, 0.029, 0.006, 0.511, 0.002, 0.0, 0.0, 0.0, 0.003, 0.001, 0.001, 0.037, 0.169, 0.009, 0.004, 0.162, 0.29, 0.596, 0.462, 0.513, 0.115, 0.099, 0.025, 0.002, 0.869, 0.857, 0.009, 0.002, 0.0, 0.02, 0.514, 0.042, 0.313, 0.006, 0.485, 0.105, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.005, 0.0, 0.0, 0.0, 0.029, 0.0, 0.487, 0.094, 0.0, 0.001, 0.017, 0.0, 0.001, 0.013, 0.0, 0.0, 0.044, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "d0.0400_med": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.002, 0.01, 0.034, 0.066, 0.1, 0.195, 0.206, 0.329, 0.512, 0.533, 0.702, 0.637, 0.519, 0.22, 0.204, 0.222, 0.263, 0.23, 0.249, 0.282, 0.317, 0.311, 0.362, 0.431, 0.368, 0.369, 0.399, 0.405, 0.331, 0.41, 0.395, 0.43, 0.448, 0.426, 0.407, 0.455, 0.491, 0.479, 0.52, 0.511, 0.508, 0.413, 0.523, 0.548, 0.549, 0.533, 0.528, 0.471, 0.28, 0.201, 0.126, 0.086, 0.051, 0.06, 0.036, 0.055, 0.068, 0.071, 0.081, 0.092, 0.122, 0.117, 0.148, 0.184, 0.217, 0.291, 0.264, 0.221, 0.199, 0.314, 0.264, 0.288, 0.314, 0.331, 0.328, 0.324, 0.356, 0.362, 0.417, 0.376, 0.411, 0.305, 0.323, 0.423, 0.289, 0.351, 0.351, 0.344, 0.362, 0.258, 0.266, 0.178, 0.113, 0.062, 0.035, 0.016, 0.022, 0.024, 0.039, 0.047, 0.037, 0.065, 0.077, 0.107, 0.11, 0.117, 0.172, 0.149, 0.164, 0.201, 0.185, 0.218, 0.29, 0.271, 0.214, 0.277, 0.307, 0.273, 0.211, 0.255, 0.257, 0.25, 0.231, 0.258, 0.24, 0.23, 0.235, 0.216, 0.14, 0.171, 0.153, 0.159, 0.149, 0.101, 0.077, 0.033, 0.014, 0.003, 0.002, 0.001, 0.001, 0.003, 0.005, 0.008, 0.017, 0.013, 0.025, 0.031, 0.046, 0.038, 0.048, 0.066, 0.092, 0.086, 0.068, 0.06, 0.048, 0.063, 0.054, 0.051, 0.045, 0.038, 0.033, 0.021, 0.025, 0.014, 0.014, 0.015, 0.006, 0.004, 0.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "graphene": {"e": [0.0, 0.027, 0.054, 0.081, 0.108, 0.135, 0.162, 0.189, 0.216, 0.243, 0.27, 0.297, 0.324, 0.351, 0.378, 0.405, 0.432, 0.459, 0.486, 0.513, 0.54, 0.567, 0.594, 0.621, 0.648, 0.675, 0.702, 0.729, 0.756, 0.783, 0.81, 0.837, 0.864, 0.891, 0.918, 0.945, 0.972, 0.999, 1.026, 1.053, 1.08, 1.107, 1.134, 1.161, 1.188, 1.215, 1.242, 1.269, 1.296, 1.323, 1.35, 1.377, 1.404, 1.431, 1.458, 1.485, 1.512, 1.539, 1.566, 1.593, 1.62, 1.647, 1.674, 1.701, 1.728, 1.755, 1.782, 1.809, 1.836, 1.863, 1.89, 1.917, 1.944, 1.971, 1.998, 2.025, 2.052, 2.079, 2.106, 2.133, 2.16, 2.187, 2.214, 2.241, 2.268, 2.295, 2.322, 2.349, 2.376, 2.403, 2.43, 2.457, 2.484, 2.511, 2.538, 2.565, 2.592, 2.619, 2.646, 2.673, 2.7, 2.727, 2.754, 2.781, 2.808, 2.835, 2.862, 2.889, 2.916, 2.943, 2.97, 2.997, 3.024, 3.051, 3.078, 3.105, 3.132, 3.159, 3.186, 3.213, 3.24, 3.267, 3.294, 3.321, 3.348, 3.375, 3.402, 3.429, 3.456, 3.483, 3.51, 3.537, 3.564, 3.591, 3.618, 3.645, 3.672, 3.699, 3.726, 3.753, 3.78, 3.807, 3.834, 3.861, 3.888, 3.915, 3.942, 3.969, 3.996, 4.023, 4.05, 4.077, 4.104, 4.131, 4.158, 4.185, 4.212, 4.239, 4.266, 4.293, 4.32, 4.347, 4.374, 4.401, 4.428, 4.455, 4.482, 4.509, 4.536, 4.563, 4.59, 4.617, 4.644, 4.671, 4.698, 4.725, 4.752, 4.779, 4.806, 4.833, 4.86, 4.887, 4.914, 4.941, 4.968, 4.995, 5.022, 5.049, 5.076, 5.103, 5.13, 5.157, 5.184, 5.211, 5.238, 5.265, 5.292, 5.319, 5.346, 5.373, 5.4, 5.427, 5.454, 5.481, 5.508, 5.535, 5.562, 5.589, 5.616, 5.643, 5.67, 5.697, 5.724, 5.751, 5.778, 5.805, 5.832, 5.859, 5.886, 5.913, 5.94, 5.967, 5.994, 6.021, 6.048, 6.075, 6.102, 6.129, 6.156, 6.183, 6.21, 6.237, 6.264, 6.291, 6.318, 6.345, 6.372, 6.399, 6.426, 6.453, 6.48, 6.507, 6.534, 6.561, 6.588, 6.615, 6.642, 6.669, 6.696, 6.723, 6.75, 6.777, 6.804, 6.831, 6.858, 6.885, 6.912, 6.939, 6.966, 6.993, 7.02, 7.047, 7.074, 7.101, 7.128, 7.155, 7.182, 7.209, 7.236, 7.263, 7.29, 7.317, 7.344, 7.371, 7.398, 7.425, 7.452, 7.479, 7.506, 7.533, 7.56, 7.587, 7.614, 7.641, 7.668, 7.695, 7.722, 7.749, 7.776, 7.803, 7.83, 7.857, 7.884, 7.911, 7.938, 7.965, 7.992, 8.019, 8.046, 8.073], "pristine": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "d0.0400": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.005, 0.008, 0.061, 0.096, 0.493, 0.221, 0.431, 0.167, 0.484, 0.673, 0.23, 0.844, 0.398, 0.814, 0.605, 0.595, 1.073, 0.194, 0.247, 1.262, 0.858, 1.114, 1.337, 0.926, 0.741, 1.09, 1.256, 0.834, 1.12, 0.793, 1.278, 1.113, 1.224, 1.785, 1.486, 1.35, 1.665, 1.35, 1.48, 1.287, 1.151, 1.132, 1.412, 1.372, 1.216, 1.508, 0.768, 1.243, 1.592, 1.325, 1.305, 1.0, 0.423, 3.684, 2.334, 5.323, 10.215, 4.691, 7.012, 0.129, 3.501, 0.056, 3.807, 4.073, 0.389, 1.69, 1.033, 0.827, 0.297, 1.303, 0.72, 1.772, 0.217, 0.901, 3.938, 15.345, 14.166, 8.974, 10.997, 0.249, 0.028, 2.416, 1.017, 0.411, 0.256, 0.448, 3.25, 1.453, 0.339, 0.416, 0.245, 0.55, 0.714, 1.672, 0.349, 2.12, 3.202, 2.583, 0.994, 2.186, 0.076, 0.954, 1.841, 0.769, 0.716, 0.283, 1.393, 1.577, 0.806, 4.709, 0.104, 3.188, 4.793, 2.51, 0.679, 0.003, 0.087, 0.706, 0.783, 0.857, 1.064, 0.021, 0.901, 1.027, 1.249, 1.434, 1.728, 1.524, 1.67, 1.709, 0.919, 0.963, 1.069, 1.279, 1.059, 1.095, 1.639, 1.391, 0.623, 0.644, 1.911, 0.433, 0.962, 0.598, 0.782, 0.496, 0.609, 0.686, 1.67, 1.022, 0.813, 1.997, 0.788, 0.507, 0.044, 0.4, 0.892, 0.608, 0.735, 1.208, 0.331, 0.455, 0.417, 0.607, 1.093, 2.37, 2.922, 0.04, 0.168, 0.531, 0.869, 0.525, 0.39, 0.814, 0.995, 0.651, 0.742, 1.004, 1.086, 0.96, 1.693, 1.275, 0.971, 1.381, 1.029, 1.181, 1.59, 1.676, 0.444, 1.061, 0.945, 1.445, 1.585, 1.639, 0.959, 0.388, 0.586, 0.908, 0.437, 0.9, 1.073, 0.578, 0.825, 1.026, 1.057, 0.095, 0.55, 0.366, 0.366, 0.262, 0.138, 0.476, 0.136, 0.331, 0.55, 0.087, 0.073, 0.075, 0.107, 0.107, 0.915, 0.356, 0.933, 0.345, 0.849, 0.819, 0.495, 0.87, 0.95, 0.579, 0.51, 0.301, 0.118, 0.294, 0.237, 0.337, 0.002, 0.611, 0.578, 0.332, 0.197, 0.069, 1.066, 0.322, 0.094, 0.253, 0.098, 0.348, 0.069, 0.163, 0.112, 0.509, 0.367, 0.037, 0.153, 0.094, 0.005, 0.019, 0.06, 0.033, 0.017, 0.342, 0.06, 0.137, 0.008, 0.041, 0.519, 0.617, 0.06, 0.009, 0.01, 0.046, 0.124, 0.053, 0.019, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "d0.0400_med": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.001, 0.001, 0.001, 0.002, 0.005, 0.021, 0.026, 0.047, 0.172, 0.322, 0.375, 0.512, 0.528, 0.599, 0.647, 0.645, 0.667, 0.667, 0.663, 0.499, 0.465, 0.458, 0.551, 0.633, 0.659, 0.746, 0.81, 0.872, 0.962, 1.01, 0.992, 1.054, 1.089, 1.146, 1.139, 1.187, 1.217, 1.234, 1.219, 1.251, 1.274, 1.244, 1.305, 1.307, 1.313, 1.369, 1.334, 1.35, 1.33, 1.339, 1.356, 1.334, 1.335, 1.337, 1.307, 1.278, 1.063, 0.883, 0.966, 1.143, 4.701, 5.235, 4.36, 3.75, 2.877, 2.105, 2.035, 2.083, 1.387, 0.991, 0.856, 0.884, 0.836, 0.747, 0.812, 0.763, 0.817, 0.686, 0.638, 0.913, 3.837, 5.249, 4.664, 3.361, 2.723, 2.429, 1.83, 1.922, 1.702, 1.281, 1.274, 0.988, 0.835, 0.853, 0.891, 0.868, 0.782, 0.776, 0.856, 0.813, 0.88, 0.842, 0.794, 0.729, 0.954, 0.859, 0.95, 0.877, 0.985, 1.083, 1.271, 1.421, 1.804, 1.951, 2.613, 4.026, 5.345, 4.935, 2.619, 1.013, 0.59, 0.487, 0.519, 0.566, 0.641, 0.723, 0.843, 0.872, 0.965, 0.953, 1.055, 1.064, 1.093, 1.099, 1.101, 1.127, 1.176, 1.147, 1.171, 1.185, 1.181, 1.198, 1.273, 1.166, 1.146, 1.111, 1.102, 1.105, 1.154, 1.121, 1.062, 1.014, 1.01, 1.04, 0.971, 0.918, 0.975, 0.941, 0.877, 0.793, 0.71, 0.727, 0.593, 0.577, 0.613, 0.519, 0.449, 0.529, 0.571, 0.779, 1.27, 3.841, 1.556, 0.779, 0.522, 0.397, 0.501, 0.613, 0.684, 0.868, 0.881, 0.959, 0.974, 1.086, 1.05, 1.054, 1.065, 1.055, 1.065, 1.059, 1.081, 1.063, 1.101, 1.012, 1.008, 1.043, 1.012, 1.035, 1.05, 0.954, 0.943, 0.934, 0.88, 0.889, 0.831, 0.858, 0.841, 0.785, 0.728, 0.701, 0.643, 0.626, 0.573, 0.466, 0.394, 0.407, 0.468, 0.432, 0.58, 3.299, 1.253, 0.633, 0.338, 0.325, 0.369, 0.39, 0.425, 0.499, 0.498, 0.615, 0.605, 0.626, 0.602, 0.659, 0.68, 0.681, 0.521, 0.619, 0.612, 0.571, 0.589, 0.557, 0.515, 0.522, 0.471, 0.463, 0.397, 0.418, 0.389, 0.268, 0.267, 0.238, 0.205, 0.182, 0.248, 0.354, 0.49, 0.693, 0.3, 0.226, 0.096, 0.072, 0.061, 0.1, 0.127, 0.129, 0.14, 0.119, 0.113, 0.094, 0.103, 0.087, 0.068, 0.041, 0.046, 0.028, 0.031, 0.021, 0.012, 0.012, 0.003, 0.003, 0.002, 0.001, 0.0, 0.0, 0.0, 0.0]}}</script>
+<script>
+(function () {
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  var S3 = Math.sqrt(3);
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function fmt(x, d) { return Number(x).toFixed(d); }
+
+  /* ---------- Figure 2: spectra ---------- */
+  var DATA = {};
+  try { DATA = JSON.parse(document.getElementById("spectra-data").textContent); } catch (e) { DATA = {}; }
+  var spec = document.getElementById("spec");
+  var SERIES = {
+    "pristine":    { src: "hbn", key: "pristine", cls: "var(--ink)", w: 1.8, dash: "" },
+    "d0.0048":     { src: "hbn", key: "d0.0048", cls: "var(--c-A)", w: 1.2, dash: "" },
+    "d0.0400":     { src: "hbn", key: "d0.0400", cls: "var(--c-K)", w: 1.2, dash: "" },
+    "d0.0400_med": { src: "hbn", key: "d0.0400_med", cls: "var(--c-K)", w: 2.2, dash: "5 4" },
+    "graphene":    { src: "graphene", key: "pristine", cls: "var(--c-C)", w: 1.8, dash: "" }
+  };
+  var shown = { "pristine": true, "d0.0048": false, "d0.0400": true, "d0.0400_med": false, "graphene": false };
+  function drawSpec() {
+    while (spec.firstChild) spec.removeChild(spec.firstChild);
+    var L = 52, R = 744, T = 16, B = 276, ymax = 5.2, xmax = 8.3;
+    var X = function (e) { return L + (e / xmax) * (R - L); };
+    var Y = function (t) { return B - (t / ymax) * (B - T); };
+    for (var t = 0; t <= 5; t++) {
+      el("line", { x1: L, x2: R, y1: Y(t), y2: Y(t), style: "stroke:var(--soft)", "stroke-width": 1 }, spec);
+      var lt = el("text", { x: L - 10, y: Y(t) + 4, "text-anchor": "end", "font-size": 11, style: "fill:var(--muted)" }, spec);
+      lt.textContent = t;
+    }
+    for (var e = 0; e <= 8; e++) {
+      el("line", { x1: X(e), x2: X(e), y1: B, y2: B + 5, style: "stroke:var(--muted)" }, spec);
+      var lx = el("text", { x: X(e), y: B + 19, "text-anchor": "middle", "font-size": 11, style: "fill:var(--muted)" }, spec);
+      lx.textContent = e;
+    }
+    el("line", { x1: L, x2: R, y1: B, y2: B, style: "stroke:var(--muted)" }, spec);
+    el("line", { x1: L, x2: L, y1: T, y2: B, style: "stroke:var(--muted)" }, spec);
+    var xl = el("text", { x: (L + R) / 2, y: 312, "text-anchor": "middle", "font-size": 12, style: "fill:var(--ink)" }, spec);
+    xl.textContent = "energy E (eV)";
+    var yl = el("text", { x: 14, y: (T + B) / 2, "text-anchor": "middle", "font-size": 12, transform: "rotate(-90 14 " + (T + B) / 2 + ")", style: "fill:var(--ink)" }, spec);
+    yl.textContent = "transmission T(E)";
+    var order = ["graphene", "d0.0048", "d0.0400", "d0.0400_med", "pristine"];
+    order.forEach(function (name) {
+      if (!shown[name]) return;
+      var s = SERIES[name], d = DATA[s.src];
+      if (!d || !d[s.key]) return;
+      var pts = d.e.map(function (en, i) { return X(en).toFixed(1) + "," + Y(Math.min(d[s.key][i], ymax)).toFixed(1); }).join(" ");
+      el("polyline", { points: pts, fill: "none", style: "stroke:" + s.cls, "stroke-width": s.w, "stroke-dasharray": s.dash, "stroke-linejoin": "round" }, spec);
+    });
+  }
+  document.querySelectorAll(".sp-toggle").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var k = b.getAttribute("data-key");
+      shown[k] = !shown[k];
+      b.setAttribute("aria-pressed", shown[k] ? "true" : "false");
+      drawSpec();
+    });
+  });
+  drawSpec();
+
+  /* ---------- Figure 3: lattice ---------- */
+  var BASIS = [[-1, 0, "C"], [0, 0, "A"], [1, 0, "B"], [0.5, 0, "K"], [-0.25, S3 / 4, "K"], [-0.25, -S3 / 4, "K"]];
+  var A1 = [1.5, S3 / 2], A2 = [1.5, -S3 / 2];
+  var RULES = [
+    ["C", "C", S3, "CC", "within"], ["A", "B", 1, "AB", "within"], ["K", "K", S3 / 2, "KK", "within"],
+    ["A", "A", S3, "AA", "aa"], ["B", "B", S3, "AA", "aa"],
+    ["C", "A", 1, "CH", "cross"], ["C", "B", 1, "CH", "cross"], ["C", "K", S3 / 2, "CK", "cross"],
+    ["A", "K", 0.5, "HK", "cross"], ["B", "K", 0.5, "HK", "cross"]
+  ];
+  var TYPE_OF = { C: "C", A: "H", B: "H", K: "K" };
+  var lat = { C: false, H: true, K: false, delta: false, aa: false, cross: true };
+  var sites = [];
+  (function buildSites() {
+    for (var m = -9; m <= 9; m++) for (var n = -9; n <= 9; n++) {
+      BASIS.forEach(function (b) {
+        var x = m * A1[0] + n * A2[0] + b[0], y = m * A1[1] + n * A2[1] + b[1];
+        if (Math.abs(x) <= 6.3 && Math.abs(y) <= 3.75) sites.push({ x: x, y: y, k: b[2] });
+      });
+    }
+  })();
+  var svgL = document.getElementById("lattice");
+  function drawLattice() {
+    while (svgL.firstChild) svgL.removeChild(svgL.firstChild);
+    var sc = 40, cx = 260, cy = 160;
+    var P = function (s) { return [cx + s.x * sc, cy - s.y * sc]; };
+    var act = sites.filter(function (s) { return lat[TYPE_OF[s.k]]; });
+    var gB = el("g", {}, svgL), gS = el("g", {}, svgL);
+    for (var i = 0; i < act.length; i++) for (var j = i + 1; j < act.length; j++) {
+      var a = act[i], b = act[j];
+      var d = Math.hypot(a.x - b.x, a.y - b.y);
+      for (var r = 0; r < RULES.length; r++) {
+        var ru = RULES[r];
+        if (!((a.k === ru[0] && b.k === ru[1]) || (a.k === ru[1] && b.k === ru[0]))) continue;
+        if (Math.abs(d - ru[2]) > 1e-6) continue;
+        if (ru[4] === "aa" && !(lat.aa && lat.H)) continue;
+        if (ru[4] === "cross" && !lat.cross) continue;
+        var pa = P(a), pb = P(b);
+        var col = ru[3] === "CC" ? "var(--c-C)" : ru[3] === "KK" ? "var(--c-K)" : ru[3] === "AB" ? "var(--c-H)" : "var(--muted)";
+        el("line", { x1: pa[0], y1: pa[1], x2: pb[0], y2: pb[1], style: "stroke:" + col,
+          "stroke-width": ru[4] === "within" ? 2 : 1.1, "stroke-dasharray": ru[4] === "within" ? "" : "3 3",
+          opacity: ru[4] === "within" ? 0.75 : 0.6 }, gB);
+        break;
+      }
+    }
+    act.forEach(function (s) {
+      var p = P(s);
+      var col = s.k === "C" ? "var(--c-C)" : s.k === "K" ? "var(--c-K)" :
+        (lat.delta ? (s.k === "A" ? "var(--c-A)" : "var(--c-B)") : "var(--c-H)");
+      el("circle", { cx: p[0], cy: p[1], r: s.k === "K" ? 4.2 : 5.2, style: "fill:" + col + ";stroke:var(--panel)", "stroke-width": 1.5 }, gS);
+    });
+    // one parent cell outline
+    var c0 = [cx, cy], pa1 = [cx + A1[0] * sc, cy - A1[1] * sc], pa2 = [cx + A2[0] * sc, cy - A2[1] * sc], pa12 = [cx + (A1[0] + A2[0]) * sc, cy - (A1[1] + A2[1]) * sc];
+    var shift = [-1.25 * sc, 0];
+    var poly = [c0, pa1, pa12, pa2].map(function (p) { return (p[0] + shift[0]) + "," + p[1]; }).join(" ");
+    el("polygon", { points: poly, fill: "none", style: "stroke:var(--accent)", "stroke-width": 1.4, "stroke-dasharray": "6 4", opacity: 0.8 }, svgL);
+    var lab = el("text", { x: cx - 1.25 * sc + 4, y: cy - A1[1] * sc - 6, "font-size": 11, style: "fill:var(--accent)" }, svgL);
+    lab.textContent = "one parent cell";
+    readLattice();
+  }
+  function readLattice() {
+    var types = ["C", "H", "K"].filter(function (t) { return lat[t]; });
+    var name = "custom host", note = "";
+    if (types.length === 1 && types[0] === "H") { name = lat.delta ? "hBN-like" : "graphene-like"; note = lat.delta ? "honeycomb with unequal A and B energies opens a gap" : "graphene, silicene and germanene differ only in s"; }
+    else if (types.length === 1 && types[0] === "C") { name = "triangular"; note = "one site per cell"; }
+    else if (types.length === 1 && types[0] === "K") { name = "kagome"; note = "has an exactly flat band"; }
+    else if (types.length === 3) { name = "all six sites"; note = "no existing builder: only the parent can make this"; }
+    else if (types.length === 2) { name = types.join(" + ") + " mixed host"; note = "no existing builder: only the parent can make this"; }
+    else { name = "no sites"; note = "at least one type must be on"; }
+    if (lat.aa && lat.H) note += "; t_AA adds A–A and B–B second neighbours";
+    document.getElementById("lt-name").textContent = name;
+    var per = (lat.C ? 1 : 0) + (lat.H ? 2 : 0) + (lat.K ? 3 : 0);
+    var within = [];
+    if (lat.C) within.push("t_CC at √3");
+    if (lat.H) within.push("t_AB at 1");
+    if (lat.K) within.push("t_KK at √3/2");
+    var cross = [];
+    if (lat.C && lat.H) cross.push("t_CH at 1");
+    if (lat.C && lat.K) cross.push("t_CK at √3/2");
+    if (lat.H && lat.K) cross.push("t_HK at 1/2");
+    var rows = [["sites / cell", per || "—"], ["within type", within.join(", ") || "—"],
+      ["between types", types.length > 1 ? (lat.cross ? cross.join(", ") : "off in this view") : "—"],
+      ["note", note]];
+    var dl = document.getElementById("lt-dl");
+    dl.innerHTML = "";
+    rows.forEach(function (r) {
+      var dt = document.createElement("dt"); dt.textContent = r[0];
+      var dd = document.createElement("dd"); dd.textContent = r[1];
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
+  }
+  function syncLatticeControls() {
+    document.querySelectorAll(".lt-type").forEach(function (b) { b.setAttribute("aria-pressed", lat[b.getAttribute("data-t")] ? "true" : "false"); });
+    document.getElementById("lt-delta").checked = lat.delta;
+    document.getElementById("lt-aa").checked = lat.aa;
+    document.getElementById("lt-cross").checked = lat.cross;
+  }
+  document.querySelectorAll(".lt-type").forEach(function (b) {
+    b.addEventListener("click", function () { var t = b.getAttribute("data-t"); lat[t] = !lat[t]; syncLatticeControls(); drawLattice(); });
+  });
+  ["delta", "aa", "cross"].forEach(function (k) {
+    document.getElementById("lt-" + k).addEventListener("change", function (ev) { lat[k] = ev.target.checked; drawLattice(); });
+  });
+  var PRESETS = {
+    graphene: { C: false, H: true, K: false, delta: false, aa: false },
+    hbn: { C: false, H: true, K: false, delta: true, aa: false },
+    triangular: { C: true, H: false, K: false, delta: false, aa: false },
+    kagome: { C: false, H: false, K: true, delta: false, aa: false },
+    full: { C: true, H: true, K: true, delta: true, aa: false }
+  };
+  document.querySelectorAll(".lt-preset").forEach(function (b) {
+    b.addEventListener("click", function () { var p = PRESETS[b.getAttribute("data-p")]; for (var k in p) lat[k] = p[k]; syncLatticeControls(); drawLattice(); });
+  });
+  syncLatticeControls(); drawLattice();
+
+  /* ---------- Figure 4: prior ---------- */
+  var PATTERNS = [["C"], ["H"], ["K"], ["C", "H"], ["C", "K"], ["H", "K"], ["C", "H", "K"]];
+  var U = function (a, b) { return a + Math.random() * (b - a); };
+  var LU = function (a, b) { return Math.exp(U(Math.log(a), Math.log(b))); };
+  var pick = function (arr) { return arr[Math.floor(Math.random() * arr.length)]; };
+  function sample() {
+    var pat = pick(PATTERNS), on = { C: pat.indexOf("C") >= 0, H: pat.indexOf("H") >= 0, K: pat.indexOf("K") >= 0 };
+    var lead = pick(pat);
+    var p = { pat: pat, on: on, lead: lead, s: LU(0.7, 4.0), free: {} };
+    var alone = pat.length === 1;
+    p.eps_H = 0; p.delta = 0; p.eps_C = 0; p.eps_K = 0;
+    if (on.H) {
+      if (alone && Math.random() < 0.5) p.eps_H = 0; else { p.eps_H = U(-2, 2); p.free.eps_H = [-2, 2]; }
+      var hi = 2 - Math.abs(p.eps_H);
+      if (Math.random() < 0.5 || hi < 0.05) p.delta = 0; else { p.delta = U(0.05, hi); p.free.delta = [0.05, hi]; }
+    }
+    if (on.C) { if (alone && Math.random() < 0.5) p.eps_C = 0; else { p.eps_C = U(-2, 2); p.free.eps_C = [-2, 2]; } }
+    if (on.K) { if (alone && Math.random() < 0.5) p.eps_K = 0; else { p.eps_K = U(-2, 2); p.free.eps_K = [-2, 2]; } }
+    p.t = {};
+    var WITHIN = { C: "t_CC", H: "t_AB", K: "t_KK" };
+    pat.forEach(function (ty) {
+      if (ty === lead) p.t[WITHIN[ty]] = 1;
+      else { p.t[WITHIN[ty]] = U(0.2, 1); p.free[WITHIN[ty]] = [0.2, 1]; }
+    });
+    if (on.H) { if (Math.random() < 0.5) p.t.t_AA = 0; else { p.t.t_AA = U(0.03, 0.3); p.free.t_AA = [0.03, 0.3]; } }
+    var bonds = [];
+    if (pat.length === 2) {
+      var nm = { "C,H": "t_CH", "C,K": "t_CK", "H,K": "t_HK" }[pat.join(",")];
+      bonds = [nm];
+    } else if (pat.length === 3) {
+      bonds = pick([["t_CH", "t_CK"], ["t_CH", "t_HK"], ["t_CK", "t_HK"], ["t_CH", "t_CK", "t_HK"]]);
+    }
+    bonds.forEach(function (b) { p.t[b] = U(0.05, 1); p.free[b] = [0.05, 1]; });
+    p.edge = Math.random() < 0.5 ? "armchair" : "zigzag";
+    p.w = 4 + Math.floor(Math.random() * 19);
+    p.c = LU(0.0025, 0.05);
+    var b = (on.C ? 1 : 0) + (on.H ? 2 : 0) + (on.K ? 3 : 0);
+    p.cells = Math.max(1, Math.round(2000 / (8 * b)));
+    p.atoms = p.cells * p.w * b;
+    p.n = Math.max(1, Math.round(p.c * p.atoms));
+    return p;
+  }
+  function warnings(p) {
+    var out = [];
+    var near = function (v, lo, hi) { var w = hi - lo; return v - lo < 0.02 * w || hi - v < 0.02 * w; };
+    if (near(Math.log(p.s), Math.log(0.7), Math.log(4))) out.push("s");
+    var vals = { eps_H: p.eps_H, delta: p.delta, eps_C: p.eps_C, eps_K: p.eps_K };
+    for (var k in p.free) {
+      var v = (k in vals) ? vals[k] : p.t[k];
+      if (near(v, p.free[k][0], p.free[k][1])) out.push(k);
+    }
+    if (p.w === 4 || p.w === 22) out.push("w");
+    if (near(Math.log(p.c), Math.log(0.0025), Math.log(0.05))) out.push("c");
+    return out;
+  }
+  var tally = [0, 0, 0, 0, 0, 0, 0], total = 0;
+  function patIndex(p) { return PATTERNS.findIndex(function (q) { return q.join() === p.pat.join(); }); }
+  function showDraw(p) {
+    var rows = [
+      ["pattern", p.pat.join(" + ")], ["lead type", p.lead + " (its hopping fixed at 1)"],
+      ["energy scale s", fmt(p.s, 3) + " eV"]
+    ];
+    if (p.on.H) { rows.push(["ε̄_H, Δ", fmt(p.eps_H, 3) + ", " + fmt(p.delta, 3) + (p.delta === 0 ? "  (point mass)" : "")]); }
+    if (p.on.C) rows.push(["ε_C", fmt(p.eps_C, 3) + (p.eps_C === 0 ? "  (point mass)" : "")]);
+    if (p.on.K) rows.push(["ε_K", fmt(p.eps_K, 3) + (p.eps_K === 0 ? "  (point mass)" : "")]);
+    var hop = Object.keys(p.t).map(function (k) { return k + " = " + (p.t[k] === 0 ? "0 (off)" : fmt(p.t[k], 3)); }).join(", ");
+    rows.push(["hoppings", hop]);
+    rows.push(["edge, width", p.edge + ", w = " + p.w]);
+    rows.push(["density", fmt(100 * p.c, 2) + "% → " + p.n + " impurities"]);
+    rows.push(["device", p.cells + " cells, " + p.atoms.toLocaleString() + " atoms"]);
+    var dl = document.getElementById("pr-dl");
+    dl.innerHTML = "";
+    rows.forEach(function (r) {
+      var dt = document.createElement("dt"); dt.textContent = r[0];
+      var dd = document.createElement("dd"); dd.textContent = r[1];
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
+    var w = warnings(p), box = document.getElementById("pr-warn");
+    box.innerHTML = "";
+    var chip = document.createElement("span");
+    chip.className = "chip " + (w.length ? "warn" : "good");
+    chip.textContent = w.length ? "box-edge warning: " + w.join(", ") : "no box-edge warning";
+    box.appendChild(chip);
+  }
+  var hist = document.getElementById("pr-hist");
+  function drawHist() {
+    while (hist.firstChild) hist.removeChild(hist.firstChild);
+    var L = 34, R = 352, T = 12, B = 196, ymax = 0.25;
+    var Y = function (v) { return B - (v / ymax) * (B - T); };
+    [0, 0.1, 0.2].forEach(function (v) {
+      el("line", { x1: L, x2: R, y1: Y(v), y2: Y(v), style: "stroke:var(--soft)" }, hist);
+      var t = el("text", { x: L - 6, y: Y(v) + 4, "text-anchor": "end", "font-size": 10, style: "fill:var(--muted)" }, hist);
+      t.textContent = v.toFixed(1);
+    });
+    var bw = (R - L) / 7;
+    var labels = ["C", "H", "K", "C+H", "C+K", "H+K", "all"];
+    tally.forEach(function (c, i) {
+      var f = total ? c / total : 0;
+      el("rect", { x: L + i * bw + 5, y: Y(Math.min(f, ymax)), width: bw - 10, height: B - Y(Math.min(f, ymax)), rx: 3, style: "fill:var(--accent)", opacity: 0.85 }, hist);
+      var t = el("text", { x: L + i * bw + bw / 2, y: B + 15, "text-anchor": "middle", "font-size": 10, style: "fill:var(--ink)" }, hist);
+      t.textContent = labels[i];
+    });
+    el("line", { x1: L, x2: R, y1: Y(1 / 7), y2: Y(1 / 7), style: "stroke:var(--c-K)", "stroke-dasharray": "5 4", "stroke-width": 1.5 }, hist);
+    var lt = el("text", { x: R, y: Y(1 / 7) - 5, "text-anchor": "end", "font-size": 10, style: "fill:var(--c-K)" }, hist);
+    lt.textContent = "1/7";
+    el("line", { x1: L, x2: R, y1: B, y2: B, style: "stroke:var(--muted)" }, hist);
+    var yl = el("text", { x: 10, y: (T + B) / 2, "text-anchor": "middle", "font-size": 10, transform: "rotate(-90 10 " + (T + B) / 2 + ")", style: "fill:var(--muted)" }, hist);
+    yl.textContent = "share of draws";
+    document.getElementById("pr-n").textContent = "(" + total.toLocaleString() + " draws)";
+  }
+  function draw(n) {
+    var last;
+    for (var i = 0; i < n; i++) { last = sample(); tally[patIndex(last)]++; total++; }
+    showDraw(last); drawHist();
+  }
+  document.getElementById("pr-one").addEventListener("click", function () { draw(1); });
+  document.getElementById("pr-many").addEventListener("click", function () { draw(1000); });
+  document.getElementById("pr-reset").addEventListener("click", function () { tally = [0, 0, 0, 0, 0, 0, 0]; total = 0; drawHist(); });
+  draw(200);
+
+  /* ---------- Figure 6: cost ---------- */
+  function cost() {
+    var n = +document.getElementById("cc-draws").value, s = +document.getElementById("cc-sec").value, j = +document.getElementById("cc-jobs").value;
+    document.getElementById("cc-draws-v").textContent = n.toLocaleString();
+    document.getElementById("cc-sec-v").textContent = s.toFixed(1) + " s";
+    document.getElementById("cc-jobs-v").textContent = j;
+    var h = n * s / j / 3600;
+    document.getElementById("cc-out").textContent = h < 48 ? h.toFixed(1) + " hours" : (h / 24).toFixed(1) + " days";
+    document.getElementById("cc-sub").textContent = n.toLocaleString() + " × " + s.toFixed(1) + " s ÷ " + j + " workers = " + h.toFixed(1) + " h";
+  }
+  ["cc-draws", "cc-sec", "cc-jobs"].forEach(function (id) { document.getElementById(id).addEventListener("input", cost); });
+  cost();
+
+  /* ---------- Figure 8: probability update ---------- */
+  var CANDS = [
+    { name: "1 · hBN-like, armchair", p: 0.41 },
+    { name: "2 · H+K, armchair", p: 0.22 },
+    { name: "3 · hBN-like, zigzag", p: 0.14 },
+    { name: "4 · C+H, armchair", p: 0.08 },
+    { name: "5 · H+K+C, zigzag", p: 0.05 }
+  ];
+  var P0 = 0.10;
+  var SCEN = { clear: [6, 1, -3, -8, -10], flip: [-6, 5, -4, -8, -9], none: [-12, -14, -15, -16, -18] };
+  var fits = SCEN.clear.slice();
+  var rowsBox = document.getElementById("up-rows");
+  function buildUpdate() {
+    rowsBox.innerHTML = "";
+    CANDS.forEach(function (c, i) {
+      var row = document.createElement("div");
+      row.className = "bar-row";
+      row.innerHTML = '<div style="min-width:0"><div>' + c.name + '</div></div>' +
+        '<div style="display:grid; gap:6px; min-width:0"><div class="bar-track"><div class="bar model" id="bm' + i + '"></div><div class="bar updated" id="bu' + i + '"></div></div>' +
+        '<input type="range" min="-20" max="10" step="0.5" id="fit' + i + '" aria-label="fit of candidate ' + (i + 1) + '"></div>' +
+        '<div class="bar-val" id="bv' + i + '"></div>';
+      rowsBox.appendChild(row);
+      var inp = row.querySelector("input");
+      inp.value = fits[i];
+      inp.addEventListener("input", function () { fits[i] = +inp.value; update(); });
+    });
+    var bg = document.createElement("div");
+    bg.className = "bar-row";
+    bg.innerHTML = '<div class="muted">everything else (p₀)</div><div class="bar-track"><div class="bar model" id="bm5"></div><div class="bar updated" id="bu5" style="background:var(--muted)"></div></div><div class="bar-val" id="bv5"></div>';
+    rowsBox.appendChild(bg);
+  }
+  function update() {
+    var k = +document.getElementById("up-kappa").value;
+    document.getElementById("up-kappa-v").textContent = k.toFixed(1);
+    var w = CANDS.map(function (c, i) { return c.p * Math.exp(fits[i] / k); });
+    var den = w.reduce(function (a, b) { return a + b; }, 0) + P0;
+    CANDS.forEach(function (c, i) {
+      var u = w[i] / den;
+      document.getElementById("bm" + i).style.width = (100 * c.p) + "%";
+      document.getElementById("bu" + i).style.width = (100 * u) + "%";
+      document.getElementById("bv" + i).textContent = c.p.toFixed(2) + "→" + u.toFixed(2);
+    });
+    var ub = P0 / den;
+    document.getElementById("bm5").style.width = (100 * P0) + "%";
+    document.getElementById("bu5").style.width = (100 * ub) + "%";
+    document.getElementById("bv5").textContent = P0.toFixed(2) + "→" + ub.toFixed(2);
+  }
+  document.getElementById("up-kappa").addEventListener("input", update);
+  document.querySelectorAll(".up-preset").forEach(function (b) {
+    b.addEventListener("click", function () {
+      fits = SCEN[b.getAttribute("data-s")].slice();
+      CANDS.forEach(function (c, i) { document.getElementById("fit" + i).value = fits[i]; });
+      update();
+    });
+  });
+  buildUpdate(); update();
+
+  /* ---------- Figure 9: progress ---------- */
+  var PHASES = [
+    ["Phase 1 · Parent lattice", [["Canonical host parameters", "done"], ["Geometry, ribbon and bulk Hamiltonians", "done"], ["Special cases match existing builders", "done"]]],
+    ["Phase 2 · Training data", [["Prior sampler, warnings, hidden materials", "done"], ["Simulate one draw; rejection rules", "done"], ["Sharded generator, loader, validity check", "done"], ["Smoke run; you choose the full-run size", "run"]]],
+    ["Phase 3 · Generative model", [["Discrete states and continuous encoding", "todo"], ["The inverse model", "todo"], ["Training script", "todo"]]],
+    ["Phase 4 · Answers and gates", [["Candidates from samples", "todo"], ["Calibration metrics and gate", "todo"], ["Simulator check and likelihood", "todo"], ["Trust-region refinement", "todo"], ["Updated probabilities", "todo"], ["Design pipeline and report", "todo"], ["Hidden-material and end-to-end tests", "todo"]]]
+  ];
+  var ph = document.getElementById("phases"), tn = 0;
+  PHASES.forEach(function (P) {
+    var d = document.createElement("div"); d.className = "phase";
+    var h = document.createElement("h3"); h.textContent = P[0]; d.appendChild(h);
+    P[1].forEach(function (t) {
+      tn++;
+      var r = document.createElement("div"); r.className = "task " + t[1];
+      r.innerHTML = '<span class="st" aria-hidden="true"></span><span><span class="mono muted">T' + tn + '</span> ' + t[0] +
+        (t[1] === "run" ? ' <span class="chip run">waiting for your decision</span>' : "") + "</span>";
+      d.appendChild(r);
+    });
+    ph.appendChild(d);
+  });
+})();
+</script>
