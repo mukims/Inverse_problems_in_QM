@@ -24,6 +24,7 @@ from shazam.inverse import data
 from shazam.inverse.encoding import STATES, active_slots, encode
 from shazam.inverse.model import InverseModel
 from shazam.inverse.runio import atomic_save, code_version
+from tbribbon import parent_data
 from tbribbon.parent_prior import excluded
 
 DEFAULT_DATA = paths.data_root() / "_generated" / "hexagonal_parent_v1"
@@ -44,8 +45,20 @@ class TrainConfig:
     patience: int = 10
     seed: int = 0
     exclude: str = "none"                      # none, hbn, kagome or silicene
+    group_norm: bool = True                    # False: the encoder without GroupNorm (INV-NOGN)
+    weight_decay: float = 0.01                 # AdamW's decoupled weight decay; 0 is plain Adam (the model_v1 run)
+    schedule: str = "none"                     # none (constant rate) or plateau (halve it when validation stalls)
+    input: str = "log"                         # log: the stored x; linear: T itself (parent_data.to_input_linear)
+    extra_conv: int = 0                        # extra stride-1 conv blocks in the encoder (INV-DEPTH)
+    encoder: str = "cnn"                       # cnn or mlp (INV-MLP)
+    mlp_hidden: tuple = (512, 256)             # mlp encoder: hidden widths
+    dropout: float = 0.0                       # mlp encoder: dropout after each hidden layer
+    init_encoder: str = ""                     # path of a SpectrumAutoencoder ae.pt whose encoder starts the model (INV-AE)
+    freeze_encoder: bool = False               # keep that encoder fixed (and in eval mode) while the heads train
+    pool: str = "avg13"                        # cnn pooling before the Linear: avg13, gap or spectral (INV-POOL)
 
 
+PLATEAU_FACTOR, PLATEAU_PATIENCE, MIN_LR = 0.5, 3, 1e-5     # the plateau schedule: halve after 3 epochs without a new best
 NEEDED = ("index", "x", "on", "lead", "params", "edge", "width", "density")      # the arrays `train` reads
 
 
@@ -53,17 +66,34 @@ def _config(cfg):
     return cfg if isinstance(cfg, TrainConfig) else TrainConfig(**cfg)
 
 
-def prepare(arrays, hide="none"):
+def make_optimizer(model, cfg):
+    """(AdamW, scheduler or None). With weight_decay 0 AdamW is exactly Adam; schedule "plateau" halves the rate (down to
+    MIN_LR) after PLATEAU_PATIENCE epochs without a new best validation loss, and is stepped with that loss."""
+    cfg = _config(cfg)
+    if cfg.schedule not in ("none", "plateau"):
+        raise ValueError(f"unknown schedule {cfg.schedule!r}; use none or plateau")
+    opt = torch.optim.AdamW(model.parameters(), cfg.lr, weight_decay=cfg.weight_decay)
+    sched = (torch.optim.lr_scheduler.ReduceLROnPlateau(opt, factor=PLATEAU_FACTOR, patience=PLATEAU_PATIENCE,
+                                                        min_lr=MIN_LR) if cfg.schedule == "plateau" else None)
+    return opt, sched
+
+
+def prepare(arrays, hide="none", input="log"):
     """(tensors, excluded count): x float32 [N, 416], state int64 [N], z float32 [N, 14], mask bool [N, 14].
 
-    Rows in the neighbourhood of `hide` are dropped; every remaining draw is encoded once."""
+    Rows in the neighbourhood of `hide` are dropped; every remaining draw is encoded once. x is the stored log input
+    for input="log", or T itself from the stored raw spectra for input="linear" (the arrays then need "raw")."""
+    if input not in ("log", "linear", "bandtop"):
+        raise ValueError(f"unknown input {input!r}; use log, linear or bandtop")
     draws = data.draws(arrays, slice(None))
     keep = np.array([hide == "none" or not excluded(d, hide) for d in draws], dtype=bool)
     enc = [encode(d) for d, k in zip(draws, keep) if k]
     if not enc:
         raise ValueError(f"no rows left after excluding {hide!r}")
     state, z, mask = zip(*enc)
-    tensors = dict(x=torch.as_tensor(np.asarray(arrays["x"][keep], dtype=np.float32)),
+    x = (arrays["x"][keep] if input == "log" else parent_data.to_input_linear(arrays["raw"][keep]) if input == "linear"
+         else parent_data.to_input_bandtop(arrays["raw"][keep]))
+    tensors = dict(x=torch.as_tensor(np.asarray(x, dtype=np.float32)),
                    state=torch.as_tensor(np.array(state), dtype=torch.long),
                    z=torch.as_tensor(np.stack(z), dtype=torch.float32),
                    mask=torch.as_tensor(np.stack(mask), dtype=torch.bool))
@@ -94,20 +124,35 @@ def train(train_arrays, val_arrays, cfg, on_epoch=None):
         raise ValueError(f"epochs must be at least 1, got {cfg.epochs}")
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
-    tr, n_ex_tr = prepare(train_arrays, cfg.exclude)
-    va, n_ex_va = prepare(val_arrays, cfg.exclude)
+    tr, n_ex_tr = prepare(train_arrays, cfg.exclude, cfg.input)
+    va, n_ex_va = prepare(val_arrays, cfg.exclude, cfg.input)
     masks = torch.as_tensor(np.stack([active_slots(s) for s in STATES]))
-    model = InverseModel(len(STATES), state_masks=masks)                      # fixed table: sampling never depends on training
-    opt = torch.optim.Adam(model.parameters(), cfg.lr)
+    model = InverseModel(len(STATES), channels=tr["x"].shape[1], state_masks=masks, group_norm=cfg.group_norm,
+                         input=cfg.input,
+                         extra_conv=cfg.extra_conv, encoder=cfg.encoder,
+                         mlp_hidden=tuple(cfg.mlp_hidden), dropout=cfg.dropout, pool=cfg.pool)   # fixed table: sampling never depends on training
+    frozen = []
+    if cfg.init_encoder:
+        from shazam.inverse.autoencoder import SpectrumAutoencoder
+        SpectrumAutoencoder.load(cfg.init_encoder).copy_encoder_into(model)        # raises on any setting mismatch
+        if cfg.freeze_encoder:
+            frozen = [model.encoder] + ([model.band_top] if hasattr(model, "band_top") else [])
+            for m in frozen:
+                m.requires_grad_(False)
+    elif cfg.freeze_encoder:
+        raise ValueError("freeze_encoder needs init_encoder")
+    opt, sched = make_optimizer(model, cfg)
     gen = torch.Generator().manual_seed(cfg.seed)
     n = len(tr["x"])
-    history = dict(train_loss=[], val_loss=[], train_ce=[], train_flow=[], val_ce=[], val_flow=[], seconds=[],
+    history = dict(train_loss=[], val_loss=[], train_ce=[], train_flow=[], val_ce=[], val_flow=[], seconds=[], lr=[],
                    best_epoch=None, excluded=dict(hide=cfg.exclude, train=n_ex_tr, val=n_ex_va),
                    n_train=n, n_val=len(va["x"]), cfg=asdict(cfg))
     best, best_state = float("inf"), None
     for epoch in range(cfg.epochs):
         t0 = time.time()
         model.train()
+        for m in frozen:                               # a frozen encoder keeps dropout off
+            m.eval()
         perm = torch.randperm(n, generator=gen)
         tot = dict(loss=0.0, ce=0.0, flow=0.0)
         for i in range(0, n, cfg.batch):
@@ -128,6 +173,9 @@ def train(train_arrays, val_arrays, cfg, on_epoch=None):
         history["val_ce"].append(v["ce"])
         history["val_flow"].append(v["flow"])
         history["seconds"].append(time.time() - t0)
+        history["lr"].append(opt.param_groups[0]["lr"])            # the rate this epoch trained with
+        if sched is not None:
+            sched.step(v["loss"])
         improved = v["loss"] < best
         if improved:
             best, history["best_epoch"] = v["loss"], epoch
@@ -151,6 +199,21 @@ def main(argv=None):
     ap.add_argument("--patience", type=int, default=10)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--threads", type=int, default=None, help="torch intra-op threads (default: torch's own)")
+    ap.add_argument("--weight-decay", type=float, default=0.01,
+                    help="AdamW weight decay (default 0.01; 0 is plain Adam, as model_v1 was trained)")
+    ap.add_argument("--schedule", choices=("none", "plateau"), default="none", help="learning-rate schedule")
+    ap.add_argument("--input", choices=("log", "linear", "bandtop"), default="log",
+                    help="log: the stored log-scaled x; linear: T itself; bandtop: T resampled to its own band top")
+    ap.add_argument("--encoder", choices=("cnn", "mlp"), default="cnn", help="1D-conv or fully connected encoder")
+    ap.add_argument("--pool", choices=("avg13", "gap", "spectral"), default="avg13", help="cnn pooling before the Linear")
+    ap.add_argument("--init-encoder", default="", help="SpectrumAutoencoder ae.pt to start the encoder from")
+    ap.add_argument("--freeze-encoder", action="store_true", help="keep the --init-encoder encoder fixed")
+    ap.add_argument("--mlp-hidden", type=int, nargs="+", default=[512, 256], help="mlp encoder hidden widths")
+    ap.add_argument("--dropout", type=float, default=0.0, help="mlp encoder dropout")
+    ap.add_argument("--extra-conv", type=int, default=0, help="extra stride-1 conv blocks after the third conv")
+    ap.add_argument("--no-group-norm", dest="group_norm", action="store_false", help="encoder without GroupNorm")
+    ap.add_argument("--max-draws", type=int, default=None,
+                    help="use only draws with index below this (keeps a run comparable while the data set grows)")
     a = ap.parse_args(argv)
     code_version()                                     # this run's code version: fixed now, when it starts
     out = Path(a.out) if a.out else default_out(a.exclude)
@@ -160,20 +223,24 @@ def main(argv=None):
         torch.set_num_threads(a.threads)
     out.mkdir(parents=True, exist_ok=True)
     extra = dict(data=str(a.data), code_version=code_version(), data_provenance=data.data_provenance(a.data),
-                 threads=torch.get_num_threads())
+                 threads=torch.get_num_threads(), max_draws=a.max_draws)
     t0 = time.time()
-    tr, va = data.load_split(a.data, "train", NEEDED), data.load_split(a.data, "val", NEEDED)
+    keys = NEEDED + (("raw",) if a.input != "log" else ())
+    tr, va = data.load_split(a.data, "train", keys), data.load_split(a.data, "val", keys)
+    if a.max_draws is not None:
+        tr, va = ({k: v[s["index"] < a.max_draws] for k, v in s.items()} for s in (tr, va))
     print(f"[inverse] {len(tr['x']):,} train / {len(va['x']):,} val rows loaded ({time.time() - t0:.0f}s)", flush=True)
 
     def on_epoch(model, history, improved):
         e = len(history["val_loss"]) - 1
         print(f"[inverse] epoch {e} train {history['train_loss'][e]:.4f} val {history['val_loss'][e]:.4f} "
-              f"({history['seconds'][e]:.0f}s){' *' if improved else ''}", flush=True)
+              f"lr {history['lr'][e]:.1e} ({history['seconds'][e]:.0f}s){' *' if improved else ''}", flush=True)
         if improved:                                  # the file always holds the best model so far
             atomic_save(out / "model.pt", lambda p: torch.save({"cfg": model.cfg, "state_dict": model.state_dict()}, p))
         atomic_save(out / "history.json", lambda p: p.write_text(json.dumps({**history, **extra}, indent=1)))
 
-    cfg = TrainConfig(a.epochs, a.batch, a.lr, a.patience, a.seed, a.exclude)
+    cfg = TrainConfig(a.epochs, a.batch, a.lr, a.patience, a.seed, a.exclude, a.group_norm, a.weight_decay, a.schedule, a.input, a.extra_conv, a.encoder,
+                      tuple(a.mlp_hidden), a.dropout, a.init_encoder, a.freeze_encoder, a.pool)
     model, history = train(tr, va, cfg, on_epoch)
     atomic_save(out / "model.pt", model.save)
     atomic_save(out / "history.json", lambda p: p.write_text(json.dumps({**history, **extra}, indent=1)))

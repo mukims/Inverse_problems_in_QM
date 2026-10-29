@@ -18,18 +18,83 @@ import torch.nn.functional as F
 _T_FREQS = torch.tensor([1.0, 2.0, 4.0, 8.0]) * torch.pi              # Fourier features of the flow time
 
 
+ENCODERS = ("cnn", "mlp")
+POOLS = ("avg13", "gap", "spectral")
+
+
+class SpectralPool1d(nn.Module):
+    """Downsample along the last axis by keeping the lowest Fourier frequencies (INV-POOL): rfft, keep the
+    out_len // 2 + 1 lowest coefficients, inverse transform onto out_len points. Keeps the mean and smooth shape with
+    no block edges (average pooling averages fixed blocks of 4 instead)."""
+
+    def __init__(self, out_len):
+        super().__init__()
+        self.out_len = out_len
+
+    def forward(self, x):
+        X = torch.fft.rfft(x, dim=-1, norm="forward")
+        return torch.fft.irfft(X[..., :self.out_len // 2 + 1], n=self.out_len, dim=-1, norm="forward")
+
+
+def make_encoder(channels=416, embed=128, group_norm=True, extra_conv=0, encoder="cnn", mlp_hidden=(512, 256),
+                 dropout=0.0, pool="avg13"):
+    """The spectrum encoder, [batch, channels] -> [batch, embed] through `run_encoder` (shared by InverseModel and the
+    autoencoder, so a pretrained encoder's state dict loads into either).
+
+    cnn: three stride-2 convs (32, 64, 128 filters), each with GroupNorm (unless group_norm=False) and GELU, then
+    `extra_conv` 128 -> 128 width-3 stride-1 blocks at the same 52 positions, then the pool and a Linear: avg13
+    averages blocks of 4 positions into 13 buckets, gap averages all positions (no position kept), spectral keeps the 7
+    lowest frequencies on 13 points (SpectralPool1d).
+    mlp: Linear -> LayerNorm -> GELU (-> Dropout) for each width in mlp_hidden, then a Linear to embed; every energy
+    feeds every unit from the first layer (no locality, no weight sharing across energies)."""
+    if encoder not in ENCODERS:
+        raise ValueError(f"unknown encoder {encoder!r}; use one of {ENCODERS}")
+    if pool not in POOLS:
+        raise ValueError(f"unknown pool {pool!r}; use one of {POOLS}")
+    if encoder == "mlp":
+        if extra_conv:
+            raise ValueError("extra_conv adds conv blocks, which the mlp encoder does not have")
+        layers, width = [], channels
+        for h in mlp_hidden:
+            layers += [nn.Linear(width, h), nn.LayerNorm(h), nn.GELU()] + ([nn.Dropout(dropout)] if dropout else [])
+            width = h
+        return nn.Sequential(*layers, nn.Linear(width, embed))
+    # group_norm=False drops the per-spectrum GroupNorm after each conv, which rescales each group of feature rows over
+    # all energies and so may remove their overall level (plateau height, i.e. the channel count)
+    norm = (lambda c: [nn.GroupNorm(8, c)]) if group_norm else (lambda c: [])
+    extra = [m for _ in range(extra_conv) for m in (nn.Conv1d(128, 128, 3, 1, 1), *norm(128), nn.GELU())]
+    return nn.Sequential(
+        nn.Conv1d(1, 32, 7, 2, 3), *norm(32), nn.GELU(),
+        nn.Conv1d(32, 64, 5, 2, 2), *norm(64), nn.GELU(),
+        nn.Conv1d(64, 128, 3, 2, 1), *norm(128), nn.GELU(),
+        *extra,
+        {"avg13": nn.AdaptiveAvgPool1d(13), "gap": nn.AdaptiveAvgPool1d(1), "spectral": SpectralPool1d(13)}[pool],
+        nn.Flatten(), nn.Linear(128 * (1 if pool == "gap" else 13), embed))
+
+
+def run_encoder(module, kind, x):
+    """Apply an encoder built by make_encoder(encoder=kind) to x of shape [batch, channels]."""
+    return module(x if kind == "mlp" else x.unsqueeze(1))
+
+
 class InverseModel(nn.Module):
-    def __init__(self, n_states, n_cont=14, channels=416, embed=128, state_masks=None, state_embed=32, hidden=256):
+    def __init__(self, n_states, n_cont=14, channels=416, embed=128, state_masks=None, state_embed=32, hidden=256,
+                 group_norm=True, input="log", extra_conv=0, encoder="cnn", mlp_hidden=(512, 256), dropout=0.0,
+                 pool="avg13"):
         super().__init__()
         self.cfg = dict(n_states=n_states, n_cont=n_cont, channels=channels, embed=embed, state_embed=state_embed,
-                        hidden=hidden, masks_fixed=state_masks is not None)
+                        hidden=hidden, group_norm=group_norm, input=input, extra_conv=extra_conv, encoder=encoder,
+                        mlp_hidden=list(mlp_hidden), dropout=dropout, pool=pool, masks_fixed=state_masks is not None)
         self.n_states, self.n_cont = n_states, n_cont
-        pool = 13
-        self.encoder = nn.Sequential(
-            nn.Conv1d(1, 32, 7, 2, 3), nn.GroupNorm(8, 32), nn.GELU(),
-            nn.Conv1d(32, 64, 5, 2, 2), nn.GroupNorm(8, 64), nn.GELU(),
-            nn.Conv1d(64, 128, 3, 2, 1), nn.GroupNorm(8, 128), nn.GELU(),
-            nn.AdaptiveAvgPool1d(pool), nn.Flatten(), nn.Linear(128 * pool, embed))
+        # `input` only records which spectrum transform the model was trained on ("log": parent_data.to_input,
+        # "linear": parent_data.to_input_linear); callers must feed the same one
+        # a CNN on the bandtop input (parent_data.to_input_bandtop: 416 resampled values + the band top) convolves only
+        # the spectrum and adds the band top to the fingerprint through its own Linear; an MLP reads all values directly
+        self._split_top = input == "bandtop" and encoder == "cnn"
+        self.encoder = make_encoder(channels - self._split_top, embed, group_norm, extra_conv, encoder, mlp_hidden,
+                                    dropout, pool)
+        if self._split_top:
+            self.band_top = nn.Linear(1, embed)
         self.discrete = nn.Sequential(nn.Linear(embed, 256), nn.GELU(), nn.Linear(256, n_states))
         self.state_emb = nn.Embedding(n_states, state_embed)
         d_in = n_cont + 2 * len(_T_FREQS) + 1 + embed + state_embed + n_cont                  # z_t, t, h, state embedding, mask
@@ -46,7 +111,9 @@ class InverseModel(nn.Module):
         self.register_buffer("mask_known", known)
 
     def encode(self, x):
-        return self.encoder(x.unsqueeze(1))
+        if self._split_top:
+            return run_encoder(self.encoder, "cnn", x[:, :-1]) + self.band_top(x[:, -1:])
+        return run_encoder(self.encoder, self.cfg["encoder"], x)
 
     def _velocity(self, zt, t, h, state, mask):
         m = mask.to(zt.dtype)

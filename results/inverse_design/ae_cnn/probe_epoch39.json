@@ -1,0 +1,7 @@
+{
+ "state": 0.4126,
+ "width": 0.2362,
+ "input": "bandtop",
+ "n_train": 60000,
+ "n_val": 15000
+}

@@ -150,3 +150,99 @@ def test_an_excluded_run_never_writes_into_model_v1(shard, tmp_path, monkeypatch
     with pytest.raises(SystemExit, match="model_v1"):
         ti.main(["--data", str(shard), "--exclude", "hbn", "--epochs", "1", "--out", str(ti.DEFAULT_OUT)])
     assert not (tmp_path / "inverse_design" / "model_v1").exists()
+
+
+def test_optimizer_is_adamw_and_the_plateau_schedule_halves_the_rate_when_validation_stalls():
+    model = InverseModel(3)
+    opt, sched = ti.make_optimizer(model, ti.TrainConfig(lr=1e-3, weight_decay=1e-2, schedule="plateau"))
+    assert isinstance(opt, torch.optim.AdamW) and opt.param_groups[0]["weight_decay"] == 1e-2
+    sched.step(1.0)
+    for _ in range(ti.PLATEAU_PATIENCE + 1):               # no improvement for longer than the schedule's patience
+        sched.step(1.0)
+    assert opt.param_groups[0]["lr"] == pytest.approx(5e-4)
+    # default: weight decay 0.01 and a constant rate; weight_decay=0 reproduces model_v1's plain Adam
+    opt, sched = ti.make_optimizer(model, ti.TrainConfig())
+    assert opt.param_groups[0]["weight_decay"] == 0.01 and sched is None
+    assert ti.make_optimizer(model, ti.TrainConfig(weight_decay=0.0))[0].param_groups[0]["weight_decay"] == 0
+
+
+def test_linear_input_is_the_cleaned_spectrum_without_the_log_and_training_can_use_it(shard):
+    va = data.load_split(shard, "val", ti.NEEDED + ("raw",))
+    lin = parent_data.to_input_linear(va["raw"])
+    assert lin.dtype == np.float32 and lin.shape == va["raw"].shape and lin.min() >= 0
+    # same rounding, despike and clip as the log input: undoing the log gives the same T (to float32 precision)
+    assert np.allclose(np.expm1(va["x"].astype(np.float64) * np.log1p(parent_data.V4.cap)), lin, atol=2e-5 * 64)
+    tensors, _ = ti.prepare(va, input="linear")
+    assert torch.equal(tensors["x"], torch.as_tensor(lin))
+    with pytest.raises(ValueError):
+        ti.prepare(va, input="sqrt")
+
+
+def test_bandtop_input_resamples_each_spectrum_to_its_own_band_top_and_keeps_the_top(shard):
+    va = data.load_split(shard, "val", ti.NEEDED + ("raw",))
+    lin = parent_data.to_input_linear(va["raw"])
+    bt = parent_data.to_input_bandtop(va["raw"])
+    assert bt.dtype == np.float32 and bt.shape == (len(lin), 417)
+    for row_lin, row_bt in zip(lin, bt):
+        k = np.nonzero(row_lin > 0)[0].max() + 1                      # channels up to the band top
+        assert row_bt[-1] == pytest.approx(k / 416)                   # band top as a fraction of the window
+        assert row_bt[0] == row_lin[0] and row_bt[415] == pytest.approx(row_lin[k - 1])
+        assert row_bt[:416].max() <= row_lin.max() + 1e-6           # interpolation adds no new extremes
+    # a spectrum whose signal fills the window is resampled onto itself
+    full = np.linspace(1, 3, 416)[None]
+    assert np.allclose(parent_data.to_input_bandtop(full)[0, :416], parent_data.to_input_linear(full)[0])
+    tensors, _ = ti.prepare(va, input="bandtop")
+    assert tensors["x"].shape == (len(lin), 417)
+
+
+def test_pristine_target_uses_the_inputs_band_top(shard):
+    va = data.load_split(shard, "val", ti.NEEDED + ("raw", "clean"))
+    before = parent_data.to_input_bandtop(va["raw"])
+    tgt = parent_data.pristine_target_bandtop(va["clean"], va["raw"])
+    assert tgt.dtype == np.float32 and tgt.shape == (len(va["raw"]), 416)
+    k = parent_data.bandtop_k(parent_data.to_input_linear(va["raw"]))
+    for i in range(len(tgt)):
+        expect = np.interp(np.linspace(0, k[i] - 1, 416), np.arange(k[i]), va["clean"][i, :k[i]].astype(float))
+        assert np.allclose(tgt[i], expect, atol=1e-5)
+    assert tgt.min() >= 0 and tgt.max() <= va["clean"].max()
+    assert np.array_equal(parent_data.to_input_bandtop(va["raw"]), before)
+    assert np.array_equal(parent_data.bandtop_k(np.zeros((1, 416))), [416])
+
+
+def test_autoencoder_training_reads_only_train_rows_and_writes_its_files(shard, tmp_path, monkeypatch):
+    ta = _load("build", "train_autoencoder")
+    seen = {}
+    orig = ta.make_arrays
+
+    def spy(arrays):
+        seen.setdefault("index", []).append(arrays["index"].copy())
+        return orig(arrays)
+    monkeypatch.setattr(ta, "make_arrays", spy)
+    out = tmp_path / "ae"
+    hist = ta.main(["--data", str(shard), "--out", str(out), "--encoder", "mlp", "--mlp-hidden", "32", "16",
+                    "--epochs", "2", "--batch", "32", "--threads", "2"])
+    tr_idx, va_idx = seen["index"]
+    assert np.all(np.isin(tr_idx % 20, range(18))) and np.all(va_idx % 20 == 18)
+    assert (out / "ae.pt").exists() and (out / "history.json").exists()
+    h = json.loads((out / "history.json").read_text())
+    assert len(h["val_loss"]) == 2 and h["baseline_val_mse"] > 0 and h["cfg"]["encoder"] == "mlp"
+    assert hist["best_epoch"] in (0, 1)
+
+
+def test_init_encoder_copies_and_freeze_keeps_the_weights(shard, tmp_path):
+    from shazam.inverse.autoencoder import SpectrumAutoencoder
+    torch.manual_seed(3)
+    ae = SpectrumAutoencoder(encoder="mlp", mlp_hidden=(32, 16), dropout=0.1)
+    ae.save(tmp_path / "ae.pt")
+    tr, va = data.load_split(shard, "train", ti.NEEDED + ("raw",)), data.load_split(shard, "val", ti.NEEDED + ("raw",))
+    base = dict(epochs=1, batch=64, input="bandtop", encoder="mlp", mlp_hidden=(32, 16), dropout=0.1,
+                init_encoder=str(tmp_path / "ae.pt"))
+    frozen, h = ti.train(tr, va, ti.TrainConfig(**base, freeze_encoder=True))
+    assert h["cfg"]["freeze_encoder"] and h["cfg"]["init_encoder"].endswith("ae.pt")
+    for a, b in zip(ae.encoder.state_dict().values(), frozen.encoder.state_dict().values()):
+        assert torch.equal(a, b)                                            # frozen: bitwise unchanged
+    tuned, _ = ti.train(tr, va, ti.TrainConfig(**base))
+    assert any(not torch.equal(a, b) for a, b in zip(ae.encoder.state_dict().values(),
+                                                     tuned.encoder.state_dict().values()))
+    with pytest.raises(ValueError, match="mlp_hidden"):
+        ti.train(tr, va, ti.TrainConfig(**dict(base, mlp_hidden=(64, 16))))
