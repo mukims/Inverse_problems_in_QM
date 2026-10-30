@@ -2770,6 +2770,118 @@ keep the 7 lowest frequencies, inverse onto 13 points; keeps the mean and smooth
 **Reading.** Where a feature sits in the band-top-normalised spectrum matters (gap loses it and is much worse).
 Spectral pooling is equivalent to block averaging. avg13 stays (simplest).
 
+### [2026-10-29] ERGO-1: Correlation Length and the Ergodic Hypothesis (atlas ensembles; model errors)
+
+**Question.** The inverse model reads one disorder seed per host. That works only under the ergodic hypothesis of
+Mukim et al. (arXiv:2007.12504), where the energy average of one spectrum stands in for the configuration average.
+How long is the correlation length dE_cor on the v4 grid? How many independent samples does one spectrum hold? Is
+there a part of the sample-to-sample variation that energy averaging cannot remove?
+
+**Setup (part A).** `results/inverse_design/ergodic/ergodic_atlas.py`, summary `summarize_atlas.py`.
+* Data: the 468 atlas clouds of germanene, silicene, hBN and kagome. These are on the v4-equivalent grid of 416
+  channels at about 0.02 eV, with ~2,000-atom devices and 1,000 seeds each. Spectra are cleaned as `to_input_linear`.
+* Ensemble quantities, per cloud:
+  * residual z = (T - mu(E)) / sd(E) over the seeds;
+  * rho(k) along energy;
+  * HWHM (rho = 1/2; below one channel it is extrapolated as exp(-k/k0));
+  * tau = 1 + 2 sum rho up to the first rho <= 0, and N_eff = support channels / tau.
+* Part energy averaging cannot remove:
+  * the plateau, the mean rho over lags 10-30 (0.2-0.6 eV);
+  * the top principal component's share of the residual variance over seeds;
+  * the participation ratio of the eigenvalues.
+* What drives the top component: R^2 of its score on the seed's impurity arrangement (`_config.npz`: share per
+  sublattice, share near an edge, nearest-neighbour pairs).
+* Label-free single-spectrum estimators (running median or mean of 7, 15 and 31 channels) on 50 seeds per cloud,
+  scored against the ensemble truth.
+
+**Result (medians per cloud; full table `atlas_summary.txt`, figure `ergodic_atlas.png`).**
+
+| Material | Impurities | HWHM | tau | N_eff | Top-mode share | R^2 (arrangement) |
+|---|---|---|---|---|---|---|
+| germanene, silicene | 1-15 | 0.33 ch | 3.1-3.2 | 47 | 0.05 | 0.14-0.16 |
+| germanene, silicene | 41-100 | 0.25-0.26 ch | 1.6-1.7 | 89-92 | 0.02 | 0.08-0.09 |
+| hBN | 1-40 | 0.9-1.5 ch | 25-26 | 7-8 | 0.38-0.39 | 0.94 |
+| hBN | 41+ | 0.37-0.38 ch | 7 | 28-29 | 0.09-0.10 | 0.88 |
+| kagome | 1-15 | 0.83 ch | 13 | 7.6 | 0.20 | 0.40 |
+| kagome | 101+ | 0.52 ch | 7 | 14 | 0.10 | 0.27 |
+
+* The short-range fluctuations decorrelate below one channel (HWHM well under 0.02 eV) in every material. On this
+  grid the ergodic averaging is limited by channel count, not by dE_cor.
+* Germanene and silicene (one scatterer class): the residual is close to white (top mode 2-5%). The energy mean of
+  one spectrum spreads no more than a stationary Gaussian process with the measured rho predicts (R_mean 0.72-0.92).
+  The ergodic hypothesis holds.
+* hBN (two sublattices with different host energy, so impurities on A and B are two scatterer classes): up to 40
+  impurities, 38-39% of the seed-to-seed variance sits in one global mode. The seed's sublattice share explains 94% of
+  it (R^2). N_eff falls to 7-8 of about 200 channels. At 41 or more impurities the mode keeps 9-10% (R^2 0.88).
+  R_mean 1.6-1.7: one spectrum's energy mean is about 1.7 times more scattered than ergodic averaging allows.
+* Kagome is in between (top mode 10-20%, R^2 0.27-0.40, arrangement mostly edge share and pairs).
+* Label-free estimators from a single spectrum do not recover the ensemble values:
+  * rho1 correlation with the truth is at most +0.49;
+  * log tau is biased by -0.5 to -1.5, i.e. N_eff is overestimated 1.7-4.5 times;
+  * the global mode is a per-seed offset that a running trend absorbs.
+  So a per-draw dE_cor or N_eff cannot be measured on the parent data, which has one seed per host.
+* Parent validation draws (15,000): 64.4% are multi-class hosts (more than one host on-site energy among the active
+  sites, the hBN-like case). n_imp has quartiles 15 / 33 / 71, and 25% have 15 impurities or fewer.
+
+**Reading (part A).**
+* The ergodic hypothesis holds for hosts whose impurity sites are all equivalent.
+* It fails in a specific way when the sites form more than one scatterer class. The share of impurities per class is
+  then a hidden per-seed variable. It shifts the whole spectrum and does not average out over energy.
+* This is the paper's two-species case (Fig. 3b: n_A, n_B). A single impurity kind on two inequivalent sites
+  behaves like two species whose ratio fluctuates binomially from seed to seed.
+* Expected consequence for the model, tested in part B: on multi-class hosts at low n_imp, the log c error should
+  follow the seed's class composition.
+
+**Part B: does the model's error follow the seed's arrangement?**
+
+*Setup.*
+* `per_draw_model.py` evaluated `model_v2_depth_bandtop` on all 15,000 validation draws: 200 samples per draw,
+  seeded by draw index, 56 min on 2 threads.
+* It reproduces `compare_inverse.py`: top state 0.580, width mode 0.377.
+* Per draw it stores the posterior median and 90% interval of log c, and the rank of the truth.
+* `ergodic_parent.py` rebuilds every draw's exact impurity sites. A regenerated spectrum matches the stored one to
+  1e-7. Per draw it scores the arrangement as:
+  * chi2 of the impurity counts over the host's on-site-energy classes;
+  * the edge-share z-score.
+* Then: Spearman correlation of |log c error| with chi2 and |z_edge| within impurity-count bins.
+* Outputs: `parent_summary.{txt,json}`.
+
+*Result.*
+
+| n_imp | Hosts | Draws | Median error | MAD | 90% coverage | Rank | rho(\|e\|, chi2) | rho(\|e\|, \|z_edge\|) |
+|---|---|---|---|---|---|---|---|---|
+| 6-15 | single class | 1,186 | +0.017 | 0.120 | 0.885 | 0.470 | - | +0.028 |
+| 6-15 | multi-class | 2,074 | +0.168 | 0.290 | 0.864 | 0.373 | +0.060 | -0.004 |
+| 16-40 | single class | 1,637 | -0.026 | 0.112 | 0.934 | 0.545 | - | +0.087 |
+| 16-40 | multi-class | 3,095 | +0.023 | 0.267 | 0.921 | 0.491 | +0.087 | +0.029 |
+| 101+ | single class | 850 | -0.064 | 0.095 | 0.885 | 0.621 | - | +0.041 |
+| 101+ | multi-class | 1,440 | -0.223 | 0.252 | 0.812 | 0.721 | +0.106 | +0.007 |
+
+* **The arrangement barely matters.** On multi-class hosts the |log c error| correlates with the class composition at
+  Spearman 0.02-0.11. Restricted to draws whose top state is right, it is 0.05-0.13. The edge share gives 0.03 or less,
+  and the signed error against z_edge also 0.05 or less. A seed's atypical arrangement explains at most about 1-2% of
+  the rank variance of the density error.
+* **The error depends on the host instead.**
+  * Multi-class hosts have about 2.3 times the density error of single-class hosts at every count (MAD 0.25-0.29
+    against 0.10-0.12). That stays 0.21-0.24 when the top state is right.
+  * Their top state is right in 0.32-0.41 of draws, against 0.86-0.93.
+* **Shrinkage toward the middle of the log c prior, strongest for multi-class hosts.**
+  * Few impurities are overestimated: median error +0.15 to +0.17 at n_imp 15 or fewer, mean rank 0.33-0.37.
+  * Many impurities are underestimated: -0.22 at n_imp above 100, mean rank 0.72.
+  * 90% coverage holds at 0.86-0.93, except multi-class hosts above 100 impurities (0.81).
+
+**Reading.**
+* The global mode found in part A is real in the spectra but does not drive the model's density error. Its size is
+  roughly 1/sqrt(n_imp) of a class share, and it is swamped by the host-level ambiguity.
+* For the inverse model, the ergodic hypothesis is a good enough working assumption, with its limits known:
+  * N_eff is set by channel count, since dE_cor is below the grid;
+  * multi-class hosts carry a per-seed composition term worth up to 40% of the residual variance at low n_imp.
+* What limits density on multi-class hosts is the trade-off between host energies and density (the paper's Fig. 3a
+  valley, here across several on-site energies) and a posterior pulled toward the prior centre. The second matches the
+  log c direction in INV-CAL.
+* Not tested: a two-class density head (n_A, n_B, the paper's Fig. 3b). Part B gives no reason to expect a large gain
+  from it.
+
 ---
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
