@@ -2371,6 +2371,517 @@ of freedom, bootstrap interval). Bonferroni over 192 comparisons per ribbon.
 edge fraction and the sublattice balance. Neither the plain nor the edge-aware graph entropy adds information beyond
 them. Results: `results/edge_fraction/{hbn_armchair_N10,graphene-ideal_zigzag_N10}_error_vs_arrangement.json`.
 
+### [2026-10-23] INV-SMOKE: Inverse-Design Training Data, Smoke Run and Cost
+
+**Question.** What does one training draw of the hexagonal-parent generator cost, how often are draws rejected, and how
+long would the full run take?
+
+**Setup.** `scripts/generate/generate_parent.py --n-draws 2000 --shard-size 1000 --n-jobs 22` (one BLAS thread per
+worker) into `$TRANSMISSION_DATA/_generated/hexagonal_parent_smoke/`, at commit 16ac2bb1b. Validity check
+`check_parent.py`; cost report `scripts/generate/report_parent.py`. Stored `seconds` covers every attempt of a draw, so
+the projection is draws x mean(seconds) / workers.
+
+**Result.**
+* Validity: all values finite, no duplicate spectra, no draw above its clean channel count (max excess -0.0007): `ok`.
+* Wall time 2,593 s for 2,000 draws on 22 workers. Seconds per draw: mean 27.9, median 12.6, 95th percentile 103,
+  max 330.
+* Rejections: 48 of 2,048 attempts (2.3%): invisible type 35, too few channels 11, no channel 2. Mean 1.02 attempts per
+  accepted draw.
+* Patterns 13.1% to 15.2% each (1/7 = 14.3%); zigzag 49.7%.
+* Cost grows with width and site count: mean 4.6 s at w = 4-8, 14 s at 9-13, 34 s at 14-18, 65 s at 19-22; 6 s for C
+  alone, 10 s for H, 14 s for K, 67 s for all three types.
+* Projection for 300,000 draws on 22 workers: 106 h from the per-draw times, 108 h from the measured wall time
+  (about 4.5 days).
+
+**Reading.** The rejection rules cost little (2.3% of attempts). The run is dominated by wide, many-site hosts. The
+full-run size is the user's decision (spec section 5). Report: `results/inverse_design/smoke_report.json`.
+
+### [2026-10-25] INV-FULL: Inverse-Design Training Data, Full Run (grown in 75k steps)
+
+**Plan.** The full hexagonal-parent training set is generated in steps of 75,000 draws into
+`$TRANSMISSION_DATA/_generated/hexagonal_parent_v1/` (5,000-draw shards, so each step ends on a shard boundary), with a
+validity check after every step before extending (user's decision). Target: 300,000 draws.
+
+**Step 1 (draws 0 to 74,999).** Generated 2026-10-23 22:45 to 2026-10-25 00:47 (93,731 s on 22 workers) by the code at
+commit 7e09a87e8. Its manifest's top-level `code_version` and the per-shard value (absent, read as "unknown") are wrong
+for these shards, because that process re-read git HEAD at each write; 7e09a87e8 is the version that ran.
+* Cost: 27.3 s per draw (median 12.1, 95th percentile 108), 4.7 s at w = 4-8 to 64 s at w = 19-22; 6 s for C alone to
+  70 s for all three types. Projection for 300,000 draws: 103-104 h in total.
+* Rejections: 1,576 of 76,576 attempts (2.1%): invisible type 1,238, too few channels 259, no channel 79.
+* Patterns 13.9-14.5% each (1/7 = 14.3%); zigzag 49.7%.
+* Validity: no duplicate spectra, no draw above its clean channel count. Two draws (43316: all three types, zigzag
+  w = 6, 3.14 eV; 74382: triangular, zigzag w = 19, 1.32 eV) each had one NaN channel.
+
+**The NaN: root cause and fix.** The Sancho-Rubio decimation of the lead surface Green's function
+(`src/tbribbon/leads.py`, eta = 1.2e-5) overflowed at that single energy, for one lead. Fix: `LeadCache` retries only
+an energy whose leads are not finite, with both leads at the same small shift (1e-8 to 1e-5), accepting a shift only
+when both decimations converged and are causal (i(g - g^dagger) positive semidefinite); `transport.spectrum` evaluates
+the device at the shifted energy too. Two simpler fallbacks were tried and rejected: shifting one lead only (mixing it
+with an unshifted device gives T of order -1e9), and accepting any converged shift (for draw 43316 a 1e-8 shift
+converges to a non-causal lead and T = -1,138). Every finite result is bit-identical to the old code (tested against
+the previous `leads.py`/`transport.py`). The two draws were regenerated from their indices with
+`scripts/generate/repair_parent.py` (every other stored field must come out identical, and did) and patched in place:
+T = 4.850 (neighbours 4.809, 4.864) and 9.237 (neighbours 9.177, 9.668). Their manifest entries record the patch.
+After the patch `check_parent`: ok (finite, unique, 0 over tolerance). Report: `results/inverse_design/full_step1_report.json`.
+
+**Steps 2 to 4 (draws 75,000 to 299,999).** All three steps ran at commit 1b0d82389 (the lead fix) on 22 workers, so
+shards 15 to 59 record that version per shard; the run resumed from the existing shards each time. Step 2 ran by hand,
+steps 3 and 4 by `chain_steps.sh` (in the data folder), which checked each step before extending and would have stopped
+on a failed check.
+* Wall time: step 2 2026-10-25 09:47 to 10-26 11:40 (25.9 h), step 3 10-26 11:42 to 10-27 13:12 (25.5 h), step 4
+  10-27 13:12 to 10-28 15:25 (26.2 h). With step 1, about 104 h in total, as the smoke run projected.
+* Rejections per step: 1,557, 1,518 and 1,471 of about 76,500 attempts (2.0%), almost all invisible type.
+* All 300,000 draws: 27.2 s per draw (median 12.0, 95th percentile 107, max 347); 306,122 attempts, rejections
+  invisible type 4,787, too few channels 1,018, no channel 317. Patterns 14.0-14.5% each; zigzag 49.9%.
+* Validity after every step: `check_parent` ok (finite, unique, 0 over tolerance); after step 4 the largest seed
+  excess is 0.0015. No new NaN channels after the fix; the two patched step-1 draws (shards 8 and 14) are unchanged.
+* Provenance: the data's code versions read `1b0d82389` (shards 15-59) and "unknown" (shards 0-14, which ran at
+  7e09a87e8, see step 1). Outputs that record `data_provenance` therefore list both.
+Reports: `results/inverse_design/full_step{2,3,4}_report.json`; checks and logs `check_step*.txt`, `run_step*.log`,
+`chain.log` in the data folder.
+
+### [2026-10-28] INV-TRAIN: Inverse Model `model_v1` (nothing held out)
+
+**Setup.** `scripts/build/train_inverse.py --exclude none --threads 16` at commit 1b0d82389 (clean tree), CPU, on the
+INV-FULL data: 270,000 train and 15,000 validation draws (index % 20 in 0-17 and 18; the test split is not read).
+Defaults: Adam, lr 1e-3, batch 512, up to 200 epochs, early stopping on mean validation loss with patience 10, seed 0.
+Model: 1D-conv encoder, a classifier over the 156 discrete states, and a flow-matching field for the 14 continuous
+slots (512,810 weights).
+
+**Result.**
+* Stopped after 34 epochs (12.6 min, 22 s per epoch); best epoch 23, validation loss 3.390 = cross-entropy 1.876 +
+  flow 1.513 (epoch 0: 2.750 + 2.225). Train loss at the best epoch 2.991 (1.514 + 1.477).
+* The two parts peak at different times: validation cross-entropy is lowest at epoch 19 (1.866) and rises to 1.940 by
+  epoch 33 while train cross-entropy keeps falling (1.365), so the classifier starts to overfit; the flow part still
+  improves on validation at epoch 31 (1.491). Early stopping on the sum stops when the two balance.
+* For scale: a classifier that knew only how often each state occurs scores about 4.4; e^1.876 is about 6.5 equally
+  likely states.
+
+**Reading.** Training is cheap at this size. Whether the probabilities are usable is decided by the calibration gate
+(INV-CAL), not by the loss; the hyperparameters stay at the plan's defaults until then. Outputs:
+`results/inverse_design/model_v1/history.json` (committed) and `model.pt` (git-ignored, sha256 starts 8a4ba393d2aa).
+
+### [2026-10-28] INV-CAL: Calibration Gate of `model_v1`: FAIL
+
+**Setup.** `scripts/evaluate/eval_inverse_calibration.py --threads 16` at commit cf12f4424 on `model_v1` (sha256 starts
+8a4ba393d2aa): 2,000 seeded rows of the test split (index % 20 == 19, 15,000 rows), 1,000 samples per spectrum, 64 flow
+steps, seed 0. 699 s (0.35 s per draw), no failed draws.
+
+**Result: spec verdict FAIL** (SBC unconditional FAIL, SBC conditional FAIL, coverage FAIL, top-5 recall ok, ECE ok).
+* Top-5 recall 0.974 (>= 0.95, ok). Candidate ECE 0.023 (<= 0.05, ok); the reliability curve follows the diagonal.
+* SBC unconditional: log_s p = 0.17 ok; **log_c p = 3e-24, w p = 2e-12**.
+* SBC with the true state fixed: **log_c p = 7e-31, w p = 1.5e-7, t_HK p = 1.3e-4, t_CH p = 7.6e-3**; every other active
+  parameter p >= 0.01 (delta 0.018, t_CK 0.010 at the edge).
+* Direction: the mean rank of the truth among the samples is 0.575 (log_c) and 0.548 (w) unconditionally, 0.584 and
+  0.542 with the state fixed (0.5 if calibrated); the truth is above 90% of the samples in 15-16% of draws for log_c.
+  The model **underestimates impurity density and width**. t_HK and t_CH lean the same way (0.548, 0.542).
+* Coverage of the 90% intervals (1,468 draws whose top candidate has the true edge and pattern and is nearest): pooled
+  0.912. Outside 0.87-0.93: **delta 0.960 (n 346), t_AA 0.948 (388), t_AB 0.930 (230, at the edge)**, all too wide;
+  none too narrow. w 0.953 (reported, not gated).
+* Noise-aware (reporting only): SBC after Bonferroni FAIL (log_c, w, t_HK); coverage after Bonferroni FAIL (delta
+  p = 9e-4; t_AA 0.012 just passes).
+
+**Reading.** The discrete part is usable as it is: the right structure is in the top 5 in 97% of draws and its
+probabilities are honest. The continuous part is not yet calibrated: a systematic low bias on the two disorder-related
+slots (log_c, w) and over-wide intervals on the H-site parameters (delta, t_AA). It fits the INV-TRAIN curves, where
+early stopping on the summed loss ended the run while the flow part was still improving. Per the plan, nothing is tuned
+on the test split; the next step is the user's decision. Outputs: `results/inverse_design/model_v1/calibration.json`
+(committed) and `calibration.jsonl` (per-draw records).
+
+### [2026-10-28] INV-STEP1: Step-1 Baseline of `model_v1` (host, width and edge; concentration profiled out)
+
+**Question.** Step 1 of the two-step design: is the true host (full structure and host values, plus width and edge) among
+`model_v1`'s top 5 candidates? Step 2 (concentration, from the spectrum divided by the predicted pristine spectrum, as
+STAGE3-1 / BUILD-13) is out of scope. "Found" is judged two ways: inside the candidate's 99% region, and by the
+recreation check of spec section 8 at the candidate's medoid, with the density fixed at the true value.
+
+**Setup.** `model_v1` (sha256 8a4ba393d2aa), the same 2,000 test rows as INV-CAL, 1,000 samples per spectrum, seeded by
+draw index. Scripts in `results/inverse_design/model_v1/host_capture/`: `host_capture.py` (2,000 draws),
+`near_identical.py` (708 misses and 300 found draws, clean spectra), `recreation_baseline.py` (a seeded random 150 of
+the 2,000; stopped by the user at 60, 1.4 min per draw, 22 workers). No retraining, nothing tuned.
+
+**Result.**
+* Top 5 (top 1): edge + site types 0.972 (0.772); + full structure 0.618 (0.511); + host values 0.614; + host values
+  + width inside the 99% region 0.612 (0.508). With the right structure, host values are inside 99.4% of the time.
+* By site types (host + width): C 0.91, K 0.94, CK 0.79, H 0.72, HK 0.43, CH 0.39, CHK 0.03. Wrong field in misses:
+  lead 44%, Delta = 0 40%, t_AA on 36%, cross bonds 25%.
+* Width of the right-structure medoid: exact 0.413, within 1 0.780, within 2 0.897 (mean -0.27, too narrow); width and
+  density errors correlate +0.46.
+* Misses are near-degenerate: clean-spectrum distance to the truth 0.40 (found 0.18, random same-type host 0.85); 93% of
+  misses are closer than a random host; wrong Delta = 0 and t_AA switches sit near the boundary (true Delta median
+  0.18, true t_AA median 0.073).
+* Recreation check (60 draws): the true host recreates in 0.967 (58 of 60; about 0.95 expected). **No top-5 medoid
+  recreates (0.000)**. Misfit / threshold (<= 1 passes; truth median 0.65): right edge + site types median 10.9, right
+  full structure 7.4, right structure and exact width 2.9, right structure and wrong width 12.6; closest 1.52.
+* Clean-spectrum distance vs misfit / threshold: Spearman +0.42 (too weak to stand in for the simulation).
+
+**Reading.** The candidate cloud usually contains the truth once the structure is right, but its medoid is not a fit:
+the seed-to-seed spread is much tighter than the medoid-to-truth gap. The baseline measures the unrefined medoid; the
+spec's refinement (`refine.py`) was not run, and it keeps the structure and width fixed, so it cannot repair the
+59% wrong widths or any wrong structure. Report with what went right and wrong:
+`results/inverse_design/model_v1/report.md`.
+
+### [2026-10-28] INV-PROBE: Where `model_v1` Loses the Answer (input, encoder, or after the samples)
+
+**Question.** Is the right structure and width lost in the input (the fixed eV grid squeezes low-s spectra into a few
+channels), in the encoder (pooling to 13 buckets of 0.64 eV), or later? Measured on the validation split, not test.
+
+**Setup.** All 15,000 validation draws (index % 20 == 18) against the 270,000 training draws. For each, the nearest
+training draw (L2) in the raw 416-channel input x and in the 128-number embedding (standardised per dimension;
+unstandardised gives the same within 0.01). Same structure / width / edge + site types as the neighbour, at k = 1 and
+"any of 10". Reference: the model itself, classifier argmax and the mode / membership over 200 posterior samples (seed =
+draw index). Scripts and per-draw records in `results/inverse_design/model_v1/info_flow/` (`nn_probe.py`,
+`nn_probe_summary.py`, `info_flow.py` for the two figures). About 7.5 min on CPU, no retraining, nothing tuned.
+
+**Result.**
+* Nearest neighbour, k = 1 (any of 10), raw input -> embedding: edge + site types 0.429 (0.762) -> 0.699 (0.944); full
+  structure 0.292 (0.531) -> 0.464 (0.746); exact width 0.261 (0.624) -> 0.295 (0.752); structure and width 0.164 ->
+  0.200.
+* Model: structure argmax 0.520, width sample mode 0.350; truth anywhere in 200 samples: structure 0.927, width 0.992.
+* By s, flat: width raw 0.25-0.27, embedding 0.28-0.31, model 0.32-0.38 across s 0.7-4; structure likewise. The low-s
+  squeeze does not show up as a loss.
+* By width, the model's exact width falls from 0.531 (w 4-7) to 0.276 (w 18-22).
+* By site types, structure (raw / embedding / model): C 0.68 / 0.84 / 0.88, K 0.75 / 0.89 / 0.91, H 0.36 / 0.57 / 0.65,
+  CK 0.16 / 0.52 / 0.63, HK 0.05 / 0.24 / 0.30, CH 0.05 / 0.18 / 0.25, CHK 0.002 / 0.016 / 0.027.
+
+**Reading.** The embedding beats the raw input everywhere, so the encoder (including the 13-bucket pooling) is not where
+the answer is lost. Nearest neighbour in x is a crude reader of the input, so this does not prove the encoder keeps
+everything. The spectrum itself is ambiguous: nearest raw spectra mostly disagree on width, more so for wide ribbons
+(closer subband steps smeared by disorder), and mixed H hosts (CH, HK, CHK) barely separate. The truth is in the samples
+93% / 99% of the time; the drop comes after them, in `candidates()` and the medoid (INV-STEP1: 0.618 / 0.413 / 0.000,
+test split, so not like-for-like). Open: this run's 0.927 "true structure in the samples" differs from the 80% quoted
+earlier in the session from the test split; not reconciled.
+
+### [2026-10-29] INV-NOGN: Encoder Without GroupNorm (does it hide plateau height?)
+
+**Question.** GroupNorm rescales each group of feature rows per spectrum over all energies, which could remove the
+overall level (plateau height = open-channel count, tied to width). Does an encoder without it recover more width or
+structure?
+
+**Setup.** `InverseModel(group_norm=False)` (new option, default True, so `model_v1` loads unchanged; test in
+`tests/atlas/test_inverse_model.py`). `scripts/build/train_inverse.py --exclude none --no-group-norm --max-draws 300000
+--threads 8 --out results/inverse_design/model_v1_nogn`: the same 270,000 / 15,000 draws as `model_v1` (`--max-draws`
+keeps the run off the shards the INV-FULL extension is writing), seed 0, same defaults; only GroupNorm differs. Epochs
+0-1 shared the CPU with the generator (about 300 s); the generator was then paused and epochs took 18-20 s. Compared on
+all 15,000 validation draws by `results/inverse_design/model_v1_nogn/compare_nogn.py` (200 samples per draw seeded by
+draw index; output `compare_nogn.{txt,json}`). Test split not read.
+
+**Result.**
+* Training: best epoch 46 of 57, validation loss 3.734 = cross-entropy 2.159 + flow 1.575 (`model_v1`: epoch 23 of 34,
+  3.390 = 1.876 + 1.513). Slower start (epoch 0: 5.97 against 4.97) and never caught up; the classifier overfits from
+  about epoch 35.
+* Validation, `model_v1` -> no GroupNorm: top state 0.520 -> 0.480; width sample mode 0.350 -> 0.322; true state in the
+  samples 0.927 -> 0.908; true width in the samples 0.992 -> 0.993. Paired (McNemar) z = -11.6 for the state, -6.2 for
+  the width: both worse, far beyond chance.
+* Wide ribbons, where a hidden plateau height would matter most (w 18-22): width mode 0.276 -> 0.252, top state
+  0.563 -> 0.510. Worse in every width band.
+* By site types the drop is largest for mixed hosts (top state CK -0.084, HK -0.063, CH -0.061; width CHK -0.056); C
+  and K alone are unchanged within about 0.03 (width C +0.019).
+
+**Reading.** GroupNorm is not hiding host information: without it the model is worse at every width and for every
+mixed host, including the wide ribbons the hypothesis was about. GroupNorm stays. The option remains in the code
+(default on). Next suspect on the input side: the log scale (a +1 channel step at T = 18 moves the input 8 times less
+than at T = 1).
+
+### [2026-10-29] INV-SCHED: AdamW Weight Decay and a Plateau Schedule (stopped early, inconclusive)
+
+**Setup.** `train_inverse.py` gains `--weight-decay` (AdamW; 0 is exactly the old Adam) and `--schedule plateau`
+(halve the rate after 3 epochs without a new best validation loss, floor 1e-5); the defaults reproduce `model_v1`, and
+each epoch's rate is recorded in `history.json` (test in `tests/atlas/test_inverse_training.py`). Run
+`--weight-decay 1e-2 --schedule plateau --max-draws 300000 --threads 16 --out results/inverse_design/model_v1_sched`,
+GroupNorm on, same draws and seed as `model_v1`, generator paused (about 25 s per epoch).
+
+**Result.** Stopped by the user after epoch 13 ("we are not getting any better"). Validation loss tracked `model_v1`
+within 0.02 at every epoch (epoch 13: 3.473 against 3.481; `model_v1`'s best is 3.390 at epoch 23). The best so far,
+epoch 13, is saved in `model_v1_sched/model.pt`; it was not evaluated.
+
+**Reading.** Inconclusive: the validation loss improved every epoch, so the plateau schedule never fired and the rate
+stayed at 1e-3 throughout; weight decay 1e-2 made no visible difference over 14 epochs. The schedule's effect would
+only show after the point where `model_v1` stalled (epochs 19-23).
+
+Afterwards (user's decision): weight decay 0.01 is the training default; reproducing `model_v1` now needs `--weight-decay 0`.
+
+### [2026-10-29] INV-LINEAR: Linear Input (no log scale)
+
+**Question.** The log input x = log(1 + T)/log 65 shrinks a one-channel step at T = 18 to an eighth of the same step at
+T = 1. Does feeding T itself recover width (and structure)?
+
+**Setup.** `parent_data.to_input_linear(raw)`: the same label-free cleaning as `to_input` (round to 3 decimals,
+despike, clip to [0, 64]) without the log; on the 15,000 validation spectra it equals the stored x with the log undone
+to 0.001 channels (float32 rounding); values 0 to 48.5, median non-zero 3.4. `InverseModel(input=...)` records the
+transform (old checkpoints read "log"). `train_inverse.py --input linear --max-draws 300000 --threads 16 --out
+results/inverse_design/model_v1_linear`: GroupNorm on, AdamW weight decay 0.01 (the new default; `model_v1` had none,
+INV-SCHED showed no visible effect of it over 14 epochs), same draws and seed. Generator paused, about 24 s per epoch.
+Compared by the new `scripts/evaluate/compare_inverse.py` (each model gets its own input; generalises
+`compare_nogn.py`), output `model_v1_linear/compare_model_v1.{txt,json}`. Test split not read.
+
+**Result.**
+* Training: best epoch 23 of 34, validation loss 3.318 = cross-entropy 1.823 + flow 1.494 (`model_v1` 3.390 = 1.876 +
+  1.513); ahead of `model_v1` at nearly every epoch. The classifier was best at epoch 23 and then rose; the flow part
+  was still improving at the last epoch (1.467 at epoch 33), so the saved model has a flow head about 0.03 short of
+  its best.
+* Validation, `model_v1` -> linear: top state 0.520 -> 0.532 (McNemar z = +3.8); true state in the samples 0.927 ->
+  0.937 (CHK 0.659 -> 0.705); width sample mode 0.350 -> 0.334 (z = -3.5); true width in the samples 0.992 -> 0.994.
+* Width by band (mode): w 4-7 +0.003, 8-12 -0.002, 13-17 -0.015, **18-22 -0.044** (0.276 -> 0.233); by site types C
+  -0.071, CK -0.052, HK +0.020, H +0.030.
+
+**Reading.** The linear input helps the structure (a small, real gain, largest for the hosts with H) and hurts the
+width point estimate, most for wide ribbons, the opposite of the log-compression hypothesis. Likely part of the
+reason: with linear T the large-T plateaus of wide ribbons dominate the input scale while the flow head is saved
+before its best epoch; not tested. Next: one extra stride-1 conv block on this setup (INV-DEPTH).
+
+### [2026-10-29] INV-DEPTH: One Extra Stride-1 Conv Block (linear input)
+
+**Setup.** `InverseModel(extra_conv=1)`: a 128 -> 128, width-3, stride-1 conv with GroupNorm and GELU after the third
+conv, at the same 52 positions (pooling and heads unchanged); encoder 298,368 weights (from 248,832); receptive field
+23 -> 39 channels (0.46 -> 0.78 eV). `train_inverse.py --input linear --extra-conv 1 --max-draws 300000 --threads 16
+--out results/inverse_design/model_v2_depth`, otherwise as INV-LINEAR (AdamW 0.01, seed 0). 36 s per epoch. Compared
+with `model_v1_linear` by `compare_inverse.py` (`model_v2_depth/compare_model_v1_linear.{txt,json}`).
+
+**Result.**
+* Training: best epoch 16 of 27, validation loss **3.184** = cross-entropy 1.699 + flow 1.485 (linear 3.318 = 1.823 +
+  1.494; `model_v1` 3.390). Ahead of the linear run at every epoch from epoch 0.
+* Validation, linear -> depth: top state 0.532 -> **0.554** (McNemar z = +6.6); width sample mode 0.334 -> **0.358**
+  (z = +5.1); true state in the samples 0.937 -> 0.947; true width in the samples 0.994 -> 0.997.
+* Width by band: w 4-7 +0.011, 8-12 +0.003, 13-17 +0.022, **18-22 +0.057** (0.233 -> 0.289, above `model_v1`'s
+  0.276); by site types C +0.074, CK +0.061, CH +0.031, H -0.011, K -0.026. Top state CH +0.056, CK +0.047.
+
+**Reading.** The first change that improves both structure and width, and by far the largest gain of the day: the
+encoder was capacity-limited (information not extracted, rather than lost). `model_v2_depth` is the CNN reference for
+INV-MLP and the autoencoder plan (`docs/superpowers/plans/2026-10-29-mlp-encoder-and-autoencoder.md`).
+
+### [2026-10-29] INV-MLP: Fully Connected Encoder Instead of the 1D CNN
+
+**Setup.** `make_encoder(encoder="mlp", mlp_hidden=..., dropout=...)` in `src/shazam/inverse/model.py` (shared with
+any future autoencoder): Linear -> LayerNorm -> GELU (-> Dropout) per hidden width, then a Linear to the same
+128-number fingerprint; classifier and flow heads unchanged. `train_inverse.py --encoder mlp --mlp-hidden ...
+--dropout ... --max-draws 300000`, AdamW 0.01, seed 0, same draws as INV-DEPTH. Tuned on validation only (plan
+`docs/superpowers/plans/2026-10-29-mlp-encoder-and-autoencoder.md`, Part 1). 10-19 s per epoch.
+
+**Result (best epoch, validation loss = cross-entropy + flow).**
+
+| Run (`results/inverse_design/`) | Hidden | Dropout | Input | Best | Val loss |
+|---|---|---|---|---|---|
+| `model_v2_mlp_base` | 512, 256 | 0 | linear | 43 | 3.925 (2.259 + 1.666) |
+| `model_v2_mlp_drop` | 512, 256 | 0.1 | linear | 99 | 3.822 (2.202 + 1.620) |
+| `model_v2_mlp_log` (stopped at 50) | 512, 256 | 0.1 | log | 50 | 4.000 (2.304 + 1.696) |
+| `model_v2_mlp_wide` | 1024, 512 | 0.1 | linear | 54 | 3.828 (2.195 + 1.632) |
+| `model_v2_mlp_deep` (stopped at 60) | 1024, 512, 256 | 0.1 | linear | 56 | 3.737 (2.116 + 1.621) |
+| `model_v2_mlp_bandtop` | 1024, 512 | 0.1 | bandtop (INV-BANDTOP) | 51 | **3.496** (1.941 + 1.555) |
+
+* Without dropout the MLP overfits early; dropout 0.1 gains 0.10. The log input is 0.10-0.13 worse at every epoch.
+  Width alone does not help (wide = drop); depth helps a little (-0.09).
+* Best MLP against the CNN reference, `compare_inverse.py model_v2_depth model_v2_mlp_bandtop`: top state 0.554 ->
+  0.533 (z = -6.0), width mode 0.358 -> 0.309 (z = -10.4), true state in the samples 0.947 -> 0.916. The MLP is
+  better only for single-type hosts (top state C +0.045; width K +0.040) and worse for every mixed host (width HK
+  -0.084; true state in the samples CHK -0.132).
+
+**Reading.** The CNN wins clearly: its locality and weight sharing across energies matter, most for the mixed hosts.
+The largest MLP gain came from the input, not the network (INV-BANDTOP). The CNN stays the encoder for the inverse
+model.
+
+### [2026-10-29] INV-BANDTOP: Label-Free Band-Top Normalisation of the Input
+
+**Setup.** `parent_data.to_input_bandtop(raw)`: the linear input (INV-LINEAR) from 0 to the spectrum's own band top
+(its last non-zero channel after cleaning, k) resampled onto 416 points by linear interpolation, plus k / 416 as value
+417. Every host fills the same length whatever its energy scale s, and the scale itself is kept. Label-free: k comes
+from T. A CNN convolves the 416 values and adds the band top to the fingerprint through its own `Linear(1, 128)`
+(`InverseModel.band_top`); an MLP reads all 417 values. Tests in `tests/atlas/test_inverse_training.py` and
+`test_inverse_model.py`. Runs: `model_v2_mlp_bandtop` (INV-MLP) and `model_v2_depth_bandtop` (`--input bandtop
+--extra-conv 1`, otherwise as INV-DEPTH; 40-60 s per epoch on a shared CPU).
+
+**Result.**
+* Validation loss: MLP 3.828 -> 3.496 (same settings, linear -> bandtop); CNN + 1 conv 3.184 -> **3.066** (best epoch
+  18 of 29: cross-entropy 1.634 + flow 1.432), the best model of the day. The CNN gain is in both heads.
+* `compare_inverse.py model_v2_depth model_v2_depth_bandtop`: top state 0.554 -> **0.580** (z = +7.6), width mode
+  0.358 -> **0.377** (z = +4.0); width w 4-7 +0.035, 8-12 -0.010, 13-17 +0.014, 18-22 +0.039; top state up for every
+  site-type pattern (C +0.055, CH +0.033, HK +0.032). True state in the samples 0.947 -> 0.940 (slightly lower).
+
+**Reading.** The fixed-eV grid made the encoder learn each energy scale s separately (the stretch no conv or MLP
+shares weights across). Normalising by the band top removes most of that and helps both encoders.
+`model_v2_depth_bandtop` is the new reference. Caveats:
+* one seed per run;
+* the band top is the last non-zero channel, so for s > 3 (band cut off by the window) it is the window edge, not the
+  band top;
+* nothing downstream (`candidates()`, recreation) has been re-measured.
+
+### [2026-10-29] INV-AE: Denoising Autoencoder Pretraining of the Encoder (amended plan, Part 2)
+
+**Setup.** Plan `docs/superpowers/plans/2026-10-29-mlp-encoder-and-autoencoder.md` Part 2 (the amended version of
+`2026-10-29-autoencoder-plan-critique.md`, approved by the user). `SpectrumAutoencoder` (`src/shazam/inverse/
+autoencoder.py`): the band-top input -> the inverse model's own encoder (`make_encoder`) -> 128 -> MLP decoder ->
+the pristine open-channel count on the same grid (`parent_data.pristine_target_bandtop`, resampled with the
+disordered input's band top). Loss MSE + L1; training split only, early stopping on validation; 300 k
+hexagonal-parent draws only (the pristine target exists only there). `scripts/build/train_autoencoder.py`; probe gate
+`scripts/evaluate/probe_latent.py` (logistic regression on the 128 numbers, 60 k train / 15 k val; rewritten in torch
+after scikit-learn's solver oversubscribed the CPU, 40 min per model -> 20 s, same numbers within 0.4 points);
+`train_inverse.py --init-encoder ae.pt [--freeze-encoder]`. Tests in `tests/atlas/test_inverse_autoencoder.py` and
+`test_inverse_training.py`.
+
+**Result.**
+* Autoencoders, validation MSE in channels squared (baseline: the disordered input itself as the answer, 7.26):
+  `ae_cnn` (CNN + 1 conv) **1.17** (best epoch 42, stopped at 43; L1 0.65 channels); `ae_mlp` (1024-512, dropout 0.1)
+  2.47 (epoch 32; validation loss oscillates, learning rate likely too high).
+* Probe gate (state / width accuracy of a linear readout): supervised CNN `model_v2_depth_bandtop` 0.513 / 0.234;
+  supervised MLP 0.467 / 0.202; `ae_mlp` 0.346 / 0.133 (**fails**); `ae_cnn` 0.413 / 0.236 (passes only on width,
+  +0.2 points, a tie within noise).
+* Downstream, all CNN + 1 conv on the band-top input, against `model_v2_depth_bandtop` (seed 0):
+
+  | Run (`results/inverse_design/`) | Init | Best epoch | Val loss | Top state | Width mode |
+  |---|---|---|---|---|---|
+  | `model_v2_depth_bandtop` | scratch, seed 0 | 18 | 3.066 | 0.580 | 0.377 |
+  | `model_v2_depth_bandtop_s1` | scratch, seed 1 | 17 | 3.081 | 0.579 | 0.394 |
+  | `model_v3_cnn_ae_ft_s0` | `ae_cnn`, fine-tuned | 13 | 3.073 | 0.581 | 0.400 |
+  | `model_v3_cnn_ae_ft_s1` | `ae_cnn`, fine-tuned, seed 1 | 15 | 3.070 | 0.580 | 0.394 |
+  | `model_v3_cnn_ae_frozen_s0` (stopped at 12) | `ae_cnn`, frozen | 12 | 3.486 | 0.519 | 0.389 |
+
+* Fine-tuned runs start 0.33 lower in validation loss and reach the reference's best 3-5 epochs sooner, but end
+  within its seed range. The frozen encoder is much worse on state (z = -18) but not on width.
+
+**Seed noise (new, matters for every earlier comparison).** Retraining the reference with seed 1 moves width mode
+by **+1.7 points** (0.377 -> 0.394, McNemar z = +3.6; C +0.078, K +0.086, H -0.018) and top state by -0.1. So:
+* width point accuracy varies by about 2 points between seeds of the same model;
+* McNemar z compares two fixed trained models on the same draws, so it cannot see seed variation;
+* the autoencoder's apparent width gain (+2.2 / +1.7 against seed 0) is the same size as the reference's own seed-1
+  shift (fine-tuned mean 0.397 against scratch mean 0.386).
+
+**Reading.**
+* Denoising pretraining works as a task (84% of the disorder error removed), and its latent carries width as well as
+  the supervised fingerprint.
+* As an initialisation it only speeds up training; it does not improve the final state or width beyond seed noise.
+  Not adopted.
+* Width differences of about 2 points between single-seed runs (INV-DEPTH +0.024, INV-BANDTOP +0.019) are within
+  this noise and need a second seed. Their state gains (+0.022, +0.026) are far above the -0.001 state noise and
+  stand.
+
+### [2026-10-29] INV-POOL: Global Average and Spectral Pooling in the CNN
+
+**Setup.** `make_encoder(pool=...)`. avg13 (default): `AdaptiveAvgPool1d(13)`, blocks of 4 positions. gap:
+`AdaptiveAvgPool1d(1)`, no position kept, Linear 128 -> 128. spectral: `SpectralPool1d(13)` (rfft along energy,
+keep the 7 lowest frequencies, inverse onto 13 points; keeps the mean and smooth shape, no block edges). Tests in
+`tests/atlas/test_inverse_model.py`. Runs `model_v2_depth_bandtop_{gap,spectral}`: `--input bandtop --extra-conv 1
+--pool ...`, seed 0, otherwise as `model_v2_depth_bandtop`.
+
+**Result.**
+* gap: 0.38-0.58 behind avg13 in validation loss at every epoch; stopped at epoch 8 (best 3.618 = 1.964 + 1.653).
+* spectral: best epoch 18 of 29, validation loss 3.076 (1.642 + 1.434) against 3.066 (within the 0.015 seed range).
+  Accuracy against avg13: top state 0.580 -> 0.579, width mode 0.377 -> 0.385 (within seed noise).
+
+**Reading.** Where a feature sits in the band-top-normalised spectrum matters (gap loses it and is much worse).
+Spectral pooling is equivalent to block averaging. avg13 stays (simplest).
+
+### [2026-10-29] ERGO-1: Correlation Length and the Ergodic Hypothesis (atlas ensembles; model errors)
+
+**Question.** The inverse model reads one disorder seed per host. That works only under the ergodic hypothesis of
+Mukim et al. (arXiv:2007.12504), where the energy average of one spectrum stands in for the configuration average.
+How long is the correlation length dE_cor on the v4 grid? How many independent samples does one spectrum hold? Is
+there a part of the sample-to-sample variation that energy averaging cannot remove?
+
+**Setup (part A).** `results/inverse_design/ergodic/ergodic_atlas.py`, summary `summarize_atlas.py`.
+* Data: the 468 atlas clouds of germanene, silicene, hBN and kagome. These are on the v4-equivalent grid of 416
+  channels at about 0.02 eV, with ~2,000-atom devices and 1,000 seeds each. Spectra are cleaned as `to_input_linear`.
+* Ensemble quantities, per cloud:
+  * residual z = (T - mu(E)) / sd(E) over the seeds;
+  * rho(k) along energy;
+  * HWHM (rho = 1/2; below one channel it is extrapolated as exp(-k/k0));
+  * tau = 1 + 2 sum rho up to the first rho <= 0, and N_eff = support channels / tau.
+* Part energy averaging cannot remove:
+  * the plateau, the mean rho over lags 10-30 (0.2-0.6 eV);
+  * the top principal component's share of the residual variance over seeds;
+  * the participation ratio of the eigenvalues.
+* What drives the top component: R^2 of its score on the seed's impurity arrangement (`_config.npz`: share per
+  sublattice, share near an edge, nearest-neighbour pairs).
+* Label-free single-spectrum estimators (running median or mean of 7, 15 and 31 channels) on 50 seeds per cloud,
+  scored against the ensemble truth.
+
+**Result (medians per cloud; full table `atlas_summary.txt`, figure `ergodic_atlas.png`).**
+
+| Material | Impurities | HWHM | tau | N_eff | Top-mode share | R^2 (arrangement) |
+|---|---|---|---|---|---|---|
+| germanene, silicene | 1-15 | 0.33 ch | 3.1-3.2 | 47 | 0.05 | 0.14-0.16 |
+| germanene, silicene | 41-100 | 0.25-0.26 ch | 1.6-1.7 | 89-92 | 0.02 | 0.08-0.09 |
+| hBN | 1-40 | 0.9-1.5 ch | 25-26 | 7-8 | 0.38-0.39 | 0.94 |
+| hBN | 41+ | 0.37-0.38 ch | 7 | 28-29 | 0.09-0.10 | 0.88 |
+| kagome | 1-15 | 0.83 ch | 13 | 7.6 | 0.20 | 0.40 |
+| kagome | 101+ | 0.52 ch | 7 | 14 | 0.10 | 0.27 |
+
+* The short-range fluctuations decorrelate below one channel (HWHM well under 0.02 eV) in every material. On this
+  grid the ergodic averaging is limited by channel count, not by dE_cor.
+* Germanene and silicene (one scatterer class): the residual is close to white (top mode 2-5%). The energy mean of
+  one spectrum spreads no more than a stationary Gaussian process with the measured rho predicts (R_mean 0.72-0.92).
+  The ergodic hypothesis holds.
+* hBN (two sublattices with different host energy, so impurities on A and B are two scatterer classes): up to 40
+  impurities, 38-39% of the seed-to-seed variance sits in one global mode. The seed's sublattice share explains 94% of
+  it (R^2). N_eff falls to 7-8 of about 200 channels. At 41 or more impurities the mode keeps 9-10% (R^2 0.88).
+  R_mean 1.6-1.7: one spectrum's energy mean is about 1.7 times more scattered than ergodic averaging allows.
+* Kagome is in between (top mode 10-20%, R^2 0.27-0.40, arrangement mostly edge share and pairs).
+* Label-free estimators from a single spectrum do not recover the ensemble values:
+  * rho1 correlation with the truth is at most +0.49;
+  * log tau is biased by -0.5 to -1.5, i.e. N_eff is overestimated 1.7-4.5 times;
+  * the global mode is a per-seed offset that a running trend absorbs.
+  So a per-draw dE_cor or N_eff cannot be measured on the parent data, which has one seed per host.
+* Parent validation draws (15,000): 64.4% are multi-class hosts (more than one host on-site energy among the active
+  sites, the hBN-like case). n_imp has quartiles 15 / 33 / 71, and 25% have 15 impurities or fewer.
+
+**Reading (part A).**
+* The ergodic hypothesis holds for hosts whose impurity sites are all equivalent.
+* It fails in a specific way when the sites form more than one scatterer class. The share of impurities per class is
+  then a hidden per-seed variable. It shifts the whole spectrum and does not average out over energy.
+* This is the paper's two-species case (Fig. 3b: n_A, n_B). A single impurity kind on two inequivalent sites
+  behaves like two species whose ratio fluctuates binomially from seed to seed.
+* Expected consequence for the model, tested in part B: on multi-class hosts at low n_imp, the log c error should
+  follow the seed's class composition.
+
+**Part B: does the model's error follow the seed's arrangement?**
+
+*Setup.*
+* `per_draw_model.py` evaluated `model_v2_depth_bandtop` on all 15,000 validation draws: 200 samples per draw,
+  seeded by draw index, 56 min on 2 threads.
+* It reproduces `compare_inverse.py`: top state 0.580, width mode 0.377.
+* Per draw it stores the posterior median and 90% interval of log c, and the rank of the truth.
+* `ergodic_parent.py` rebuilds every draw's exact impurity sites. A regenerated spectrum matches the stored one to
+  1e-7. Per draw it scores the arrangement as:
+  * chi2 of the impurity counts over the host's on-site-energy classes;
+  * the edge-share z-score.
+* Then: Spearman correlation of |log c error| with chi2 and |z_edge| within impurity-count bins.
+* Outputs: `parent_summary.{txt,json}`.
+
+*Result.*
+
+| n_imp | Hosts | Draws | Median error | MAD | 90% coverage | Rank | rho(\|e\|, chi2) | rho(\|e\|, \|z_edge\|) |
+|---|---|---|---|---|---|---|---|---|
+| 6-15 | single class | 1,186 | +0.017 | 0.120 | 0.885 | 0.470 | - | +0.028 |
+| 6-15 | multi-class | 2,074 | +0.168 | 0.290 | 0.864 | 0.373 | +0.060 | -0.004 |
+| 16-40 | single class | 1,637 | -0.026 | 0.112 | 0.934 | 0.545 | - | +0.087 |
+| 16-40 | multi-class | 3,095 | +0.023 | 0.267 | 0.921 | 0.491 | +0.087 | +0.029 |
+| 101+ | single class | 850 | -0.064 | 0.095 | 0.885 | 0.621 | - | +0.041 |
+| 101+ | multi-class | 1,440 | -0.223 | 0.252 | 0.812 | 0.721 | +0.106 | +0.007 |
+
+* **The arrangement barely matters.** On multi-class hosts the |log c error| correlates with the class composition at
+  Spearman 0.02-0.11. Restricted to draws whose top state is right, it is 0.05-0.13. The edge share gives 0.03 or less,
+  and the signed error against z_edge also 0.05 or less. A seed's atypical arrangement explains at most about 1-2% of
+  the rank variance of the density error.
+* **The error depends on the host instead.**
+  * Multi-class hosts have about 2.3 times the density error of single-class hosts at every count (MAD 0.25-0.29
+    against 0.10-0.12). That stays 0.21-0.24 when the top state is right.
+  * Their top state is right in 0.32-0.41 of draws, against 0.86-0.93.
+* **Shrinkage toward the middle of the log c prior, strongest for multi-class hosts.**
+  * Few impurities are overestimated: median error +0.15 to +0.17 at n_imp 15 or fewer, mean rank 0.33-0.37.
+  * Many impurities are underestimated: -0.22 at n_imp above 100, mean rank 0.72.
+  * 90% coverage holds at 0.86-0.93, except multi-class hosts above 100 impurities (0.81).
+
+**Reading.**
+* The global mode found in part A is real in the spectra but does not drive the model's density error. Its size is
+  roughly 1/sqrt(n_imp) of a class share, and it is swamped by the host-level ambiguity.
+* For the inverse model, the ergodic hypothesis is a good enough working assumption, with its limits known:
+  * N_eff is set by channel count, since dE_cor is below the grid;
+  * multi-class hosts carry a per-seed composition term worth up to 40% of the residual variance at low n_imp.
+* What limits density on multi-class hosts is the trade-off between host energies and density (the paper's Fig. 3a
+  valley, here across several on-site energies) and a posterior pulled toward the prior centre. The second matches the
+  log c direction in INV-CAL.
+* Not tested: a two-class density head (n_A, n_B, the paper's Fig. 3b). Part B gives no reason to expect a large gain
+  from it.
+
 ---
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes

@@ -1,0 +1,471 @@
+{
+ "model": "/run/media/shardul/storage/machine_learning/transmission_github/transmissions/results/inverse_design/model_v1/model.pt",
+ "model_sha256": "8a4ba393d2aa8ec9a6582ddb49a390f6fdf4c1add285c85ce3264df09ee7790f",
+ "data": "/run/media/shardul/storage/machine_learning/data/_generated/hexagonal_parent_v1",
+ "code_version": "cf12f4424550d88622aa2f65fa2864dbfcd9ac49",
+ "data_provenance": {
+  "root": "/run/media/shardul/storage/machine_learning/data/_generated/hexagonal_parent_v1",
+  "n_draws": 300000,
+  "code_versions": [
+   "1b0d8238946c02ad22d0874d20f159b598b9bac9",
+   "unknown"
+  ],
+  "manifest_code_version": "1b0d8238946c02ad22d0874d20f159b598b9bac9"
+ },
+ "split": "test",
+ "steps": 64,
+ "seed": 0,
+ "threads": 16,
+ "seconds": 699.1207728385925,
+ "resumed_draws": 0,
+ "failed_draws": {
+  "n": 0,
+  "indices": [],
+  "errors": {}
+ },
+ "seconds_per_draw": 0.34956038641929627,
+ "n_test": 2000,
+ "n_samples": 1000,
+ "sbc_unconditional": {
+  "log_s": {
+   "ks_p": 0.17346404647030922,
+   "n": 2000,
+   "pass": true,
+   "ks_p_bonferroni": 1.0
+  },
+  "log_c": {
+   "ks_p": 2.9764353613397508e-24,
+   "n": 2000,
+   "pass": false,
+   "ks_p_bonferroni": 5.0599401142775765e-23
+  },
+  "w": {
+   "ks_p": 2.2177192988358616e-12,
+   "n": 2000,
+   "pass": false,
+   "ks_p_bonferroni": 3.770122808020965e-11
+  }
+ },
+ "sbc_conditional": {
+  "log_s": {
+   "ks_p": 0.05783843733194105,
+   "n": 2000,
+   "pass": true,
+   "ks_p_bonferroni": 0.9832534346429979
+  },
+  "eps_C": {
+   "ks_p": 0.33446011026951117,
+   "n": 984,
+   "pass": true,
+   "ks_p_bonferroni": 1.0
+  },
+  "eps_H_mean": {
+   "ks_p": 0.5693035205813031,
+   "n": 968,
+   "pass": true,
+   "ks_p_bonferroni": 1.0
+  },
+  "delta": {
+   "ks_p": 0.018382518837504597,
+   "n": 543,
+   "pass": true,
+   "ks_p_bonferroni": 0.31250282023757814
+  },
+  "eps_K": {
+   "ks_p": 0.14483049604612763,
+   "n": 992,
+   "pass": true,
+   "ks_p_bonferroni": 1.0
+  },
+  "t_CC": {
+   "ks_p": 0.1674221864423403,
+   "n": 486,
+   "pass": true,
+   "ks_p_bonferroni": 1.0
+  },
+  "t_AB": {
+   "ks_p": 0.21820335365566945,
+   "n": 466,
+   "pass": true,
+   "ks_p_bonferroni": 1.0
+  },
+  "t_KK": {
+   "ks_p": 0.30968753631710655,
+   "n": 443,
+   "pass": true,
+   "ks_p_bonferroni": 1.0
+  },
+  "t_AA": {
+   "ks_p": 0.8718598755395666,
+   "n": 529,
+   "pass": true,
+   "ks_p_bonferroni": 1.0
+  },
+  "t_CH": {
+   "ks_p": 0.007610712901174686,
+   "n": 463,
+   "pass": false,
+   "ks_p_bonferroni": 0.12938211931996965
+  },
+  "t_CK": {
+   "ks_p": 0.010190277747346198,
+   "n": 512,
+   "pass": true,
+   "ks_p_bonferroni": 0.17323472170488538
+  },
+  "t_HK": {
+   "ks_p": 0.00012895442930998898,
+   "n": 485,
+   "pass": false,
+   "ks_p_bonferroni": 0.002192225298269813
+  },
+  "log_c": {
+   "ks_p": 6.553659292752091e-31,
+   "n": 2000,
+   "pass": false,
+   "ks_p_bonferroni": 1.1141220797678555e-29
+  },
+  "w": {
+   "ks_p": 1.472499660795625e-07,
+   "n": 2000,
+   "pass": false,
+   "ks_p_bonferroni": 2.5032494233525625e-06
+  }
+ },
+ "coverage": {
+  "per_parameter": {
+   "delta": {
+    "coverage": 0.9595375722543352,
+    "n": 346,
+    "hits": 332,
+    "gated": true,
+    "pass": false,
+    "binomial_p": 6.849227760429016e-05,
+    "binomial_p_bonferroni": 0.0008903996088557721
+   },
+   "eps_C": {
+    "coverage": 0.9058441558441559,
+    "n": 616,
+    "hits": 558,
+    "gated": true,
+    "pass": true,
+    "binomial_p": 0.6869629222201156,
+    "binomial_p_bonferroni": 1.0
+   },
+   "eps_H_mean": {
+    "coverage": 0.899641577060932,
+    "n": 558,
+    "hits": 502,
+    "gated": true,
+    "pass": true,
+    "binomial_p": 0.9437894841027558,
+    "binomial_p_bonferroni": 1.0
+   },
+   "eps_K": {
+    "coverage": 0.9193548387096774,
+    "n": 620,
+    "hits": 570,
+    "gated": true,
+    "pass": true,
+    "binomial_p": 0.12313222038193761,
+    "binomial_p_bonferroni": 1.0
+   },
+   "s": {
+    "coverage": 0.9141689373297003,
+    "n": 1468,
+    "hits": 1342,
+    "gated": true,
+    "pass": true,
+    "binomial_p": 0.07432556032302884,
+    "binomial_p_bonferroni": 0.9662322841993749
+   },
+   "t_AA": {
+    "coverage": 0.9484536082474226,
+    "n": 388,
+    "hits": 368,
+    "gated": true,
+    "pass": false,
+    "binomial_p": 0.000895900345676067,
+    "binomial_p_bonferroni": 0.011646704493788872
+   },
+   "t_AB": {
+    "coverage": 0.9304347826086956,
+    "n": 230,
+    "hits": 214,
+    "gated": true,
+    "pass": false,
+    "binomial_p": 0.15167452432474726,
+    "binomial_p_bonferroni": 1.0
+   },
+   "t_CC": {
+    "coverage": 0.921146953405018,
+    "n": 279,
+    "hits": 257,
+    "gated": true,
+    "pass": true,
+    "binomial_p": 0.2722415700279565,
+    "binomial_p_bonferroni": 1.0
+   },
+   "t_CH": {
+    "coverage": 0.9224806201550387,
+    "n": 258,
+    "hits": 238,
+    "gated": true,
+    "pass": true,
+    "binomial_p": 0.2542118251876931,
+    "binomial_p_bonferroni": 1.0
+   },
+   "t_CK": {
+    "coverage": 0.8758169934640523,
+    "n": 306,
+    "hits": 268,
+    "gated": true,
+    "pass": true,
+    "binomial_p": 0.15343663627692683,
+    "binomial_p_bonferroni": 1.0
+   },
+   "t_HK": {
+    "coverage": 0.9245283018867925,
+    "n": 265,
+    "hits": 245,
+    "gated": true,
+    "pass": true,
+    "binomial_p": 0.21824049431525072,
+    "binomial_p_bonferroni": 1.0
+   },
+   "t_KK": {
+    "coverage": 0.9294117647058824,
+    "n": 255,
+    "hits": 237,
+    "gated": true,
+    "pass": true,
+    "binomial_p": 0.14265254285450235,
+    "binomial_p_bonferroni": 1.0
+   },
+   "w": {
+    "coverage": 0.9529972752043597,
+    "n": 1468,
+    "hits": 1399,
+    "gated": false,
+    "pass": null,
+    "binomial_p": 1.3148986740241833e-13,
+    "binomial_p_bonferroni": null
+   },
+   "c": {
+    "coverage": 0.888283378746594,
+    "n": 1468,
+    "hits": 1304,
+    "gated": true,
+    "pass": true,
+    "binomial_p": 0.13895362580740742,
+    "binomial_p_bonferroni": 1.0
+   }
+  },
+  "pooled": {
+   "coverage": 0.9118605639790279,
+   "n": 7057
+  },
+  "n_draws": 1468,
+  "range": [
+   0.87,
+   0.93
+  ],
+  "gate": "per parameter",
+  "conditioning": "top candidate has the true (edge, pattern) and is nearest to the truth",
+  "note_w": "w is reported but not gated (ruling R19): the 5th..95th percentile interval of an integer has whole-number ends and cannot separate a calibrated from an over-confident model; w calibration is gated through SBC.",
+  "note_slots": "intervals are those of the slots active in the top candidate's medoid state",
+  "key_only_diagnostic": {
+   "per_parameter": {
+    "delta": {
+     "coverage": 0.9517766497461929,
+     "n": 394,
+     "hits": 375,
+     "gated": true
+    },
+    "eps_C": {
+     "coverage": 0.9039634146341463,
+     "n": 656,
+     "hits": 593,
+     "gated": true
+    },
+    "eps_H_mean": {
+     "coverage": 0.884430176565008,
+     "n": 623,
+     "hits": 551,
+     "gated": true
+    },
+    "eps_K": {
+     "coverage": 0.9086826347305389,
+     "n": 668,
+     "hits": 607,
+     "gated": true
+    },
+    "s": {
+     "coverage": 0.9088558500323206,
+     "n": 1547,
+     "hits": 1406,
+     "gated": true
+    },
+    "t_AA": {
+     "coverage": 0.9255813953488372,
+     "n": 430,
+     "hits": 398,
+     "gated": true
+    },
+    "t_AB": {
+     "coverage": 0.8897058823529411,
+     "n": 272,
+     "hits": 242,
+     "gated": true
+    },
+    "t_CC": {
+     "coverage": 0.9191919191919192,
+     "n": 297,
+     "hits": 273,
+     "gated": true
+    },
+    "t_CH": {
+     "coverage": 0.918918918918919,
+     "n": 296,
+     "hits": 272,
+     "gated": true
+    },
+    "t_CK": {
+     "coverage": 0.8810975609756098,
+     "n": 328,
+     "hits": 289,
+     "gated": true
+    },
+    "t_HK": {
+     "coverage": 0.9288025889967637,
+     "n": 309,
+     "hits": 287,
+     "gated": true
+    },
+    "t_KK": {
+     "coverage": 0.9078014184397163,
+     "n": 282,
+     "hits": 256,
+     "gated": true
+    },
+    "w": {
+     "coverage": 0.9457013574660633,
+     "n": 1547,
+     "hits": 1463,
+     "gated": false
+    },
+    "c": {
+     "coverage": 0.8862314156431803,
+     "n": 1547,
+     "hits": 1371,
+     "gated": true
+    }
+   },
+   "pooled": {
+    "coverage": 0.9046934239769905,
+    "n": 7649
+   },
+   "n_draws": 1547,
+   "conditioning": "top candidate has the true (edge, pattern); not a gate"
+  }
+ },
+ "top5_recall": {
+  "value": 0.974,
+  "threshold": 0.95,
+  "pass": true
+ },
+ "ece": {
+  "value": 0.02279182915506035,
+  "threshold": 0.05,
+  "n_candidates": 5385,
+  "reliability": [
+   {
+    "lo": 0.0,
+    "hi": 0.1,
+    "n": 1795,
+    "mean_prob": 0.05189470752089137,
+    "hit_rate": 0.0479108635097493
+   },
+   {
+    "lo": 0.1,
+    "hi": 0.2,
+    "n": 893,
+    "mean_prob": 0.14233482642777157,
+    "hit_rate": 0.1265397536394177
+   },
+   {
+    "lo": 0.2,
+    "hi": 0.3,
+    "n": 505,
+    "mean_prob": 0.24480792079207925,
+    "hit_rate": 0.2198019801980198
+   },
+   {
+    "lo": 0.3,
+    "hi": 0.4,
+    "n": 303,
+    "mean_prob": 0.3478019801980198,
+    "hit_rate": 0.2871287128712871
+   },
+   {
+    "lo": 0.4,
+    "hi": 0.5,
+    "n": 227,
+    "mean_prob": 0.4482555066079295,
+    "hit_rate": 0.46255506607929514
+   },
+   {
+    "lo": 0.5,
+    "hi": 0.6,
+    "n": 202,
+    "mean_prob": 0.5482425742574257,
+    "hit_rate": 0.4801980198019802
+   },
+   {
+    "lo": 0.6,
+    "hi": 0.7,
+    "n": 228,
+    "mean_prob": 0.6489035087719298,
+    "hit_rate": 0.5657894736842105
+   },
+   {
+    "lo": 0.7,
+    "hi": 0.8,
+    "n": 194,
+    "mean_prob": 0.7504742268041237,
+    "hit_rate": 0.7268041237113402
+   },
+   {
+    "lo": 0.8,
+    "hi": 0.9,
+    "n": 200,
+    "mean_prob": 0.8511949999999999,
+    "hit_rate": 0.8
+   },
+   {
+    "lo": 0.9,
+    "hi": 1.0,
+    "n": 838,
+    "mean_prob": 0.976961813842482,
+    "hit_rate": 0.9534606205250596
+   }
+  ],
+  "pass": true
+ },
+ "gates": {
+  "sbc_unconditional": false,
+  "sbc_conditional": false,
+  "coverage": false,
+  "top5_recall": true,
+  "ece": true
+ },
+ "pass": false,
+ "sbc_pass_bonferroni": false,
+ "coverage_consistent_bonferroni": false,
+ "noise_aware": {
+  "alpha": 0.01,
+  "ks_gates": 17,
+  "coverage_gates": 13,
+  "note": "reporting only: Bonferroni-adjusted p > alpha for every KS gate / every coverage parameter"
+ }
+}

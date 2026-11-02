@@ -1,0 +1,69 @@
+{
+  "root": "/run/media/shardul/storage/machine_learning/data/_generated/hexagonal_parent_v1",
+  "n_draws": 150000,
+  "n_shards": 30,
+  "seconds_per_draw": {
+    "mean": 27.22411333560268,
+    "median": 12.0035400390625,
+    "p95": 107.52340698242186,
+    "max": 343.2989501953125
+  },
+  "attempts": {
+    "mean": 1.0208866666666667,
+    "total": 153133
+  },
+  "rejections": {
+    "counts": {
+      "invisible_type": 2449,
+      "no_channel": 162,
+      "few_channels": 522
+    },
+    "rate_per_attempt": {
+      "invisible_type": 0.01599263385423129,
+      "no_channel": 0.0010579039135914532,
+      "few_channels": 0.003408801499350238
+    }
+  },
+  "pattern": {
+    "C": {
+      "share": 0.14542666666666668,
+      "mean_seconds": 6.154119126517143
+    },
+    "H": {
+      "share": 0.14437333333333333,
+      "mean_seconds": 9.600822697423528
+    },
+    "K": {
+      "share": 0.14314,
+      "mean_seconds": 16.220860084605803
+    },
+    "C+H": {
+      "share": 0.14310666666666666,
+      "mean_seconds": 17.401157659896985
+    },
+    "C+K": {
+      "share": 0.14343333333333333,
+      "mean_seconds": 29.16008603605813
+    },
+    "H+K": {
+      "share": 0.14008666666666666,
+      "mean_seconds": 43.68265538758441
+    },
+    "C+H+K": {
+      "share": 0.14043333333333333,
+      "mean_seconds": 69.9910469238135
+    }
+  },
+  "mean_seconds_by_width": {
+    "4-8": 4.671878430805462,
+    "9-13": 14.016724575929144,
+    "14-18": 33.7397735216223,
+    "19-22": 63.85464520064239
+  },
+  "edge_share_zigzag": 0.49855333333333335,
+  "projection": {
+    "draws": 300000,
+    "workers": 22,
+    "hours": 103.12164142273743
+  }
+}

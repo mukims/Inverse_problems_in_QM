@@ -44,5 +44,8 @@ def transmission(E, H0, H1, shifts, gL, gR, eta=None, formula="caroli"):
 
 
 def spectrum(H0, H1, energies, shifts, leads, eta=None, formula="caroli"):
-    return np.array([transmission(E, H0, H1, shifts, leads.gL[i], leads.gR[i], eta=eta, formula=formula)
+    # a channel whose leads were evaluated at a slightly shifted energy (LeadCache.energy_shift) uses that energy for
+    # the device too
+    moved = getattr(leads, "energy_shift", None) or [0.0] * len(energies)
+    return np.array([transmission(E + moved[i], H0, H1, shifts, leads.gL[i], leads.gR[i], eta=eta, formula=formula)
                      for i, E in enumerate(energies)])
