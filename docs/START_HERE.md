@@ -11,6 +11,7 @@ the inverse problem: from one transmission spectrum T(E), read the ribbon's mate
 | To read the data with plain NumPy | [`reading-cloud-data.md`](reading-cloud-data.md) |
 | To simulate a ribbon | `src/tbribbon/` (engine), run with `scripts/generate/generate_clouds.py` |
 | To identify a spectrum | `src/atlaslib/` (`Atlas`, ensemble `lookup`), built by `scripts/build/`, scored by `scripts/evaluate/` |
+| Inverse design (continuous host) | [`INVERSE_DESIGN_REPORT.md`](INVERSE_DESIGN_REPORT.md), code in `src/shazam/inverse/`, results in `results/inverse_design/` |
 | The older 7/9-AGNR models | `scripts/experiments/agnr/` and `results/agnr/` |
 | A number from the logbook | `results/<same path the logbook gives under notebooks/>`; `docs/path_map.csv` maps every moved file |
 | One material's model and data | `docs/materials/<material>/README.md` |
@@ -20,7 +21,7 @@ the inverse problem: from one transmission spectrum T(E), read the ribbon's mate
 
 ```
 src/         importable code: tbribbon, atlaslib, shazam, agnr, paths
-scripts/     generate/ (simulate, leads), build/ (atlas, lookup, autoencoder), evaluate/, experiments/ (studies),
+scripts/     generate/ (simulate, leads), build/ (atlas, lookup, autoencoder, inverse models), evaluate/, experiments/ (studies),
              report/ (figures), data/ (organise, index)
 notebooks/   Jupyter notebooks only
 results/     what the scripts write: metrics, logs, figures, checkpoints
