@@ -246,3 +246,29 @@ def test_init_encoder_copies_and_freeze_keeps_the_weights(shard, tmp_path):
                                                      tuned.encoder.state_dict().values()))
     with pytest.raises(ValueError, match="mlp_hidden"):
         ti.train(tr, va, ti.TrainConfig(**dict(base, mlp_hidden=(64, 16))))
+
+
+def test_embed_sets_the_encoder_output_both_heads_read_and_is_recorded(shard, tmp_path):
+    ti.main(["--data", str(shard), "--out", str(tmp_path), "--input", "bandtop", "--extra-conv", "1", "--embed", "832",
+             "--epochs", "1", "--threads", "2"])
+    model = InverseModel.load(tmp_path / "model.pt")
+    assert model.cfg["embed"] == 832
+    assert model.encode(torch.zeros(3, model.cfg["channels"])).shape == (3, 832)
+    assert model.discrete[0].in_features == 832
+    assert json.loads((tmp_path / "history.json").read_text())["cfg"]["embed"] == 832
+
+
+def test_drop_pattern_removes_those_lattices_from_train_and_val_and_leaves_their_states_unknown(shard, tmp_path):
+    from shazam.inverse.pattern import NAMES, pattern_labels
+    tr, va = (data.load_split(shard, s, ("on",)) for s in ("train", "val"))
+    chk = NAMES.index("CHK")
+    n_tr, n_va = (int((pattern_labels(s["on"]) != chk).sum()) for s in (tr, va))
+    assert n_tr < len(tr["on"])                                   # the smoke shard has CHK rows to drop
+    ti.main(["--data", str(shard), "--out", str(tmp_path), "--input", "bandtop", "--extra-conv", "1",
+             "--drop-pattern", "CHK", "--epochs", "1", "--threads", "2"])
+    h = json.loads((tmp_path / "history.json").read_text())
+    assert (h["n_train"], h["n_val"]) == (n_tr, n_va)
+    assert h["drop_pattern"] == ["CHK"]
+    model = InverseModel.load(tmp_path / "model.pt")
+    is_chk = torch.tensor([s.pattern == (True, True, True) for s in STATES])
+    assert not model.mask_known[is_chk].any() and model.mask_known[~is_chk].any()

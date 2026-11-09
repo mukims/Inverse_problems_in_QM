@@ -121,8 +121,9 @@ class InverseModel(nn.Module):
         inp = torch.cat([zt * m, t, tf.sin(), tf.cos(), h, self.state_emb(state), m], 1)
         return self.velocity(inp) * m
 
-    def loss(self, x, state, z, mask):
-        """Cross-entropy of the state plus flow-matching MSE on the active slots; returns (loss, parts)."""
+    def loss(self, x, state, z, mask, weight=None):
+        """Cross-entropy of the state plus flow-matching MSE on the active slots; returns (loss, parts). `weight` [B]
+        (optional) weights the rows of both terms (the importance weights of active learning)."""
         if self.cfg["masks_fixed"]:
             if not torch.equal(self.state_masks[state], mask.to(torch.bool)):
                 raise ValueError("mask differs from the model's fixed state_masks for the given states")
@@ -131,15 +132,29 @@ class InverseModel(nn.Module):
                 self.state_masks[state] = mask
                 self.mask_known[state] = True
         h = self.encode(x)
-        ce = F.cross_entropy(self.discrete(h), state)
+        logits = self.discrete(h)
+        if self.cfg["masks_fixed"]:                 # states marked unknown (left-out lattices) get no probability
+            logits = logits.masked_fill(~self.mask_known, float("-inf"))
+        if weight is None:
+            ce = F.cross_entropy(logits, state)
+        else:
+            weight = weight.to(h.dtype)
+            ce = (F.cross_entropy(logits, state, reduction="none") * weight).sum() / weight.sum().clamp_min(1e-12)
+        flow = self.flow_loss(h, state, z, mask, weight)
+        total = ce + flow
+        return total, {"ce": ce.item(), "flow": flow.item(), "loss": total.item()}
+
+    def flow_loss(self, h, state, z, mask, weight=None):
+        """Flow-matching MSE on the active slots for fingerprints h; `weight` [B] (optional) weights the rows."""
         m = mask.to(z.dtype)
         z0 = torch.randn_like(z) * m
         t = torch.rand(z.shape[0], 1, dtype=z.dtype, device=z.device)
         zt = (1 - t) * z0 + t * z * m
         v = self._velocity(zt, t, h, state, mask)
-        flow = (((v - (z * m - z0)) ** 2) * m).sum() / m.sum().clamp_min(1.0)
-        total = ce + flow
-        return total, {"ce": ce.item(), "flow": flow.item(), "loss": total.item()}
+        sq = ((v - (z * m - z0)) ** 2) * m
+        if weight is None:
+            return sq.sum() / m.sum().clamp_min(1.0)
+        return (sq.sum(1) * weight).sum() / (m.sum(1) * weight).sum().clamp_min(1e-12)
 
     @torch.no_grad()
     def sample(self, x, n, steps=64, state=None):
@@ -172,6 +187,20 @@ class InverseModel(nn.Module):
             return states.cpu(), z.cpu()
         finally:
             self.train(was_training)
+
+    def sample_batch(self, h, states, z0, steps=64, grad_last=0):
+        """The Euler loop of `sample` for a batch: fingerprints h [B, embed], states [B], start noise z0 [B, n_cont]
+        (masked here). The first steps - grad_last steps run without gradients; the last grad_last keep the graph through
+        the velocity and h, so a cost on the samples can train the flow. The train/eval mode is left as it is."""
+        mask = self.state_masks[states]
+        m = mask.to(h.dtype)
+        z = z0.to(h.dtype) * m
+        dt = 1.0 / steps
+        for i in range(steps):
+            t = torch.full((len(z), 1), i * dt, dtype=h.dtype, device=h.device)
+            with torch.set_grad_enabled(torch.is_grad_enabled() and i >= steps - grad_last):
+                z = (z + dt * self._velocity(z, t, h, states, mask)) * m
+        return z
 
     def save(self, path):
         torch.save({"cfg": self.cfg, "state_dict": self.state_dict()}, Path(path))

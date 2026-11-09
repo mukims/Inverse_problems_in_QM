@@ -8,8 +8,9 @@ Draws --n-test rows of the TEST split (draw index % 20 == 19; a seeded random ch
 per-parameter 90%-interval coverage in 0.87-0.93 (draws whose top candidate has the true edge and pattern and is the
 nearest candidate to the truth; the integer width w is reported, not gated), top-5 recall >= 0.95, candidate ECE <= 0.05.
 calibration.json also carries noise-aware verdicts (Bonferroni over the KS gates, binomial tests of the coverage) as
-reporting only. Nothing is tuned on the test split: a failing gate is a result to report, not a prompt to change
-thresholds or sampling settings.
+reporting only. `--split val` runs the same evaluation on the validation split (for model selection; writes
+calibration_val.json). Each model gets its own input (design.model_input). Nothing is tuned on the test split: a
+failing gate is a result to report, not a prompt to change thresholds or sampling settings.
 
 The run takes about an hour, so each evaluated draw is appended to calibration.jsonl next to the output; a restart skips
 the draws already there (keyed by the test draw's index; each draw's randomness derives from (seed, index), so the rest
@@ -26,6 +27,7 @@ import torch
 
 import paths
 from shazam.inverse import calibration, data
+from shazam.inverse.design import model_input
 from shazam.inverse.model import InverseModel
 from shazam.inverse.runio import RunLog, atomic_write_json, code_version, sha256_of
 
@@ -34,7 +36,13 @@ DEFAULT_DATA = paths.data_root() / "_generated" / "hexagonal_parent_v1"
 NEEDED = ("index", "x", "on", "lead", "params", "edge", "width", "density")
 
 
-def main(argv=None):
+def inputs_for(model, xs):
+    """The (n, 416) v4 log inputs `xs` as the input the model was trained on (its cfg "input"; design.model_input)."""
+    kind = getattr(model, "cfg", {}).get("input", "log")
+    return np.stack([model_input(x, kind) for x in xs])
+
+
+def parse_args(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--model", default=str(DEFAULT_MODEL))
     ap.add_argument("--data", default=str(DEFAULT_DATA))
@@ -43,26 +51,35 @@ def main(argv=None):
     ap.add_argument("--steps", type=int, default=64)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--threads", type=int, default=None, help="torch intra-op threads (default: torch's own)")
-    ap.add_argument("--out", default=None, help="default: calibration.json next to the model")
+    ap.add_argument("--out", default=None,
+                    help="default: calibration.json (test) or calibration_val.json (val) next to the model")
     ap.add_argument("--retry-errors", action="store_true", help="retry the draws the .jsonl records as failed")
-    a = ap.parse_args(argv)
+    ap.add_argument("--split", choices=("val", "test"), default="test",
+                    help="the split to evaluate: test for the gate, val for model selection")
+    return ap.parse_args(argv)
+
+
+def main(argv=None):
+    a = parse_args(argv)
     code_version()                                     # this run's code version: fixed now, when it starts
     if a.threads:
         torch.set_num_threads(a.threads)
-    out = Path(a.out) if a.out else Path(a.model).with_name("calibration.json")
+    default = "calibration.json" if a.split == "test" else "calibration_val.json"
+    out = Path(a.out) if a.out else Path(a.model).with_name(default)
     sha = sha256_of(a.model)
     model = InverseModel.load(a.model)
     data_prov = data.data_provenance(a.data)
-    arrays = data.load_split(a.data, "test", NEEDED)
+    arrays = data.load_split(a.data, a.split, NEEDED)
     n_rows = len(arrays["index"])
     rows = np.sort(np.random.default_rng(a.seed).choice(n_rows, size=min(a.n_test, n_rows), replace=False))
-    draws, xs = data.draws(arrays, rows), arrays["x"][rows]
+    draws, xs = data.draws(arrays, rows), inputs_for(model, arrays["x"][rows])
     indices = [int(i) for i in arrays["index"][rows]]
-    print(f"[calibration] {len(rows)} of {n_rows} test rows, {a.n_samples} samples each", flush=True)
+    print(f"[calibration] {len(rows)} of {n_rows} {a.split} rows, {a.n_samples} samples each", flush=True)
 
-    cfg = dict(model=str(a.model), model_sha256=sha, n_samples=a.n_samples, steps=a.steps, seed=a.seed, n_rows=n_rows,
+    cfg = dict(model=str(a.model), model_sha256=sha, split=a.split, n_samples=a.n_samples, steps=a.steps, seed=a.seed,
+               n_rows=n_rows,
                data_draws=data_prov["n_draws"])
-    log = RunLog(out.with_name("calibration.jsonl"), cfg, key_field="index", tag="calibration")
+    log = RunLog(out.with_suffix(".jsonl"), cfg, key_field="index", tag="calibration")
     done = dict(log.done)
     wanted = set(indices)
     failed = {} if a.retry_errors else {i: e for i, e in log.errors.items() if i in wanted}
@@ -83,7 +100,7 @@ def main(argv=None):
     if failed:
         print(f"[calibration] {len(failed)} draws failed and are not in the gates: {failed_draws['indices']}", flush=True)
     report = dict(model=str(a.model), model_sha256=sha, data=str(a.data), code_version=code_version(),
-                  data_provenance=data_prov, split="test", steps=a.steps, seed=a.seed, threads=torch.get_num_threads(),
+                  data_provenance=data_prov, split=a.split, steps=a.steps, seed=a.seed, threads=torch.get_num_threads(),
                   seconds=seconds, resumed_draws=resumed, failed_draws=failed_draws,
                   seconds_per_draw=seconds / max(n_new, 1) if n_new else None, **summary)
     out.parent.mkdir(parents=True, exist_ok=True)

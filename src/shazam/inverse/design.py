@@ -20,7 +20,7 @@ from shazam.inverse.runio import code_version
 from shazam.inverse.verify import (FINAL_SEEDS, OPT_SEEDS, VERIFY_SEEDS, log_likelihood, recreation_check,
                                    simulate_inputs)
 from tbribbon.parent import device_cells_for
-from tbribbon.parent_data import E_WINDOW, V4, n_impurities
+from tbribbon.parent_data import E_WINDOW, V4, bandtop_k, n_impurities, resample_to_top
 from tbribbon.parent_prior import FIELDS, box_edge_warnings
 
 NO_UPDATE_WARNING = ("updated probabilities are renormalised over the returned candidates: "
@@ -54,6 +54,23 @@ def target_input(energies_ev, T):
     if not x.any():
         raise ValueError("target has no transmission")
     return x.astype(np.float32)
+
+
+def model_input(target_x, kind="log"):
+    """The network input a model was trained on (its cfg "input": "log", "linear" or "bandtop") for the v4 input
+    `target_x` (416,), which stays the space the simulator checks compare in.
+
+    Exact: the v4 input is log1p of the cleaned, 3-decimal T over log1p(cap), so expm1 and the same rounding give back
+    parent_data.to_input_linear of the spectrum, and the band-top input follows from it as in to_input_bandtop."""
+    if kind == "log":
+        return np.asarray(target_x, dtype=np.float32)
+    if kind not in ("linear", "bandtop"):
+        raise ValueError(f"unknown model input {kind!r}: expected 'log', 'linear' or 'bandtop'")
+    lin = np.round(np.expm1(np.asarray(target_x, dtype=np.float64) * np.log1p(V4.cap)), 3).astype(np.float32)[None]
+    if kind == "linear":
+        return lin[0]
+    k = bandtop_k(lin)
+    return np.concatenate([resample_to_top(lin, k)[0], (k / lin.shape[1]).astype(np.float32)])
 
 
 def background_mass(p_realistic, n_samples):
@@ -147,9 +164,10 @@ def design(target_x, model, n_samples=1000, update=None, refine_budget=200, n_jo
     if fitted and not (np.isfinite(kappa) and kappa > 0 and np.isfinite(log_L0)):
         raise ValueError(f"update needs a finite kappa > 0 and a finite log_L0, got kappa={kappa}, log_L0={log_L0}")
 
+    x_model = model_input(target_x, getattr(model, "cfg", {}).get("input", "log"))
     with torch.random.fork_rng(devices=[]):
         torch.manual_seed(seed)
-        states, z = model.sample(target_x[None, :], n_samples)
+        states, z = model.sample(x_model[None, :], n_samples)
     cands, p_unassigned = candidates_mod.candidates(np.asarray(states), np.asarray(z))
 
     rows, n_simulations = [], 0

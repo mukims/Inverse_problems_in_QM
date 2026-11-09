@@ -7,7 +7,9 @@ draw once, and trains with Adam and early stopping on the mean validation loss. 
 the rows near that material from the training AND the validation rows (the hidden material must not steer early
 stopping either). Writes model.pt (best epoch) and history.json to --out: by default model_v1 for --exclude none and
 hidden_<material> otherwise (an excluded run never writes into model_v1). history.json records this run's code version and
-the data's provenance.
+the data's provenance. `--drop-pattern CHK` (repeatable) removes every draw of that site-type pattern from the train AND
+validation rows (INV-NOCHK): the model never sees those lattices, so their states stay unknown (mask_known False) and
+get no probability at inference.
 """
 import argparse
 import copy
@@ -56,6 +58,8 @@ class TrainConfig:
     init_encoder: str = ""                     # path of a SpectrumAutoencoder ae.pt whose encoder starts the model (INV-AE)
     freeze_encoder: bool = False               # keep that encoder fixed (and in eval mode) while the heads train
     pool: str = "avg13"                        # cnn pooling before the Linear: avg13, gap or spectral (INV-POOL)
+    embed: int = 128                           # length of the encoder's output vector, read by both heads (INV-EMBED)
+    drop_pattern: tuple = ()                   # site-type patterns (pattern NAMES) left out: their states are unknown (INV-NOCHK)
 
 
 PLATEAU_FACTOR, PLATEAU_PATIENCE, MIN_LR = 0.5, 3, 1e-5     # the plateau schedule: halve after 3 epochs without a new best
@@ -115,22 +119,36 @@ def _validation_loss(model, val, batch, seed):
     return {k: v / len(val["x"]) for k, v in tot.items()}
 
 
-def train(train_arrays, val_arrays, cfg, on_epoch=None):
+def train(train_arrays, val_arrays, cfg, on_epoch=None, weights=None):
     """Fit an InverseModel; returns (model with the best-validation weights, history dict).
 
-    `cfg` is a TrainConfig (or a dict of its fields). `on_epoch(model, history, improved)` is called after each epoch."""
+    `cfg` is a TrainConfig (or a dict of its fields). `on_epoch(model, history, improved)` is called after each epoch.
+    `weights` (optional, one per train row) weights the training loss (active learning's importance weights); the
+    validation loss is never weighted."""
     cfg = _config(cfg)
     if cfg.epochs < 1:
         raise ValueError(f"epochs must be at least 1, got {cfg.epochs}")
     torch.manual_seed(cfg.seed)
     np.random.seed(cfg.seed)
+    if weights is not None and cfg.exclude != "none":
+        raise ValueError("row weights and --exclude cannot be combined (the weights are per loaded row)")
     tr, n_ex_tr = prepare(train_arrays, cfg.exclude, cfg.input)
+    if weights is not None:
+        if len(weights) != len(tr["x"]):
+            raise ValueError(f"{len(weights)} weights for {len(tr['x'])} train rows")
+        tr["w"] = torch.as_tensor(np.asarray(weights, dtype=np.float32))
     va, n_ex_va = prepare(val_arrays, cfg.exclude, cfg.input)
     masks = torch.as_tensor(np.stack([active_slots(s) for s in STATES]))
     model = InverseModel(len(STATES), channels=tr["x"].shape[1], state_masks=masks, group_norm=cfg.group_norm,
                          input=cfg.input,
                          extra_conv=cfg.extra_conv, encoder=cfg.encoder,
-                         mlp_hidden=tuple(cfg.mlp_hidden), dropout=cfg.dropout, pool=cfg.pool)   # fixed table: sampling never depends on training
+                         mlp_hidden=tuple(cfg.mlp_hidden), dropout=cfg.dropout, pool=cfg.pool,
+                         embed=cfg.embed)   # fixed table: sampling never depends on training
+    if cfg.drop_pattern:                           # left-out lattices: no probability in training or at inference
+        from shazam.inverse.pattern import NAMES
+        from tbribbon.parent_prior import PATTERNS
+        gone = {PATTERNS[NAMES.index(n)] for n in cfg.drop_pattern}
+        model.mask_known[torch.tensor([st.pattern in gone for st in STATES])] = False
     frozen = []
     if cfg.init_encoder:
         from shazam.inverse.autoencoder import SpectrumAutoencoder
@@ -157,7 +175,8 @@ def train(train_arrays, val_arrays, cfg, on_epoch=None):
         tot = dict(loss=0.0, ce=0.0, flow=0.0)
         for i in range(0, n, cfg.batch):
             idx = perm[i:i + cfg.batch]
-            loss, parts = model.loss(tr["x"][idx], tr["state"][idx], tr["z"][idx], tr["mask"][idx])
+            batch = (tr["x"][idx], tr["state"][idx], tr["z"][idx], tr["mask"][idx])
+            loss, parts = model.loss(*batch, weight=tr["w"][idx]) if "w" in tr else model.loss(*batch)
             opt.zero_grad()
             loss.backward()
             opt.step()
@@ -211,9 +230,15 @@ def main(argv=None):
     ap.add_argument("--mlp-hidden", type=int, nargs="+", default=[512, 256], help="mlp encoder hidden widths")
     ap.add_argument("--dropout", type=float, default=0.0, help="mlp encoder dropout")
     ap.add_argument("--extra-conv", type=int, default=0, help="extra stride-1 conv blocks after the third conv")
+    ap.add_argument("--embed", type=int, default=128, help="length of the encoder output both heads read")
     ap.add_argument("--no-group-norm", dest="group_norm", action="store_false", help="encoder without GroupNorm")
     ap.add_argument("--max-draws", type=int, default=None,
                     help="use only draws with index below this (keeps a run comparable while the data set grows)")
+    ap.add_argument("--drop-pattern", action="append", default=[], choices=("C", "H", "K", "CH", "CK", "HK", "CHK"),
+                    help="drop every draw of this site-type pattern from train and val (repeatable)")
+    ap.add_argument("--extra-data", action="append", default=[],
+                    help="an active-learning data root whose train rows are added, importance-weighted back to the "
+                         "prior (repeatable; validation stays on --data)")
     a = ap.parse_args(argv)
     code_version()                                     # this run's code version: fixed now, when it starts
     out = Path(a.out) if a.out else default_out(a.exclude)
@@ -229,6 +254,25 @@ def main(argv=None):
     tr, va = data.load_split(a.data, "train", keys), data.load_split(a.data, "val", keys)
     if a.max_draws is not None:
         tr, va = ({k: v[s["index"] < a.max_draws] for k, v in s.items()} for s in (tr, va))
+    if a.drop_pattern:
+        if a.extra_data:
+            raise SystemExit("--drop-pattern and --extra-data cannot be combined (the weights assume the full prior)")
+        from shazam.inverse.pattern import NAMES, pattern_labels
+        drop = [NAMES.index(n) for n in a.drop_pattern]
+        tr, va = ({k: v[~np.isin(pattern_labels(s["on"]), drop)] for k, v in s.items()} for s in (tr, va))
+        extra.update(drop_pattern=list(a.drop_pattern))
+    weights = None
+    if a.extra_data:
+        from shazam.inverse import active
+        prior_cells = active.cells_of_arrays(tr)
+        extras = [data.load_split(r, "train", keys) for r in a.extra_data]
+        tr = {k: np.concatenate([tr[k]] + [e[k] for e in extras]) for k in tr}
+        weights = active.pooled_weights(np.concatenate([prior_cells] + [active.cells_of_arrays(e) for e in extras]),
+                                        prior_cells)
+        extra.update(extra_data=[dict(root=str(r), n_train=len(e["index"]), provenance=data.data_provenance(r))
+                                 for r, e in zip(a.extra_data, extras)],
+                     weight_stats=dict(min=float(weights.min()), max=float(weights.max()),
+                                       ess=float(weights.sum() ** 2 / (weights ** 2).sum())))
     print(f"[inverse] {len(tr['x']):,} train / {len(va['x']):,} val rows loaded ({time.time() - t0:.0f}s)", flush=True)
 
     def on_epoch(model, history, improved):
@@ -240,8 +284,9 @@ def main(argv=None):
         atomic_save(out / "history.json", lambda p: p.write_text(json.dumps({**history, **extra}, indent=1)))
 
     cfg = TrainConfig(a.epochs, a.batch, a.lr, a.patience, a.seed, a.exclude, a.group_norm, a.weight_decay, a.schedule, a.input, a.extra_conv, a.encoder,
-                      tuple(a.mlp_hidden), a.dropout, a.init_encoder, a.freeze_encoder, a.pool)
-    model, history = train(tr, va, cfg, on_epoch)
+                      tuple(a.mlp_hidden), a.dropout, a.init_encoder, a.freeze_encoder, a.pool, a.embed,
+                      tuple(a.drop_pattern))
+    model, history = train(tr, va, cfg, on_epoch, weights=weights)
     atomic_save(out / "model.pt", model.save)
     atomic_save(out / "history.json", lambda p: p.write_text(json.dumps({**history, **extra}, indent=1)))
     print(f"[inverse] best epoch {history['best_epoch']} val {min(history['val_loss']):.4f}; wrote {out}", flush=True)

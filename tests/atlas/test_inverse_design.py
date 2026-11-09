@@ -8,12 +8,12 @@ import torch
 from shazam.inverse import candidates as candidates_mod
 from shazam.inverse import design as design_mod
 from shazam.inverse import refine as refine_mod
-from shazam.inverse.design import background_mass, design, target_input
+from shazam.inverse.design import background_mass, design, model_input, target_input
 from shazam.inverse.refine import RefineResult
 from shazam.inverse.verify import FINAL_SEEDS, OPT_SEEDS, VERIFY_SEEDS, log_likelihood
 from shazam.inverse.encoding import encode
 from tbribbon.parent import HexParams, named_material
-from tbribbon.parent_data import V4, simulate_raw, to_input
+from tbribbon.parent_data import V4, simulate_raw, to_input, to_input_bandtop, to_input_linear
 from tbribbon.parent_prior import Draw
 
 pytestmark = pytest.mark.filterwarnings("ignore:This process .* is multi-threaded:DeprecationWarning")
@@ -133,6 +133,25 @@ def test_malformed_targets_are_rejected():
 def test_target_input_equals_the_simulated_input_on_the_v4_grid():
     raw = simulate_raw(HOST, 3, 1, n_cells=N_CELLS)
     assert np.array_equal(target_input(V4.energies_t(), raw), to_input(raw))
+
+
+def test_model_input_rebuilds_the_training_inputs_from_the_v4_input():
+    raw = simulate_raw(OTHER, 6, 2, n_cells=N_CELLS)
+    x = target_input(V4.energies_t(), raw)
+    assert np.array_equal(model_input(x, "log"), x)
+    assert np.allclose(model_input(x, "linear"), to_input_linear(raw)[0], atol=1e-6)
+    bt = model_input(x, "bandtop")
+    assert bt.shape == (417,) and bt.dtype == np.float32
+    assert np.allclose(bt, to_input_bandtop(raw)[0], atol=1e-6)
+    with pytest.raises(ValueError, match="input"):
+        model_input(x, "spectral")
+
+
+def test_design_feeds_the_model_the_input_it_was_trained_on():
+    model = StubModel([(HOST, 1)])
+    model.cfg = {"input": "bandtop"}
+    run(sim_target(HOST), model, n_samples=20, refine_budget=0)
+    assert model.calls[0][0] == (1, 417)
 
 
 def test_no_candidates_still_writes_a_report():

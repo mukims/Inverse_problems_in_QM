@@ -7,6 +7,10 @@ shard_NNNNN.npz.tmp and renamed when complete, and the manifest lists the finish
 resumed by running the same command again.
 
     PYTHONPATH=src python scripts/generate/generate_parent.py --n-draws 2000 --n-jobs 22
+
+Active learning (shazam.inverse.active): `--proposal cells.json` draws hosts from the tilted prior whose per-cell
+acceptance table is the file's "accept" list (each row then also stores its `cell`), and `--index-start` puts the draw
+indices (and so the disorder seeds and the index % 20 split) in a range disjoint from every other data set.
 """
 import os
 
@@ -31,6 +35,8 @@ from tbribbon import parent_data
 from tbribbon.parent import active_atoms_per_cell
 from tbribbon.parent_prior import RANGES, sample_prior
 
+PROPOSAL = None             # per-cell acceptance table of the active-learning proposal (None: the plain prior)
+
 STALL_SECONDS = 1800        # no result for this long with workers alive: stop (a worker may have died holding the queue lock)
 MAX_ATTEMPTS = 100          # redraws allowed per index; the prior rejects a small fraction, so reaching this is a bug
 REASONS = ("invisible_type", "no_channel", "few_channels")      # in the order they are checked (cheapest first)
@@ -52,7 +58,12 @@ def draw_with_resampling(index):
     reasons = {r: 0 for r in REASONS}
     probe = np.ones(N_CHANNELS)          # stands in for a spectrum not yet computed, so the cheap rules can run first
     for j in range(MAX_ATTEMPTS):
-        draw = sample_prior(np.random.default_rng([index, j]))
+        rng = np.random.default_rng([index, j])
+        if PROPOSAL is None:
+            draw = sample_prior(rng)
+        else:
+            from shazam.inverse import active
+            draw = active.sample_proposal(rng, PROPOSAL, sampler=sample_prior)
         weights = parent_data.band_weights(draw.params)
         why = parent_data.reject_reason(draw, np.ones(1, int), probe, weights)      # only the weight rule can fire
         if why is None:
@@ -80,7 +91,13 @@ def _record(index):
         params=[getattr(p, c) for c in PARAM_COLUMNS], on=[p.on_C, p.on_H, p.on_K], lead=LEAD_CODES[p.lead],
         edge=EDGE_CODES[draw.edge], width=draw.width, density=draw.density, n_imp=n_imp, n_cells=n_cells,
         active_atoms=n_cells * active_atoms_per_cell(p, draw.edge, draw.width),
-        seconds=time.perf_counter() - t0, attempts=attempts, reasons=reasons)
+        seconds=time.perf_counter() - t0, attempts=attempts, reasons=reasons,
+        **({} if PROPOSAL is None else dict(cell=_cell(draw))))
+
+
+def _cell(draw):
+    from shazam.inverse import active
+    return active.cell_of(draw)
 
 
 def _limit_blas():
@@ -165,7 +182,7 @@ def _compute(indices, n_jobs, label="shard"):
     return sorted(got, key=lambda r: r["index"])
 
 
-def _update_manifest(root, entry, shard_size):
+def _update_manifest(root, entry, shard_size, index_start=0, proposal=None):
     """Add or replace the entry of one finished shard; counts are recomputed from the entries."""
     m = load_manifest(root) or {}
     shards = {e["shard"]: e for e in m.get("shards", [])}
@@ -176,10 +193,12 @@ def _update_manifest(root, entry, shard_size):
         prior_ranges=RANGES, code_version=CODE_VERSION, shard_size=shard_size, shards=shards,
         counts=dict(n_draws=sum(e["n_draws"] for e in shards), n_attempts=sum(e["n_attempts"] for e in shards),
                     rejections=rej, seconds=sum(e["seconds"] for e in shards)))
+    if index_start or proposal is not None:            # active-learning data sets only: v1 manifests are unchanged
+        manifest.update(index_start=index_start, proposal=proposal)
     atomic_write_bytes(Path(root) / "manifest.json", lambda f: f.write(json.dumps(manifest, indent=2).encode()))
 
 
-def write_shard(root, shard, indices, n_jobs, shard_size=None):
+def write_shard(root, shard, indices, n_jobs, shard_size=None, index_start=0, proposal=None):
     """Compute the draws of `indices` and write shard_{shard:05d}.npz, its rejection counts and the manifest entry."""
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
@@ -191,8 +210,11 @@ def write_shard(root, shard, indices, n_jobs, shard_size=None):
         if shard_size not in (None, old["shard_size"]):
             raise ValueError(f"{root} was started with shard size {old['shard_size']}, not {shard_size}")
         shard_size = old["shard_size"]
-        if len(indices) > shard_size or indices[0] != shard * shard_size:     # a short final shard is allowed
-            raise ValueError(f"shard {shard} of {root} must start at {shard * shard_size} and hold at most "
+        if old.get("index_start", 0) != index_start:
+            raise ValueError(f"{root} was started at index {old.get('index_start', 0)}, not {index_start}")
+        first = index_start + shard * shard_size
+        if len(indices) > shard_size or indices[0] != first:     # a short final shard is allowed
+            raise ValueError(f"shard {shard} of {root} must start at {first} and hold at most "
                              f"{shard_size} draws, got {indices[0]}..{indices[-1]}")
     recs = _compute(indices, n_jobs, label=f"shard {shard}")
     col = lambda key, dtype: np.array([r[key] for r in recs], dtype=dtype)
@@ -203,6 +225,8 @@ def write_shard(root, shard, indices, n_jobs, shard_size=None):
         n_cells=col("n_cells", np.int32), active_atoms=col("active_atoms", np.int32),
         seconds=col("seconds", np.float32), attempts=col("attempts", np.int16),
         code_version=np.array(CODE_VERSION))                    # 0-d: per shard, not a column (data.SHARD_META)
+    if "cell" in recs[0]:
+        arrays["cell"] = col("cell", np.int32)
     rej = {r: sum(rec["reasons"][r] for rec in recs) for r in REASONS}
     name = f"shard_{shard:05d}"
     summary = dict(n_draws=len(recs), n_attempts=int(arrays["attempts"].sum()), rejections=rej)
@@ -210,7 +234,7 @@ def write_shard(root, shard, indices, n_jobs, shard_size=None):
     atomic_write_bytes(root / f"{name}.npz", lambda f: np.savez(f, **arrays))
     entry = dict(shard=shard, file=f"{name}.npz", start=indices[0], stop=indices[-1] + 1, **summary,
                  seconds=float(arrays["seconds"].sum()), code_version=CODE_VERSION)
-    _update_manifest(root, entry, shard_size or len(indices))
+    _update_manifest(root, entry, shard_size or len(indices), index_start, proposal)
     return root / f"{name}.npz"
 
 
@@ -220,7 +244,23 @@ def main(argv=None):
     ap.add_argument("--n-draws", type=int, default=300_000)
     ap.add_argument("--shard-size", type=int, default=10_000)
     ap.add_argument("--n-jobs", type=int, default=22)
+    ap.add_argument("--index-start", type=int, default=0, help="first draw index (active learning: a disjoint range)")
+    ap.add_argument("--proposal", type=Path, default=None,
+                    help="active-learning cells json; hosts come from its tilted prior instead of the plain prior")
     a = ap.parse_args(argv)
+    global PROPOSAL
+    proposal = None
+    if a.proposal is not None:
+        from shazam.inverse import active
+        spec = json.loads(a.proposal.read_text())
+        PROPOSAL = np.asarray(spec["accept"], float)
+        if PROPOSAL.shape != (active.N_CELLS,) or not (0 < PROPOSAL.max() <= 1) or PROPOSAL.min() < 0:
+            sys.exit(f"{a.proposal}: 'accept' must hold {active.N_CELLS} probabilities with a positive maximum")
+        proposal = dict(file=str(a.proposal), accept=PROPOSAL.tolist())
+    if a.index_start % 20:
+        sys.exit("--index-start must be a multiple of 20 so the index % 20 split is unchanged")
+    if a.index_start + a.n_draws >= 2 ** 32:
+        sys.exit("draw indices are disorder seeds and must stay below 2**32")
     out = a.out.expanduser()
     out.mkdir(parents=True, exist_ok=True)
     for stray in out.glob("*.tmp"):                    # left by an interrupted run
@@ -231,14 +271,15 @@ def main(argv=None):
     done = {e["shard"]: e for e in (manifest or {}).get("shards", [])}
     n_shards = -(-a.n_draws // a.shard_size)
     for k in range(n_shards):
-        lo, hi = k * a.shard_size, min((k + 1) * a.shard_size, a.n_draws)
+        lo, hi = a.index_start + k * a.shard_size, a.index_start + min((k + 1) * a.shard_size, a.n_draws)
         e = done.get(k)
         if e and (out / e["file"]).exists() and (e["start"], e["stop"]) == (lo, hi):
             print(f"shard {k}: done, skipping", flush=True)
             continue
         t0 = time.time()
         print(f"shard {k}: draws {lo}..{hi - 1}", flush=True)
-        write_shard(out, k, range(lo, hi), a.n_jobs, shard_size=a.shard_size)
+        write_shard(out, k, range(lo, hi), a.n_jobs, shard_size=a.shard_size, index_start=a.index_start,
+                    proposal=proposal)
         print(f"shard {k}: written in {time.time() - t0:.0f} s", flush=True)
 
 

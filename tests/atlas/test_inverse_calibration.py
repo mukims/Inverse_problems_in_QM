@@ -265,3 +265,23 @@ def test_cli_records_a_failing_draw_and_goes_on(tmp_path, monkeypatch):
     monkeypatch.setattr(cal, "evaluate_draw", orig)
     again = ev.main(args + ["--retry-errors"])
     assert again["failed_draws"]["n"] == 0 and again["n_test"] == 4
+
+
+def test_calibration_inputs_follow_the_model_input():
+    ec = _load("evaluate", "eval_inverse_calibration")
+    xs = np.random.default_rng(0).random((3, 416)).astype(np.float32)
+
+    class Bandtop:
+        cfg = {"input": "bandtop"}
+
+    class Log:
+        cfg = {"input": "log"}
+
+    assert ec.inputs_for(Bandtop(), xs).shape == (3, 417)
+    np.testing.assert_array_equal(ec.inputs_for(Log(), xs), xs)
+
+
+def test_calibration_split_argument_defaults_to_test():
+    ec = _load("evaluate", "eval_inverse_calibration")
+    assert ec.parse_args([]).split == "test"
+    assert ec.parse_args(["--split", "val"]).split == "val"

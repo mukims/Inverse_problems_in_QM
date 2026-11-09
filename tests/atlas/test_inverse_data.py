@@ -235,3 +235,9 @@ def test_the_code_version_is_fixed_when_the_generator_starts(tmp_path, monkeypat
     with np.load(tmp_path / "shard_00000.npz") as z:
         assert str(z["code_version"]) == "0123abc-at-start"
     assert data.data_provenance(tmp_path)["code_versions"] == ["0123abc-at-start"]
+
+
+def test_seeded_rows_are_a_sorted_reproducible_choice():
+    a = data.seeded_rows(100, 10)
+    assert list(a) == sorted(a) and len(set(a)) == 10 and list(a) == list(data.seeded_rows(100, 10))
+    assert len(data.seeded_rows(5, 10)) == 5
