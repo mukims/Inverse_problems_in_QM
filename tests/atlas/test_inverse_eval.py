@@ -18,7 +18,7 @@ from tbribbon.materials import make_model
 from tbribbon.parent import TYPES, named_material
 from tbribbon.parent_data import V4
 from tbribbon.parent_prior import EDGES, Draw
-from test_inverse_design import HOST, OTHER, StubModel, sim_target
+from test_inverse_design import HOST, KNOWN, OTHER, StubModel, sim_target
 import paths
 
 pytestmark = pytest.mark.filterwarnings("ignore:This process .* is multi-threaded:DeprecationWarning")
@@ -121,7 +121,7 @@ def test_score_hidden_passes_when_every_mark_clears():
 # ------------------------------------------------------------------------------------------------------------------ design.py
 
 def test_design_check_top_and_no_refinement():
-    model = StubModel([(HOST, 70), (OTHER, 30)])
+    model = StubModel([(HOST, 70), (KNOWN, 30)])
     kw = dict(n_samples=100, refine_budget=6, n_jobs=1, n_cells=10, seeds_override=3)
     report = design_mod.design(sim_target(HOST), model, check="top", **kw)
     assert report["candidates"][0]["check"] is not None

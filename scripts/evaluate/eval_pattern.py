@@ -60,12 +60,49 @@ def without(p, drop):
     return p / p.sum(1, keepdims=True)
 
 
+def ensemble_probs(state_ps, members):
+    """[N, 156] mean state probabilities of the full inverse models `members` (keys of `state_ps`, whose values are
+    state_probs results; None marks a lattice-type-only model, which cannot join)."""
+    if any(state_ps[m] is None for m in members):
+        raise ValueError("ensembles take full inverse models only (156-state probabilities)")
+    return np.mean([state_ps[m] for m in members], 0)
+
+
+# Fixed regime bins (INV-DISTIL), so runs stay comparable: [lo, hi) except the last bin, which includes hi.
+REGIMES = dict(width=(("4-8", 4, 9), ("9-13", 9, 14), ("14-18", 14, 19), ("19-22", 19, 23)),
+               density=(("0.0025-0.005", 0.0025, 0.005), ("0.005-0.01", 0.005, 0.01), ("0.01-0.025", 0.01, 0.025),
+                        ("0.025-0.05", 0.025, 0.0501)),
+               cross=(("0.05-0.3", 0.05, 0.3), ("0.3-0.6", 0.3, 0.6), ("0.6-1", 0.6, 1.0001)))
+TWO_TYPE = [NAMES.index(n) for n in ("CH", "CK", "HK")]
+
+
+def regime_accuracy(hit, va, y):
+    """Top-1 by width, edge and impurity density over all rows and over the two-type lattices (CH, CK, HK), and by the
+    cross hopping between the two types on the two-type lattices: {subset: {regime: {bin: {n, top1}}}}."""
+    from tbribbon.parent_prior import EDGES, FIELDS
+    cross = va["params"][:, [FIELDS.index(f) for f in ("t_CH", "t_CK", "t_HK")]].sum(1)
+    values = dict(width=va["width"], density=va["density"], cross=cross)
+
+    def cell(m):
+        return dict(n=int(m.sum()), top1=float(hit[m].mean()) if m.any() else float("nan"))
+
+    out = {}
+    for subset, sel in (("all", np.ones(len(y), bool)), ("two_type", np.isin(y, TWO_TYPE))):
+        r = {k: {name: cell(sel & (values[k] >= lo) & (values[k] < hi)) for name, lo, hi in bins}
+             for k, bins in REGIMES.items() if k != "cross" or subset == "two_type"}
+        r["edge"] = {e: cell(sel & (va["edge"] == i)) for i, e in enumerate(EDGES)}
+        out[subset] = r
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("models", nargs="+", help="model directories; the first is the McNemar reference")
     ap.add_argument("--data", default=str(DEFAULT_DATA))
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--threads", type=int, default=None)
+    ap.add_argument("--ensemble-sizes", nargs="+", type=int, default=[],
+                    help="also score the ensemble (mean state probabilities) of the first k models, for each k")
     ap.add_argument("--drop-pattern", action="append", default=[], choices=NAMES,
                     help="score without this site-type pattern (repeatable)")
     a = ap.parse_args(argv)
@@ -80,8 +117,15 @@ def main(argv=None):
     true_state = np.array([encode(d)[0] for d in data.draws(va, slice(None))])
     dropped_states = _STATE_TO_PATTERN[:, drop].any(1) if drop else np.zeros(len(STATES), bool)
     res, hits = {}, {}
-    for d in a.models:
-        ps = state_probs(d, x)
+    state_ps = {d: state_probs(d, x) for d in a.models}
+    entries = list(a.models)
+    for k in a.ensemble_sizes:                       # the ensemble of the first k models, scored like another model
+        if not 2 <= k <= len(a.models):
+            raise SystemExit(f"--ensemble-sizes {k}: needs 2 to {len(a.models)} models")
+        state_ps[f"ensemble{k}"] = ensemble_probs(state_ps, a.models[:k])
+        entries.append(f"ensemble{k}")
+    for d in entries:
+        ps = state_ps[d]
         p = PatternModel.load(Path(d) / "model.pt").predict_proba(x).numpy() if ps is None else ps @ _STATE_TO_PATTERN
         if drop:
             p = without(p, drop)
@@ -93,11 +137,11 @@ def main(argv=None):
         res[d] = dict(top1=float(hits[d].mean()), top2=float(top2.mean()),
                       ece=calibration.expected_calibration_error(p.max(1), hits[d]),
                       by_pattern={NAMES[k]: float(hits[d][y == k].mean()) for k in range(N_PATTERNS) if k not in drop},
-                      confusion=conf.tolist())
+                      confusion=conf.tolist(), regimes=regime_accuracy(hits[d], va, y))
         if ps is not None:
             res[d]["state_top1"] = float(((without(ps, dropped_states) if drop else ps).argmax(1) == true_state).mean())
     ref = a.models[0]
-    for d in a.models[1:]:
+    for d in entries[1:]:
         only_new, only_ref = int((hits[d] & ~hits[ref]).sum()), int((hits[ref] & ~hits[d]).sum())
         res[d]["mcnemar_vs_ref"] = dict(only_new=only_new, only_ref=only_ref,
                                         z=float((only_new - only_ref) / np.sqrt(max(only_new + only_ref, 1))))
@@ -105,7 +149,7 @@ def main(argv=None):
     a.out.write_text(json.dumps(dict(n_val=int(len(y)), names=list(NAMES), drop_pattern=list(a.drop_pattern),
                                      reference=ref, models=res), indent=1))
 
-    names = [Path(d).name for d in a.models]
+    names = [Path(d).name for d in entries]
     w = max(24, *(len(n) + 2 for n in names))
     print(f"{len(y):,} val spectra" + (f" (without {', '.join(a.drop_pattern)})" if drop else "") + "\n" + f"{'':18s}" + "".join(f"{n:>{w}s}" for n in names))
     rows = [("top-1", lambda m: f"{m['top1']:.4f}"), ("top-2", lambda m: f"{m['top2']:.4f}"),
@@ -114,8 +158,14 @@ def main(argv=None):
     rows += [(f"  {k}", (lambda k: lambda m: f"{m['by_pattern'][k]:.4f}")(k)) for k in NAMES if k not in a.drop_pattern]
     rows += [("McNemar z", lambda m: f"{m['mcnemar_vs_ref']['z']:+.1f}" if "mcnemar_vs_ref" in m else "ref")]
     for label, f in rows:
-        print(f"{label:18s}" + "".join(f"{f(res[d]):>{w}s}" for d in a.models))
-    for d, n in zip(a.models, names):
+        print(f"{label:18s}" + "".join(f"{f(res[d]):>{w}s}" for d in entries))
+    for subset in ("all", "two_type"):
+        print(f"\ntop-1 by regime, {'all spectra' if subset == 'all' else 'two-type lattices (CH, CK, HK)'}")
+        for regime, bins in res[entries[0]]["regimes"][subset].items():
+            for b, c in bins.items():
+                print(f"  {regime + ' ' + b:22s} n={c['n']:6d}" + "".join(
+                    f"{res[d]['regimes'][subset][regime][b]['top1']:>{w}.4f}" for d in entries))
+    for d, n in zip(entries, names):
         print(f"\n{n}: confusion (rows truth, columns prediction)\n{'':6s}" + "".join(f"{k:>7s}" for k in NAMES))
         for k, r in zip(NAMES, res[d]["confusion"]):
             print(f"{k:6s}" + "".join(f"{v:7d}" for v in r))

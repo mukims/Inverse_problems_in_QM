@@ -88,7 +88,7 @@ def test_medoid_is_a_member_and_inside_its_intervals():
         assert c.mean.shape == (14,) and c.cov.shape == (14, 14)
         assert np.all(np.linalg.eigvalsh(c.cov) >= 1e-4 - 1e-12)         # regularised by 1e-4 I
         assert c.nearest_material in ("graphene-ideal", "silicene", "germanene", "hbn", "triangular", "kagome")
-        assert c.realistic is True and c.box_edge == []
+        assert c.realistic is False and c.box_edge == []                  # neither host is near a known material
 
 
 def test_no_candidate_when_every_cluster_is_tiny():
@@ -257,3 +257,20 @@ def test_candidates_medoid_respects_modal_family_and_active_intervals():
     # Because inactive members are excluded, lo is ~0.48, well above 0.4.
     assert lo > 0.4
 
+
+
+def test_realistic_means_near_a_known_material():
+    assert is_realistic(Draw(named_material("graphene-ideal"), "zigzag", 20, 0.04)) is True
+    assert is_realistic(Draw(replace(named_material("graphene-ideal"), s=2.9), "zigzag", 20, 0.04)) is True     # 7% off
+    assert is_realistic(Draw(replace(named_material("graphene-ideal"), s=3.1), "zigzag", 20, 0.04)) is False    # 15% off
+    assert is_realistic(HOST_A) is False and is_realistic(HOST_B) is False
+    two_types = HexParams(True, True, False, "H", 2.7, t_AB=1.0, t_CC=0.5, t_CH=0.3)
+    assert is_realistic(Draw(two_types, "armchair", 9, 0.01)) is False
+
+
+def test_each_candidate_carries_its_own_realistic_flag():
+    hbn = Draw(named_material("hbn"), "zigzag", 9, 0.01)
+    states, z = samples([(hbn, 600), (HOST_B, 400)], seed=5)
+    cands, _ = candidates(states, z)
+    assert [c.realistic for c in cands] == [True, False]
+    assert cands[0].nearest_material == "hbn"

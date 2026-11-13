@@ -11,6 +11,11 @@ resumed by running the same command again.
 Active learning (shazam.inverse.active): `--proposal cells.json` draws hosts from the tilted prior whose per-cell
 acceptance table is the file's "accept" list (each row then also stores its `cell`), and `--index-start` puts the draw
 indices (and so the disorder seeds and the index % 20 split) in a range disjoint from every other data set.
+
+Near known materials (shazam.inverse.realism): `--near hbn=12000 graphene-ideal=10000 ...` draws hosts from the prior
+restricted to within --near-radius tolerances of each material, one block of draw indices per material in the order
+given. Each row then also stores `near` (the material's position in tbribbon.parent.NAMED) and `tries` (prior draws
+used, over all attempts of that index); the manifest stores the plan, and a rerun must give the same one.
 """
 import os
 
@@ -31,11 +36,13 @@ import numpy as np
 import paths
 from shazam.inverse.data import EDGE_CODES, LEAD_CODES, PARAM_COLUMNS, load_manifest
 from shazam.inverse.runio import atomic_write_bytes, code_version
+from shazam.inverse import realism
 from tbribbon import parent_data
-from tbribbon.parent import active_atoms_per_cell
+from tbribbon.parent import NAMED, active_atoms_per_cell
 from tbribbon.parent_prior import RANGES, sample_prior
 
 PROPOSAL = None             # per-cell acceptance table of the active-learning proposal (None: the plain prior)
+NEAR = None                 # near-material plan (near_spec) plus its index_start; write_shard sets it for its workers
 
 STALL_SECONDS = 1800        # no result for this long with workers alive: stop (a worker may have died holding the queue lock)
 MAX_ATTEMPTS = 100          # redraws allowed per index; the prior rejects a small fraction, so reaching this is a bug
@@ -47,6 +54,44 @@ DEFAULT_OUT = paths.data_root() / "_generated" / "hexagonal_parent_v1"
 CODE_VERSION = code_version()
 
 
+def near_spec(counts, radius=2.0, rel_tol=realism.REL_TOL, abs_tol=realism.ABS_TOL):
+    """The plan of a near-material data set, as stored in its manifest: `counts` is [(material, draws), ...]; the
+    materials take consecutive blocks of draw indices in this order."""
+    names = [n for n, _ in counts]
+    for n in names:
+        if n not in NAMED:
+            raise ValueError(f"unknown material {n!r}; choose from {NAMED}")
+        if names.count(n) > 1:
+            raise ValueError(f"material {n!r} is listed twice")
+    if any(int(c) != c or c < 1 for _, c in counts):
+        raise ValueError(f"every count must be a positive whole number, got {[c for _, c in counts]}")
+    if not radius > 0:
+        raise ValueError(f"radius must be positive, got {radius}")
+    return dict(materials=names, counts=[int(c) for _, c in counts], radius=float(radius), rel_tol=float(rel_tol),
+                abs_tol=float(abs_tol))
+
+
+def near_material(spec, offset):
+    """The material of the draw `offset` places after the plan's first index."""
+    stops = np.cumsum(spec["counts"])
+    if not 0 <= offset < stops[-1]:
+        raise ValueError(f"draw {offset} is outside the plan's {int(stops[-1])} draws")
+    return spec["materials"][int(np.searchsorted(stops, offset, side="right"))]
+
+
+def _host(rng, index):
+    """(draw, prior draws used, material or None) of one attempt, from the plain prior, the proposal or the plan."""
+    if NEAR is not None:
+        name = near_material(NEAR, index - NEAR["index_start"])
+        draw, tries = realism.sample_near(rng, name, NEAR["radius"], NEAR["rel_tol"], NEAR["abs_tol"],
+                                          sampler=sample_prior)
+        return draw, tries, name
+    if PROPOSAL is None:
+        return sample_prior(rng), 1, None
+    from shazam.inverse import active
+    return active.sample_proposal(rng, PROPOSAL, sampler=sample_prior), 1, None
+
+
 def draw_with_resampling(index):
     """Accepted draw for this index: (draw, n_imp, raw, clean, attempts, reasons).
 
@@ -55,15 +100,18 @@ def draw_with_resampling(index):
     band-weight and the channel rule would reject a draw it is counted as invisible_type. `attempts` counts the
     attempts up to and including the accepted one; `reasons` counts the rejections by reason for this index.
     """
+    return _draw(index)[:6]
+
+
+def _draw(index):
+    """draw_with_resampling plus (prior draws used over all attempts, material of a near-material plan or None)."""
     reasons = {r: 0 for r in REASONS}
     probe = np.ones(N_CHANNELS)          # stands in for a spectrum not yet computed, so the cheap rules can run first
+    tries = 0
     for j in range(MAX_ATTEMPTS):
         rng = np.random.default_rng([index, j])
-        if PROPOSAL is None:
-            draw = sample_prior(rng)
-        else:
-            from shazam.inverse import active
-            draw = active.sample_proposal(rng, PROPOSAL, sampler=sample_prior)
+        draw, used, material = _host(rng, index)
+        tries += used
         weights = parent_data.band_weights(draw.params)
         why = parent_data.reject_reason(draw, np.ones(1, int), probe, weights)      # only the weight rule can fire
         if why is None:
@@ -75,7 +123,7 @@ def draw_with_resampling(index):
             raw = parent_data.simulate_raw(draw, n_imp, index, n_cells=n_cells)
             why = parent_data.reject_reason(draw, clean, raw, weights)
             if why is None:
-                return draw, n_imp, raw, clean, j + 1, reasons
+                return draw, n_imp, raw, clean, j + 1, reasons, tries, material
         reasons[why] += 1
     raise RuntimeError(f"draw index {index}: no acceptable host in {MAX_ATTEMPTS} attempts (rejections {reasons})")
 
@@ -83,7 +131,7 @@ def draw_with_resampling(index):
 def _record(index):
     """Everything stored for one index. `seconds` is the wall time of the whole attempt sequence up to acceptance."""
     t0 = time.perf_counter()
-    draw, n_imp, raw, clean, attempts, reasons = draw_with_resampling(index)
+    draw, n_imp, raw, clean, attempts, reasons, tries, material = _draw(index)
     n_cells = parent_data.device_cells_for(draw.params, draw.edge)
     p = draw.params
     return dict(
@@ -92,7 +140,8 @@ def _record(index):
         edge=EDGE_CODES[draw.edge], width=draw.width, density=draw.density, n_imp=n_imp, n_cells=n_cells,
         active_atoms=n_cells * active_atoms_per_cell(p, draw.edge, draw.width),
         seconds=time.perf_counter() - t0, attempts=attempts, reasons=reasons,
-        **({} if PROPOSAL is None else dict(cell=_cell(draw))))
+        **({} if PROPOSAL is None else dict(cell=_cell(draw))),
+        **({} if material is None else dict(near=NAMED.index(material), tries=tries)))
 
 
 def _cell(draw):
@@ -182,7 +231,7 @@ def _compute(indices, n_jobs, label="shard"):
     return sorted(got, key=lambda r: r["index"])
 
 
-def _update_manifest(root, entry, shard_size, index_start=0, proposal=None):
+def _update_manifest(root, entry, shard_size, index_start=0, proposal=None, near=None):
     """Add or replace the entry of one finished shard; counts are recomputed from the entries."""
     m = load_manifest(root) or {}
     shards = {e["shard"]: e for e in m.get("shards", [])}
@@ -195,11 +244,15 @@ def _update_manifest(root, entry, shard_size, index_start=0, proposal=None):
                     rejections=rej, seconds=sum(e["seconds"] for e in shards)))
     if index_start or proposal is not None:            # active-learning data sets only: v1 manifests are unchanged
         manifest.update(index_start=index_start, proposal=proposal)
+    if near is not None:
+        manifest.update(index_start=index_start, proposal=proposal, near=near)
     atomic_write_bytes(Path(root) / "manifest.json", lambda f: f.write(json.dumps(manifest, indent=2).encode()))
 
 
-def write_shard(root, shard, indices, n_jobs, shard_size=None, index_start=0, proposal=None):
-    """Compute the draws of `indices` and write shard_{shard:05d}.npz, its rejection counts and the manifest entry."""
+def write_shard(root, shard, indices, n_jobs, shard_size=None, index_start=0, proposal=None, near=None):
+    """Compute the draws of `indices` and write shard_{shard:05d}.npz, its rejection counts and the manifest entry.
+    `near` (near_spec) draws the hosts from that near-material plan, which starts at `index_start`."""
+    global NEAR
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     indices = list(indices)
@@ -212,11 +265,17 @@ def write_shard(root, shard, indices, n_jobs, shard_size=None, index_start=0, pr
         shard_size = old["shard_size"]
         if old.get("index_start", 0) != index_start:
             raise ValueError(f"{root} was started at index {old.get('index_start', 0)}, not {index_start}")
+        if old.get("near") != near:
+            raise ValueError(f"{root} was started with the near-material plan {old.get('near')}, not {near}")
         first = index_start + shard * shard_size
         if len(indices) > shard_size or indices[0] != first:     # a short final shard is allowed
             raise ValueError(f"shard {shard} of {root} must start at {first} and hold at most "
                              f"{shard_size} draws, got {indices[0]}..{indices[-1]}")
-    recs = _compute(indices, n_jobs, label=f"shard {shard}")
+    NEAR = None if near is None else dict(near, index_start=index_start)       # read by the forked workers
+    try:
+        recs = _compute(indices, n_jobs, label=f"shard {shard}")
+    finally:
+        NEAR = None
     col = lambda key, dtype: np.array([r[key] for r in recs], dtype=dtype)
     arrays = dict(
         index=col("index", np.int64), x=col("x", np.float32), raw=col("raw", np.float32), clean=col("clean", np.int16),
@@ -227,6 +286,8 @@ def write_shard(root, shard, indices, n_jobs, shard_size=None, index_start=0, pr
         code_version=np.array(CODE_VERSION))                    # 0-d: per shard, not a column (data.SHARD_META)
     if "cell" in recs[0]:
         arrays["cell"] = col("cell", np.int32)
+    if "near" in recs[0]:
+        arrays.update(near=col("near", np.int8), tries=col("tries", np.int32))
     rej = {r: sum(rec["reasons"][r] for rec in recs) for r in REASONS}
     name = f"shard_{shard:05d}"
     summary = dict(n_draws=len(recs), n_attempts=int(arrays["attempts"].sum()), rejections=rej)
@@ -234,7 +295,7 @@ def write_shard(root, shard, indices, n_jobs, shard_size=None, index_start=0, pr
     atomic_write_bytes(root / f"{name}.npz", lambda f: np.savez(f, **arrays))
     entry = dict(shard=shard, file=f"{name}.npz", start=indices[0], stop=indices[-1] + 1, **summary,
                  seconds=float(arrays["seconds"].sum()), code_version=CODE_VERSION)
-    _update_manifest(root, entry, shard_size or len(indices), index_start, proposal)
+    _update_manifest(root, entry, shard_size or len(indices), index_start, proposal, near)
     return root / f"{name}.npz"
 
 
@@ -247,9 +308,20 @@ def main(argv=None):
     ap.add_argument("--index-start", type=int, default=0, help="first draw index (active learning: a disjoint range)")
     ap.add_argument("--proposal", type=Path, default=None,
                     help="active-learning cells json; hosts come from its tilted prior instead of the plain prior")
+    ap.add_argument("--near", nargs="+", metavar="NAME=COUNT", default=None,
+                    help="hosts near known materials: draws per material, in index order; sets --n-draws to their sum")
+    ap.add_argument("--near-radius", type=float, default=2.0, help="... within this many tolerances (realism.py)")
     a = ap.parse_args(argv)
     global PROPOSAL
-    proposal = None
+    proposal, near = None, None
+    if a.near is not None:
+        if a.proposal is not None:
+            sys.exit("--near and --proposal cannot be combined")
+        try:
+            near = near_spec([(n, int(c)) for n, c in (item.split("=") for item in a.near)], a.near_radius)
+        except ValueError as e:
+            sys.exit(f"--near takes NAME=COUNT items ({e})")
+        a.n_draws = sum(near["counts"])
     if a.proposal is not None:
         from shazam.inverse import active
         spec = json.loads(a.proposal.read_text())
@@ -268,6 +340,8 @@ def main(argv=None):
     manifest = load_manifest(out)
     if manifest and manifest["shard_size"] != a.shard_size:
         sys.exit(f"{out} was started with --shard-size {manifest['shard_size']}, not {a.shard_size}")
+    if manifest and manifest.get("near") != near:
+        sys.exit(f"{out} was started with the near-material plan {manifest.get('near')}, not {near}")
     done = {e["shard"]: e for e in (manifest or {}).get("shards", [])}
     n_shards = -(-a.n_draws // a.shard_size)
     for k in range(n_shards):
@@ -279,7 +353,7 @@ def main(argv=None):
         t0 = time.time()
         print(f"shard {k}: draws {lo}..{hi - 1}", flush=True)
         write_shard(out, k, range(lo, hi), a.n_jobs, shard_size=a.shard_size, index_start=a.index_start,
-                    proposal=proposal)
+                    proposal=proposal, near=near)
         print(f"shard {k}: written in {time.time() - t0:.0f} s", flush=True)
 
 

@@ -87,3 +87,38 @@ def test_recreation_rate_is_one_when_the_simulator_returns_the_target():
 
     rate, rows = cr.recreation_rate(model, torch.as_tensor(target), target, n_samples=20, simulate_ensemble=ensemble)
     assert rate == 1.0 and len(rows) == 3 and all(r["recreated"] for r in rows)
+
+
+def test_ensemble_members_takes_the_first_k_models_and_keeps_the_old_name_for_all():
+    names = ["s0", "s1", "s2", "s3"]
+    assert cr.ensemble_members(names, sizes=[2, 3, 4], everything=False) == {
+        "ensemble2": ["s0", "s1"], "ensemble3": ["s0", "s1", "s2"], "ensemble4": names}
+    assert cr.ensemble_members(names, sizes=[], everything=True) == {"ensemble": names}
+    assert cr.ensemble_members(["s0"], sizes=[], everything=True) == {}
+    with pytest.raises(ValueError):
+        cr.ensemble_members(names, sizes=[5], everything=False)
+    with pytest.raises(ValueError):
+        cr.ensemble_members(names, sizes=[1], everything=False)
+
+
+def test_model_outputs_give_a_bandtop_scale_model_the_band_top_of_each_row():
+    import torch
+    from shazam.inverse.encoding import STATES, active_slots
+    from shazam.inverse.model import InverseModel
+    torch.manual_seed(0)
+    masks = torch.as_tensor(np.stack([active_slots(s) for s in STATES]))
+    model = InverseModel(len(STATES), channels=417, input="bandtop", extra_conv=1, state_masks=masks, scale="bandtop").eval()
+    x = torch.cat([torch.rand(3, 416), torch.tensor([[0.2], [0.5], [0.9]])], 1)
+    probs, states, phys = cr.model_outputs(model, x, n_samples=4, seed=0, batch=2)
+    assert probs.shape == (3, len(STATES)) and states.shape == (3, 4) and np.isfinite(phys).all()
+    torch.manual_seed(0)
+    again = cr.model_outputs(model, x, n_samples=4, seed=0, batch=2)[2]
+    assert np.allclose(phys, again)
+    # row by row the samples are those of sample_batch with that row's band top
+    h = model.encode(x[2:3])
+    gen = torch.Generator().manual_seed(0)
+    p0 = torch.softmax(model.discrete(model.encode(x[:2])), 1)
+    torch.multinomial(p0, 4, replacement=True, generator=gen); torch.randn(8, model.n_cont, generator=gen)
+    s = torch.multinomial(torch.softmax(model.discrete(h), 1), 4, replacement=True, generator=gen).reshape(-1)
+    z = model.sample_batch(h.repeat_interleave(4, 0), s, torch.randn(4, model.n_cont, generator=gen), top=x[2:3, -1].expand(4))
+    assert np.allclose(phys[2], rw.physical_torch(s, z).detach().numpy(), atol=1e-5)

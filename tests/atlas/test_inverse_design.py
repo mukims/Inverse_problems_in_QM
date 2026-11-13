@@ -22,6 +22,7 @@ N_CELLS = 10              # short devices, and 3 seeds per check, keep the tests
 SEEDS = 3
 HOST = Draw(named_material("hbn"), "zigzag", 5, 0.02)
 OTHER = Draw(HexParams(False, True, False, "H", 1.3, eps_H_mean=-0.4, delta=1.0, t_AB=1.0, t_AA=0.2), "armchair", 12, 0.004)
+KNOWN = Draw(named_material("graphene-ideal"), "armchair", 12, 0.004)     # a second realistic host; OTHER is near no material
 
 
 class StubModel:
@@ -62,7 +63,7 @@ CANDIDATE_KEYS = {"rank", "model_probability", "updated_probability", "realistic
 
 
 def test_report_has_every_key():
-    model = StubModel([(HOST, 70), (OTHER, 30)])
+    model = StubModel([(HOST, 70), (KNOWN, 30)])
     report = run(sim_target(HOST), model)
     json.dumps(report, allow_nan=False)                                # plain JSON types only
     assert {"p_unassigned", "candidates", "update_fitted", "warning", "n_simulations", "seconds"} <= set(report)
@@ -90,11 +91,21 @@ def test_report_has_every_key():
 
 def test_fitted_update_keeps_background_mass():
     stray = Draw(named_material("kagome"), "zigzag", 8, 0.01)
-    model = StubModel([(HOST, 60), (OTHER, 30), (stray, 10)])                           # 10 samples: below the cluster minimum
+    model = StubModel([(HOST, 60), (KNOWN, 30), (stray, 10)])                           # 10 samples: below the cluster minimum
     report = run(sim_target(HOST), model, update={"kappa": 1.0, "log_L0": 1e9})        # background wins: all fall to ~0
     assert report["update_fitted"] is True and "warning" not in report
     assert report["p_unassigned"] == pytest.approx(0.1) and report["p_background"] == pytest.approx(0.1)
     assert all(c["updated_probability"] < 1e-6 for c in report["candidates"])
+
+
+def test_a_candidate_near_no_known_material_is_reported_but_not_simulated_and_counts_as_background():
+    report = run(sim_target(HOST), StubModel([(HOST, 70), (OTHER, 30)]), update={"kappa": 1.0, "log_L0": -1e9})
+    near, far = report["candidates"]
+    assert near["realistic"] is True and near["check"] is not None and near["updated_probability"] is not None
+    assert far["realistic"] is False and far["check"] is None and far["updated_probability"] is None
+    assert far["model_probability"] == pytest.approx(0.3) and far["nearest_material"] is not None
+    assert report["p_background"] == pytest.approx(0.3)                 # the unrealistic share is background mass
+    json.dumps(report, allow_nan=False)
 
 
 def test_unrealistic_candidates_are_reported_but_not_simulated(monkeypatch):

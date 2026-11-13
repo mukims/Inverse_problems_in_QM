@@ -10,6 +10,7 @@ import numpy as np
 from scipy.cluster.hierarchy import linkage
 
 from shazam.inverse.encoding import CONT, SLOT, STATES, active_slots, decode, state_index, state_of
+from shazam.inverse.realism import is_near_known
 from shazam.inverse.reward import FAMILY_OF
 from tbribbon.parent import NAMED, device_cells_for, named_material
 from tbribbon.parent_data import n_impurities
@@ -59,8 +60,10 @@ def full_vector(draw):
 
 
 def is_realistic(draw):
-    """Physical plausibility of a host (spec section 7, step 6). Placeholder: every host passes until it is defined."""
-    return True
+    """Physical plausibility of a host (spec section 7, step 6): it is near a known material, i.e. it has the site types
+    of one of the named materials and every energy and hopping within realism.REL_TOL of that material's value, or
+    realism.ABS_TOL eV where the material has none (the user's criterion and tolerances, 2026-11-10; INV-REAL)."""
+    return bool(is_near_known(draw))
 
 
 def nearest_named(draw):

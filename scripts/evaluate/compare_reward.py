@@ -102,6 +102,12 @@ def coverage_metrics(sample_phys, sample_fam, truth_phys, truth_fam, top_fam):
     return {n: (float(np.mean(v)) if v else None) for n, v in hits.items()}
 
 
+def _top(model, x, repeat):
+    """The band top of each input row, repeated `repeat` times, for a scale="bandtop" model (sample_batch needs it to
+    return the standard coordinates); None for every other model."""
+    return x[:, -1].repeat_interleave(repeat) if model.cfg.get("scale") == "bandtop" else None
+
+
 @torch.no_grad()
 def model_outputs(model, x, n_samples, seed=0, batch=50):
     """(state probabilities (n, 156), sample states (n, S), sample physical vectors (n, S, N_PHYS) float32)."""
@@ -140,10 +146,11 @@ def model_outputs(model, x, n_samples, seed=0, batch=50):
                     h_full = h_m.repeat_interleave(n_samples, 0)
                     h_sub = h_full[start:end]
                     z0_sub = torch.randn(len(s_sub), m.n_cont, generator=gen)
-                    z[start:end] = m.sample_batch(h_sub, s_sub, z0_sub)
+                    top = _top(m, xb, n_samples)
+                    z[start:end] = m.sample_batch(h_sub, s_sub, z0_sub, top=None if top is None else top[start:end])
             else:
                 z0 = torch.randn(len(s), model.n_cont, generator=gen)
-                z = model.sample_batch(h.repeat_interleave(n_samples, 0), s, z0)
+                z = model.sample_batch(h.repeat_interleave(n_samples, 0), s, z0, top=_top(model, xb, n_samples))
             st.append(s.reshape(len(xb), n_samples).numpy())
             ph.append(rw.physical_torch(s, z).reshape(len(xb), n_samples, -1).numpy().astype(np.float32))
     return np.concatenate(probs), (np.concatenate(st) if st else None), (np.concatenate(ph) if ph else None)
@@ -190,12 +197,25 @@ def recreation_rate(model, x_model, target_x, n_samples=200, simulate_ensemble=_
         h = model.encode(x_model[i:i + 1])
         k = int(model.discrete(h).masked_fill(~model.mask_known, -torch.inf).argmax(1))
         z0 = torch.randn(n_samples, model.n_cont)
-        z = model.sample_batch(h.expand(n_samples, -1), torch.full((n_samples,), k), z0)
+        z = model.sample_batch(h.expand(n_samples, -1), torch.full((n_samples,), k), z0,
+                               top=_top(model, x_model[i:i + 1], n_samples))
         draw = decode(k, z.median(0).values.numpy())
         check = recreation_check(target_x[i], simulate_ensemble(draw, seeds, i))
         rows.append(dict(row=i, state=k, recreated=check.recreated, p_value=check.p_value, misfit=check.misfit,
                          threshold=check.threshold))
     return float(np.mean([r["recreated"] for r in rows])), rows
+
+
+def ensemble_members(names, sizes, everything):
+    """Name -> member names for each ensemble to score: 'ensemble{k}' is the first k models, 'ensemble' all of them."""
+    out = {}
+    for k in sizes:
+        if not 2 <= k <= len(names):
+            raise ValueError(f"ensemble size {k} must be between 2 and the {len(names)} models given")
+        out[f"ensemble{k}"] = list(names[:k])
+    if everything and len(names) > 1:
+        out["ensemble"] = list(names)
+    return out
 
 
 def _table(results):
@@ -243,6 +263,8 @@ def main(argv=None):
     ap.add_argument("--recreation", type=int, default=0,
                     help="also the recreation rate on this many seeded val rows (50 simulations each)")
     ap.add_argument("--ensemble", action="store_true", help="also evaluate the ensemble of all specified models")
+    ap.add_argument("--ensemble-sizes", nargs="+", type=int, default=[],
+                    help="also evaluate the ensemble of the first k models, for each k given")
     ap.add_argument("--drop-pattern", action="append", default=[], help="drop pattern at inference time (repeatable)")
     ap.add_argument("--threads", type=int, default=None)
     ap.add_argument("--out", type=Path, default=paths.results_dir("inverse_design", "reward_compare"))
@@ -275,11 +297,11 @@ def main(argv=None):
         meta[folder.name] = dict(path=str(folder), model_sha256=sha256_of(folder / "model.pt"))
         print(f"[compare] {folder.name} done ({time.time() - t0:.0f} s)", flush=True)
 
-    if a.ensemble and len(a.models) > 1:
-        ens_model = EnsembleInverseModel(list(loaded_models.values()), drop_patterns=tuple(a.drop_pattern))
-        ens_name = "ensemble"
+    folders = {f.name: f for f in a.models}
+    for ens_name, members in ensemble_members(list(loaded_models), a.ensemble_sizes, a.ensemble).items():
+        ens_model = EnsembleInverseModel([loaded_models[n] for n in members], drop_patterns=tuple(a.drop_pattern))
         results[ens_name] = evaluate(ens_model, va, physics_rows, ss, a.samples, a.decode)
-        meta[ens_name] = dict(models=[str(f) for f in a.models], drop_patterns=list(a.drop_pattern))
+        meta[ens_name] = dict(models=[str(folders[n]) for n in members], drop_patterns=list(a.drop_pattern))
         print(f"[compare] {ens_name} done ({time.time() - t0:.0f} s)", flush=True)
     text = _table(results)
     print(text, flush=True)

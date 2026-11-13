@@ -246,3 +246,122 @@ def test_ensemble_model_combines_seeds_and_masks_dropped_patterns(tmp_path):
     sampled_states, _ = ens_chk.sample(x_full, 200, steps=2)
     assert not any(int(s) in chk_states for s in sampled_states)
 
+
+
+def test_soft_targets_mix_into_the_cross_entropy_and_leave_unknown_states_alone():
+    torch.manual_seed(0)
+    n_states, masks, batch = _problem()
+    m = InverseModel(n_states, state_masks=masks)
+    x, s, z, mk = batch(64)
+    hard, parts = m.loss(x, s, z, mk)
+    one_hot = torch.nn.functional.one_hot(s, n_states).float()
+    torch.manual_seed(1); a, pa = m.loss(x, s, z, mk, soft=one_hot, alpha=1.0, temp=1.0)
+    torch.manual_seed(1); b, pb = m.loss(x, s, z, mk)
+    assert torch.isclose(a, b, atol=1e-5) and abs(pa["kd"] - pa["ce"]) < 1e-5   # one-hot soft targets at T=1 = hard CE
+    torch.manual_seed(1); c, _ = m.loss(x, s, z, mk, soft=one_hot.roll(1, 1), alpha=0.0, temp=2.0)
+    assert torch.isclose(c, b, atol=1e-5)                                         # alpha 0: soft targets ignored
+    m.mask_known[2] = False                                                       # an unknown state with zero target
+    soft = torch.full((64, n_states), 0.5); soft[:, 2] = 0
+    d, pd = m.loss(x, s.clamp(max=1), z, masks[s.clamp(max=1)], soft=soft, alpha=0.5, temp=2.0)
+    assert torch.isfinite(d) and pd["kd"] > 0
+    d.backward()
+    assert all(torch.isfinite(p.grad).all() for p in m.parameters() if p.grad is not None)
+
+
+# ---------------------------------------------------------------- the band-top scale coordinate (INV-SCALE)
+
+from shazam.inverse import model as model_mod
+from shazam.inverse.model import EnsembleInverseModel
+
+_LO, _HI = np.log(0.7), np.log(4.0)                                # the prior box of log s
+
+
+def _bandtop_model(scale, seed=0, n_states=3):
+    torch.manual_seed(seed)
+    masks = torch.ones(n_states, 14, dtype=torch.bool)
+    return InverseModel(n_states, channels=417, input="bandtop", extra_conv=1, state_masks=masks, scale=scale).eval()
+
+
+def _scale_of(z):
+    return torch.exp(_LO + (_HI - _LO) * torch.sigmoid(z[:, 0]))
+
+
+def test_bandtop_scale_coordinate_is_the_band_top_over_the_scale_and_round_trips():
+    m = _bandtop_model("bandtop")
+    z, top = torch.randn(6, 14), torch.rand(6) * 0.9 + 0.05
+    zf = m.to_flow(z, top)
+    want = (torch.log(8.32 * top) - torch.log(_scale_of(z)) - model_mod.RHO_MU) / model_mod.RHO_SIGMA
+    assert torch.allclose(zf[:, 0], want, atol=1e-5) and torch.equal(zf[:, 1:], z[:, 1:])
+    assert torch.allclose(m.from_flow(zf, top), z, atol=1e-4)
+    direct = _bandtop_model("direct")
+    assert direct.to_flow(z, top) is z and direct.from_flow(z, top) is z
+
+
+def test_from_flow_keeps_the_scale_inside_its_box():
+    m = _bandtop_model("bandtop")
+    zf = torch.zeros(2, 14)
+    zf[:, 0] = torch.tensor([50.0, -50.0])
+    z = m.from_flow(zf, torch.tensor([0.5, 0.5]))
+    assert torch.isfinite(z).all() and torch.all((_scale_of(z) >= 0.7 - 1e-4) & (_scale_of(z) <= 4.0 + 1e-4))
+
+
+def test_a_scale_fixed_by_the_band_top_is_one_constant_in_flow_coordinates():
+    # hosts whose band top is 3 s (eV), as ideal graphene: the standard scale slot varies, the flow's does not
+    m = _bandtop_model("bandtop")
+    s = torch.exp(torch.empty(50).uniform_(np.log(0.8), np.log(2.5)))
+    z = torch.randn(50, 14)
+    z[:, 0] = torch.logit((torch.log(s) - _LO) / (_HI - _LO))
+    zf = m.to_flow(z, 3 * s / 8.32)
+    assert z[:, 0].std() > 0.5 and zf[:, 0].std() < 1e-4
+    assert float(zf[:, 0].mean()) == pytest.approx((np.log(3) - model_mod.RHO_MU) / model_mod.RHO_SIGMA, abs=1e-4)
+    loss, parts = m.loss(torch.cat([torch.rand(50, 416), (3 * s / 8.32)[:, None]], 1), torch.zeros(50, dtype=torch.long), z,
+                         torch.ones(50, 14, dtype=torch.bool))
+    assert torch.isfinite(loss) and np.isfinite(parts["flow"])
+
+
+def test_sample_batch_of_a_bandtop_scale_model_needs_the_band_top_and_then_matches_sample():
+    m = _bandtop_model("bandtop")
+    x = torch.cat([torch.randn(1, 416), torch.tensor([[0.6]])], 1)
+    torch.manual_seed(5)
+    states, z_ref = m.sample(x, 8, state=2)
+    torch.manual_seed(5)
+    with torch.no_grad():
+        h = m.encode(x)
+    z0 = torch.randn(8, 14)
+    with pytest.raises(ValueError, match="band top"):
+        m.sample_batch(h.expand(8, -1), states, z0)
+    with torch.no_grad():
+        z = m.sample_batch(h.expand(8, -1), states, z0, top=x[:, -1].expand(8))
+    assert torch.allclose(z, z_ref, atol=1e-5)
+
+
+def test_scale_choice_survives_save_load_and_old_checkpoints_read_as_direct(tmp_path):
+    m = _bandtop_model("bandtop")
+    m.save(tmp_path / "m.pt")
+    again = InverseModel.load(tmp_path / "m.pt")
+    assert again.cfg["scale"] == "bandtop"
+    x = torch.cat([torch.randn(1, 416), torch.tensor([[0.4]])], 1)
+    torch.manual_seed(1); a = m.sample(x, 5, state=0)[1]
+    torch.manual_seed(1); b = again.sample(x, 5, state=0)[1]
+    assert torch.allclose(a, b)
+    old = _bandtop_model("direct")
+    ck = {"cfg": {k: v for k, v in old.cfg.items() if k != "scale"}, "state_dict": old.state_dict()}
+    torch.save(ck, tmp_path / "old.pt")
+    assert InverseModel.load(tmp_path / "old.pt").cfg["scale"] == "direct"
+    with pytest.raises(ValueError):
+        InverseModel(3, input="log", scale="bandtop")              # the band top is only in the bandtop input
+    with pytest.raises(ValueError):
+        InverseModel(3, channels=417, input="bandtop", scale="top")
+
+
+def test_ensemble_converts_each_members_samples_back_from_its_flow_coordinates():
+    members = [_bandtop_model("bandtop", seed=s) for s in (0, 1)]
+    for m in members:                                              # zero velocity: the samples are the start noise
+        for p in m.velocity[-1].parameters():
+            p.data.zero_()
+    x = torch.cat([torch.randn(1, 416), torch.tensor([[0.7]])], 1)
+    torch.manual_seed(3)
+    _, z = EnsembleInverseModel(members).sample(x, 6, state=1)
+    torch.manual_seed(3)
+    z0 = torch.cat([torch.randn(3, 14), torch.randn(3, 14)])
+    assert torch.allclose(z, members[0].from_flow(z0, x[:, -1].expand(6)), atol=1e-5)

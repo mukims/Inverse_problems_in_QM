@@ -272,3 +272,36 @@ def test_drop_pattern_removes_those_lattices_from_train_and_val_and_leaves_their
     model = InverseModel.load(tmp_path / "model.pt")
     is_chk = torch.tensor([s.pattern == (True, True, True) for s in STATES])
     assert not model.mask_known[is_chk].any() and model.mask_known[~is_chk].any()
+
+
+def test_teachers_give_their_tempered_average_as_soft_targets_and_distilled_training_records_them(tmp_path):
+    tr, va = _synthetic(600, 0), _synthetic(100, 10**6)
+    paths_ = []
+    for seed in (0, 1):
+        t, _ = ti.train(tr, va, ti.TrainConfig(epochs=1, batch=64, seed=seed))
+        t.save(tmp_path / f"t{seed}.pt"); paths_.append(str(tmp_path / f"t{seed}.pt"))
+    x = torch.as_tensor(tr["x"][:50])
+    teachers = [InverseModel.load(p) for p in paths_]
+    soft = ti.teacher_targets(teachers, x, temp=2.0)
+    with torch.no_grad():
+        want = torch.stack([torch.softmax(m.discrete(m.encode(x)).masked_fill(~m.mask_known, -torch.inf) / 2.0, 1)
+                            for m in teachers]).mean(0)
+    assert soft.shape == (50, len(STATES)) and torch.allclose(soft, want, atol=1e-6)
+    assert torch.allclose(soft.sum(1), torch.ones(50), atol=1e-5)
+    cfg = ti.TrainConfig(epochs=2, batch=64, seed=2, teachers=tuple(paths_), distill_alpha=0.7, distill_temp=2.0)
+    _, h = ti.train(tr, va, cfg)
+    assert list(h["cfg"]["teachers"]) == paths_ and h["cfg"]["distill_alpha"] == 0.7
+    assert len(h["train_kd"]) == 2 and all(np.isfinite(h["train_kd"]))
+    with pytest.raises(ValueError):
+        ti.train(tr, va, ti.TrainConfig(epochs=1, batch=64, teachers=tuple(paths_), input="bandtop"))   # input mismatch
+
+
+def test_cli_trains_with_the_bandtop_scale_coordinate_and_refuses_it_without_the_bandtop_input(shard, tmp_path):
+    ti.main(["--data", str(shard), "--out", str(tmp_path), "--input", "bandtop", "--extra-conv", "1", "--scale", "bandtop",
+             "--epochs", "1", "--threads", "2"])
+    h = json.loads((tmp_path / "history.json").read_text())
+    assert h["cfg"]["scale"] == "bandtop" and np.isfinite(h["val_loss"]).all()
+    model = InverseModel.load(tmp_path / "model.pt")
+    assert model.cfg["scale"] == "bandtop"
+    with pytest.raises((SystemExit, ValueError)):
+        ti.main(["--data", str(shard), "--out", str(tmp_path / "bad"), "--scale", "bandtop", "--epochs", "1", "--threads", "2"])

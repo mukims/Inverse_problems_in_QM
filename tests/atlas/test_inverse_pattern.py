@@ -105,3 +105,48 @@ def test_scoring_without_a_pattern_zeroes_it_and_renormalises_the_rest():
     p = np.array([[0.5, 0.25, 0.25], [0.1, 0.1, 0.8]])
     q = ep.without(p, [2])
     assert np.allclose(q, [[2 / 3, 1 / 3, 0], [0.5, 0.5, 0]]) and np.allclose(p[0], [0.5, 0.25, 0.25])
+
+
+def test_regime_accuracy_bins_width_edge_density_and_the_cross_hopping_of_two_type_lattices():
+    ep = _load("evaluate", "eval_pattern")
+    from tbribbon.parent_prior import FIELDS
+    n = 8
+    params = np.zeros((n, len(FIELDS)))
+    params[:, FIELDS.index("t_CH")] = [0.1, 0.1, 0.9, 0.9, 0, 0, 0, 0]
+    va = dict(width=np.array([4, 5, 20, 21, 10, 10, 10, 10]), edge=np.array([0, 0, 1, 1, 0, 1, 0, 1]),
+              density=np.array([0.003, 0.003, 0.04, 0.04, 0.003, 0.003, 0.003, 0.003]), params=params)
+    y = np.array([NAMES.index("CH")] * 4 + [NAMES.index("H")] * 4)
+    hit = np.array([0, 0, 1, 1, 1, 1, 1, 1], bool)
+    r = ep.regime_accuracy(hit, va, y)
+    assert r["all"]["width"]["4-8"] == dict(n=2, top1=0.0) and r["all"]["width"]["19-22"] == dict(n=2, top1=1.0)
+    assert r["two_type"]["cross"]["0.05-0.3"] == dict(n=2, top1=0.0)
+    assert r["two_type"]["cross"]["0.6-1"] == dict(n=2, top1=1.0)
+    assert r["all"]["edge"]["armchair"]["n"] == 4 and r["two_type"]["width"]["9-13"]["n"] == 0
+    assert r["all"]["density"]["0.0025-0.005"]["n"] == 6
+
+
+def test_ensembles_average_the_members_state_probabilities():
+    ep = _load("evaluate", "eval_pattern")
+    a, b = np.array([[0.8, 0.2], [0.1, 0.9]]), np.array([[0.2, 0.8], [0.3, 0.7]])
+    out = ep.ensemble_probs({"m0": a, "m1": b, "m2": None}, ["m0", "m1"])
+    assert np.allclose(out, [[0.5, 0.5], [0.2, 0.8]])
+    with pytest.raises(ValueError):
+        ep.ensemble_probs({"m0": a, "m2": None}, ["m0", "m2"])                     # a lattice-type-only model
+
+
+def test_cli_distils_from_teacher_folders_and_scores_ensembles_with_regimes(shard, tmp_path):
+    ti, ep = _load("build", "train_inverse"), _load("evaluate", "eval_pattern")
+    common = ["--data", str(shard), "--input", "bandtop", "--extra-conv", "1", "--epochs", "1", "--threads", "2"]
+    for s in (0, 1):
+        ti.main(common + ["--out", str(tmp_path / f"t{s}"), "--seed", str(s)])
+    ti.main(common + ["--out", str(tmp_path / "student"), "--seed", "4",
+                      "--teacher", str(tmp_path / "t0"), "--teacher", str(tmp_path / "t1")])
+    h = json.loads((tmp_path / "student" / "history.json").read_text())
+    assert h["cfg"]["teachers"] == [str(tmp_path / f"t{s}" / "model.pt") for s in (0, 1)]
+    assert (h["cfg"]["distill_alpha"], h["cfg"]["distill_temp"]) == (0.7, 2.0) and len(h["train_kd"]) == 1
+    out = tmp_path / "eval.json"
+    ep.main([str(tmp_path / m) for m in ("t0", "t1", "student")]
+            + ["--data", str(shard), "--out", str(out), "--ensemble-sizes", "2"])
+    r = json.loads(out.read_text())["models"]
+    assert set(r) == {str(tmp_path / m) for m in ("t0", "t1", "student")} | {"ensemble2"}
+    assert "mcnemar_vs_ref" in r["ensemble2"] and set(r["ensemble2"]["regimes"]) == {"all", "two_type"}

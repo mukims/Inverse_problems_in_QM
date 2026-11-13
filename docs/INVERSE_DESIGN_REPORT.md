@@ -42,6 +42,8 @@ Earlier stages of the project (Shazam, `src/atlaslib/lookup.py`) matched an unkn
 | **`reward.py`** | [`src/shazam/inverse/reward.py`](../src/shazam/inverse/reward.py) | Truth rewards for phase-1 fine-tuning: label and physics cost tables over the 156 states, flow rewards. |
 | **`sim_reward.py`** | [`src/shazam/inverse/sim_reward.py`](../src/shazam/inverse/sim_reward.py) | Simulator reward for phase-2 fine-tuning: simulate a candidate with a fresh disorder seed and score how well it recreates the target. |
 | **`active.py`** | [`src/shazam/inverse/active.py`](../src/shazam/inverse/active.py) | Active learning: cell assignment, empirical-Bayes shrinkage, expected gain, the tilted proposal sampler and the pooled importance weights. Pure NumPy. |
+| **`closeness.py`** | [`src/shazam/inverse/closeness.py`](../src/shazam/inverse/closeness.py) | Spectrum closeness in units of seed-to-seed noise (smoothed misfit / m0 of the target), the nearest-stored-spectrum lookup and the scoreboard summary. Pure NumPy. |
+| **`realism.py`** | [`src/shazam/inverse/realism.py`](../src/shazam/inverse/realism.py) | The realistic-host criterion: near a known material of spec 4.3 (same site types, every energy and hopping in eV within `REL_TOL` of the material's value or `ABS_TOL` eV where it has none). `candidates.is_realistic` applies it, so `design()` simulates only candidates near a known material and counts the rest as background. |
 | **`runio.py`** | [`src/shazam/inverse/runio.py`](../src/shazam/inverse/runio.py) | Atomic checkpoint writes and the run's code version. |
 
 ### Supporting Packages & Scripts
@@ -50,7 +52,7 @@ Earlier stages of the project (Shazam, `src/atlaslib/lookup.py`) matched an unkn
   - `parent_data.py`: Preprocessing transforms (`to_input_linear`, `to_input_bandtop`, `pristine_target_bandtop`).
   - `leads.py` & `transport.py`: Causal decimation with `LeadCache` energy-shift retries (`1j * 1e-9`) preventing Sancho-Rubio NaNs.
 - **Execution Scripts (`scripts/`)**:
-  - `scripts/build/train_inverse.py`: Inverse model trainer with AdamW, Cosine/Plateau scheduling, and feature flags (`--encoder`, `--input`, `--extra-conv`, `--pool`, `--embed` for the encoder output width, `--seed`, `--max-draws`, `--extra-data` for importance-weighted active-learning rows, `--drop-pattern` to leave a lattice type out of train and val).
+  - `scripts/build/train_inverse.py`: Inverse model trainer with AdamW, Cosine/Plateau scheduling, and feature flags (`--encoder`, `--input`, `--extra-conv`, `--pool`, `--embed` for the encoder output width, `--seed`, `--max-draws`, `--extra-data` for importance-weighted active-learning rows, `--add-data` for unweighted extra train rows such as the near-material data, `--drop-pattern` to leave a lattice type out of train and val, `--scale bandtop` to let the flow model the band top over the energy scale).
   - `scripts/build/train_pattern.py`: Trains the lattice-type-only classifier (`--dropout`, `--weight-decay`, `--label-smoothing`, `--noise`).
   - `scripts/build/finetune_inverse.py`, `finetune_simulator.py`, `reward_tables.py`: Reward fine-tuning, phase 1 (truth reward), phase 2 (simulator reward) and their cost tables.
   - `scripts/build/acquire_round.py`: Active learning, steps 0-1: per-cell diagnosis and the round's tilted proposal (`cells_round{k}.json`). No simulation.
@@ -61,8 +63,9 @@ Earlier stages of the project (Shazam, `src/atlaslib/lookup.py`) matched an unkn
   - `scripts/evaluate/eval_pattern.py`: Lattice-type accuracy, top-2, ECE, confusion matrix, 156-state top-1 and McNemar for lattice-type and full models; `--drop-pattern` scores without a lattice type.
   - `scripts/evaluate/eval_active_round.py`: Targets and guards of an active-learning round on the shared val split. No simulation.
   - `scripts/evaluate/compare_reward.py`: The reward-run comparison table for any set of models.
+  - `scripts/evaluate/eval_closeness.py`: Spectrum-closeness scoreboard: how close the hosts each method proposes are to the target's spectrum (one fresh simulation per host), against the lookup of the nearest stored train spectra. `--lookup-extra ROOT` adds a lookup that may also return that root's train rows.
   - `scripts/evaluate/design_from_spectrum.py`: Design a host from one target spectrum (report output).
-  - `scripts/generate/generate_parent.py`: Multi-worker dataset generator for the hexagonal parent; `--proposal` draws from an active-learning proposal and `--index-start` gives new rounds disjoint draw indices.
+  - `scripts/generate/generate_parent.py`: Multi-worker dataset generator for the hexagonal parent; `--proposal` draws from an active-learning proposal, `--near NAME=COUNT ...` from the prior restricted to the neighbourhood of known materials (`realism.sample_near`), and `--index-start` gives new data sets disjoint draw indices.
   - `scripts/generate/check_parent.py` & `report_parent.py`: Validation checks and cost/rejection reporting.
 
 ---
@@ -167,6 +170,13 @@ python scripts/evaluate/eval_pattern.py --threads 16 --out results/inverse_desig
 # The same without a lattice type (dropped from val, given no probability in every model)
 python scripts/evaluate/eval_pattern.py --threads 16 --drop-pattern CHK --out results/inverse_design/nochk/eval_pattern.json \
     results/inverse_design/model_v2_depth_bandtop_600k results/inverse_design/model_v2_depth_bandtop_600k_nochk
+```
+
+### Spectrum Closeness of the Proposed Hosts
+```bash
+# 300 val targets, up to 5 hosts each, one simulation per host; lookup baseline + each model (resumable)
+python scripts/evaluate/eval_closeness.py results/inverse_design/model_v2_depth_bandtop_600k \
+    results/inverse_design/model_v2_depth_bandtop_600k_distil --jobs 20 --threads 8
 ```
 
 ### Training Variants

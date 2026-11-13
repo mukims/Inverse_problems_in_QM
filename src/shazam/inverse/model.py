@@ -8,14 +8,30 @@ Masks: the model needs the per-state slot mask to sample. Pass `state_masks` (bo
 `encoding.active_slots`) to fix the table at construction; otherwise the table is recorded from the masks seen in
 `loss` (a mask is a deterministic function of the state, so the record is exact) and `sample` only draws states whose
 mask is known.
+
+Scale coordinate (INV-SCALE): with scale="bandtop" the flow does not model slot 0 (the logit of log s in its prior box)
+directly but the band top over the scale, (log(E_top / s) - RHO_MU) / RHO_SIGMA, where E_top is the band top the
+bandtop input carries as its last value. For a given host that ratio is the band top in model units, which the other
+slots fix, so the flow no longer has to rebuild an absolute energy scale the spectrum already shows. Everything outside
+the model keeps the standard coordinates: `loss` converts z before the flow loss, `sample` and `sample_batch` convert
+back (`to_flow`, `from_flow`).
 """
+import math
 from pathlib import Path
 
 import torch
 from torch import nn
 import torch.nn.functional as F
 
+from tbribbon.parent_prior import RANGES
+
 _T_FREQS = torch.tensor([1.0, 2.0, 4.0, 8.0]) * torch.pi              # Fourier features of the flow time
+SCALES = ("direct", "bandtop")
+SCALE_SLOT = 0                              # encoding.SLOT["log_s"]
+E_WINDOW = 8.32                             # eV: the v4 window the band-top fraction of the bandtop input refers to
+RHO_MU, RHO_SIGMA = 0.9, 0.45               # centre and spread of log(E_top / s) over the training prior (INV-SCALE)
+_LOG_S = (math.log(RANGES["s"][0]), math.log(RANGES["s"][1]))
+_U_EPS = 1e-6                               # the scale stays this far inside its box when converted back
 
 
 ENCODERS = ("cnn", "mlp")
@@ -91,11 +107,16 @@ def dropped_state_mask(drop_patterns, device=None):
 class InverseModel(nn.Module):
     def __init__(self, n_states, n_cont=14, channels=416, embed=128, state_masks=None, state_embed=32, hidden=256,
                  group_norm=True, input="log", extra_conv=0, encoder="cnn", mlp_hidden=(512, 256), dropout=0.0,
-                 pool="avg13"):
+                 pool="avg13", scale="direct"):
         super().__init__()
+        if scale not in SCALES:
+            raise ValueError(f"unknown scale {scale!r}; use one of {SCALES}")
+        if scale == "bandtop" and input != "bandtop":
+            raise ValueError("scale='bandtop' needs input='bandtop': the band top is that input's last value")
         self.cfg = dict(n_states=n_states, n_cont=n_cont, channels=channels, embed=embed, state_embed=state_embed,
                         hidden=hidden, group_norm=group_norm, input=input, extra_conv=extra_conv, encoder=encoder,
-                        mlp_hidden=list(mlp_hidden), dropout=dropout, pool=pool, masks_fixed=state_masks is not None)
+                        mlp_hidden=list(mlp_hidden), dropout=dropout, pool=pool, scale=scale,
+                        masks_fixed=state_masks is not None)
         self.n_states, self.n_cont = n_states, n_cont
         # `input` only records which spectrum transform the model was trained on ("log": parent_data.to_input,
         # "linear": parent_data.to_input_linear); callers must feed the same one
@@ -126,15 +147,39 @@ class InverseModel(nn.Module):
             return run_encoder(self.encoder, "cnn", x[:, :-1]) + self.band_top(x[:, -1:])
         return run_encoder(self.encoder, self.cfg["encoder"], x)
 
+    def to_flow(self, z, top):
+        """Standard z [B, n_cont] -> the coordinates the flow models; `top` [B] is the band-top fraction of the window
+        (the last value of the bandtop input). Unchanged for scale="direct"."""
+        if self.cfg["scale"] != "bandtop":
+            return z
+        log_s = _LOG_S[0] + (_LOG_S[1] - _LOG_S[0]) * torch.sigmoid(z[:, SCALE_SLOT])
+        rho = torch.log(E_WINDOW * top.to(z.dtype)) - log_s
+        cols = list(z.unbind(1))
+        cols[SCALE_SLOT] = (rho - RHO_MU) / RHO_SIGMA
+        return torch.stack(cols, 1)
+
+    def from_flow(self, zf, top):
+        """The inverse of `to_flow`; the scale is kept inside its prior box."""
+        if self.cfg["scale"] != "bandtop":
+            return zf
+        log_s = torch.log(E_WINDOW * top.to(zf.dtype)) - (RHO_MU + RHO_SIGMA * zf[:, SCALE_SLOT])
+        u = ((log_s - _LOG_S[0]) / (_LOG_S[1] - _LOG_S[0])).clamp(_U_EPS, 1 - _U_EPS)
+        cols = list(zf.unbind(1))
+        cols[SCALE_SLOT] = torch.logit(u)
+        return torch.stack(cols, 1)
+
     def _velocity(self, zt, t, h, state, mask):
         m = mask.to(zt.dtype)
         tf = t * _T_FREQS.to(t.dtype).to(t.device)
         inp = torch.cat([zt * m, t, tf.sin(), tf.cos(), h, self.state_emb(state), m], 1)
         return self.velocity(inp) * m
 
-    def loss(self, x, state, z, mask, weight=None):
+    def loss(self, x, state, z, mask, weight=None, soft=None, alpha=0.0, temp=1.0):
         """Cross-entropy of the state plus flow-matching MSE on the active slots; returns (loss, parts). `weight` [B]
-        (optional) weights the rows of both terms (the importance weights of active learning)."""
+        (optional) weights the rows of both terms (the importance weights of active learning). `soft` [B, n_states]
+        (optional, INV-DISTIL) are a teacher's state probabilities at temperature `temp`: the state term becomes
+        (1 - alpha) * CE(hard label) + alpha * temp^2 * CE(soft, softmax(logits / temp)); states with no soft
+        probability (unknown ones) take no part."""
         if self.cfg["masks_fixed"]:
             if not torch.equal(self.state_masks[state], mask.to(torch.bool)):
                 raise ValueError("mask differs from the model's fixed state_masks for the given states")
@@ -146,17 +191,28 @@ class InverseModel(nn.Module):
         logits = self.discrete(h)
         if self.cfg["masks_fixed"]:                 # states marked unknown (left-out lattices) get no probability
             logits = logits.masked_fill(~self.mask_known, float("-inf"))
-        if weight is None:
-            ce = F.cross_entropy(logits, state)
-        else:
+        if weight is not None:
             weight = weight.to(h.dtype)
-            ce = (F.cross_entropy(logits, state, reduction="none") * weight).sum() / weight.sum().clamp_min(1e-12)
-        flow = self.flow_loss(h, state, z, mask, weight)
-        total = ce + flow
-        return total, {"ce": ce.item(), "flow": flow.item(), "loss": total.item()}
+
+        def mean(rows):
+            return rows.mean() if weight is None else (rows * weight).sum() / weight.sum().clamp_min(1e-12)
+
+        ce = mean(F.cross_entropy(logits, state, reduction="none"))
+        flow = self.flow_loss(h, state, self.to_flow(z, x[:, -1]), mask, weight)
+        parts = {"ce": ce.item(), "flow": flow.item()}
+        state_term = ce
+        if soft is not None:
+            logp = F.log_softmax(logits / temp, dim=-1).masked_fill(soft <= 0, 0.0)     # 0 * -inf would be NaN
+            kd = mean(-(soft * logp).sum(-1)) * temp ** 2
+            state_term = (1 - alpha) * ce + alpha * kd
+            parts["kd"] = kd.item()
+        total = state_term + flow
+        parts["loss"] = total.item()
+        return total, parts
 
     def flow_loss(self, h, state, z, mask, weight=None):
-        """Flow-matching MSE on the active slots for fingerprints h; `weight` [B] (optional) weights the rows."""
+        """Flow-matching MSE on the active slots for fingerprints h; `weight` [B] (optional) weights the rows. `z` is in
+        the flow's coordinates (`to_flow`): the standard ones unless scale="bandtop"."""
         m = mask.to(z.dtype)
         z0 = torch.randn_like(z) * m
         t = torch.rand(z.shape[0], 1, dtype=z.dtype, device=z.device)
@@ -198,14 +254,18 @@ class InverseModel(nn.Module):
             for i in range(steps):
                 t = torch.full((n, 1), i * dt, dtype=h.dtype, device=dev)
                 z = (z + dt * self._velocity(z, t, hn, states, mask)) * m
-            return states.cpu(), z.cpu()
+            return states.cpu(), self.from_flow(z, x[:, -1].expand(n)).cpu()
         finally:
             self.train(was_training)
 
-    def sample_batch(self, h, states, z0, steps=64, grad_last=0):
+    def sample_batch(self, h, states, z0, steps=64, grad_last=0, top=None):
         """The Euler loop of `sample` for a batch: fingerprints h [B, embed], states [B], start noise z0 [B, n_cont]
         (masked here). The first steps - grad_last steps run without gradients; the last grad_last keep the graph through
-        the velocity and h, so a cost on the samples can train the flow. The train/eval mode is left as it is."""
+        the velocity and h, so a cost on the samples can train the flow. The train/eval mode is left as it is.
+        A scale="bandtop" model needs `top` [B], the band-top fraction of each row's input (x[:, -1]), to return the
+        standard coordinates."""
+        if self.cfg["scale"] == "bandtop" and top is None:
+            raise ValueError("a scale='bandtop' model needs the band top of each row: pass top=x[:, -1]")
         mask = self.state_masks[states]
         m = mask.to(h.dtype)
         z = z0.to(h.dtype) * m
@@ -214,7 +274,7 @@ class InverseModel(nn.Module):
             t = torch.full((len(z), 1), i * dt, dtype=h.dtype, device=h.device)
             with torch.set_grad_enabled(torch.is_grad_enabled() and i >= steps - grad_last):
                 z = (z + dt * self._velocity(z, t, h, states, mask)) * m
-        return z
+        return z if top is None else self.from_flow(z, top)
 
     def save(self, path):
         torch.save({"cfg": self.cfg, "state_dict": self.state_dict()}, Path(path))
@@ -225,6 +285,7 @@ class InverseModel(nn.Module):
         p = p / "model.pt" if p.is_dir() else p
         ck = torch.load(p, map_location="cpu", weights_only=True)
         cfg = dict(ck["cfg"])
+        cfg.setdefault("scale", "direct")              # checkpoints written before INV-SCALE
         fixed = cfg.pop("masks_fixed")
         sd = ck["state_dict"]
         model = cls(state_masks=sd["state_masks"] if fixed else None, **cfg)
@@ -318,7 +379,7 @@ class EnsembleInverseModel:
             for s in range(steps):
                 t = torch.full((count, 1), s * dt, dtype=h_list[i].dtype, device=dev)
                 sub_z = (sub_z + dt * m._velocity(sub_z, t, hn, sub_states, sub_mask)) * sub_m
-            z_full[idx] = sub_z
+            z_full[idx] = m.from_flow(sub_z, x[:, -1].expand(count))
             offset += count
 
         return states.cpu(), z_full.cpu()
