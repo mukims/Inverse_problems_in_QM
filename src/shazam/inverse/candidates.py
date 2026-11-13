@@ -10,6 +10,7 @@ import numpy as np
 from scipy.cluster.hierarchy import linkage
 
 from shazam.inverse.encoding import CONT, SLOT, STATES, active_slots, decode, state_index, state_of
+from shazam.inverse.reward import FAMILY_OF
 from tbribbon.parent import NAMED, device_cells_for, named_material
 from tbribbon.parent_data import n_impurities
 from tbribbon.parent_prior import RANGES, Draw, box_edge_warnings
@@ -101,6 +102,8 @@ class Candidate:
     realistic: bool
     mahal_99: float                              # 99th percentile of the members' Mahalanobis distances from `mean` under `cov`
     #                                              (unscaled full_vector units, ruling R18; calibration.captures uses it)
+    z_members: np.ndarray = None                 # raw logit vectors of cluster members, shape (len(members), 14)
+    member_widths: np.ndarray = None             # integer widths of cluster members, shape (len(members),)
 
 
 def _cluster(x):
@@ -175,12 +178,21 @@ def candidates(states, z, min_size=20, top=5):
             if sel.sum() < min_size:
                 unassigned += int(sel.sum())
                 continue
-            centre = x[sel].mean(axis=0)
-            medoid = rows[sel][int(np.argmin(((x[sel] - centre) ** 2).sum(axis=1)))]
+            fams = FAMILY_OF[states[rows[sel]]]
+            modal_fam = int(np.bincount(fams).argmax())
+            widths = np.array([draws[r].width for r in rows[sel]])
+            modal_w = int(np.bincount(widths).argmax())
+            cand_pool = np.flatnonzero((fams == modal_fam) & (widths == modal_w))
+            if len(cand_pool) == 0:
+                cand_pool = np.flatnonzero(fams == modal_fam)
+            x_sel = x[sel]
+            centre = np.median(x_sel[cand_pool], axis=0)
+            best_idx = cand_pool[int(np.argmin(((x_sel[cand_pool] - centre) ** 2).sum(axis=1)))]
+            medoid = rows[sel][best_idx]
             clusters.append((rows[sel], int(medoid)))
     clusters.sort(key=lambda c: (-len(c[0]), c[0][0]))
     atoms = {}                                                                  # (pattern, edge, width) -> atoms in the device
-    return [_candidate(c, m, draws, vec, total, atoms) for c, m in clusters[:top]], unassigned / total
+    return [_candidate(c, m, states, z, draws, vec, total, atoms) for c, m in clusters[:top]], unassigned / total
 
 
 def _n_imp(draw, atoms):
@@ -191,21 +203,29 @@ def _n_imp(draw, atoms):
     return max(1, round(draw.density * atoms[key]))
 
 
-def _candidate(members, medoid, draws, vec, total, atoms):
+def _candidate(members, medoid, states, z, draws, vec, total, atoms):
     draw = draws[medoid]
     state = state_index(state_of(draw))                  # agrees with the parameters reported (R11)
     v = vec[members]
     canonical = v.copy()
     canonical[:, [SLOT["log_s"], SLOT["log_c"]]] = np.exp(canonical[:, [SLOT["log_s"], SLOT["log_c"]]])
     mask = active_slots(state)
-    intervals = {_KEY.get(n, n): tuple(float(q) for q in np.percentile(canonical[:, i], INTERVAL))
-                 for i, n in enumerate(CONT) if mask[i]}
+    active_mat = np.array([active_slots(int(states[m])) for m in members])
+    intervals = {}
+    for i, n in enumerate(CONT):
+        if not mask[i]:
+            continue
+        has_active = active_mat[:, i]
+        col = canonical[has_active, i] if has_active.sum() >= MIN_CHILD else canonical[:, i]
+        intervals[_KEY.get(n, n)] = tuple(float(q) for q in np.percentile(col, INTERVAL))
     counts = [_n_imp(draws[i], atoms) for i in members]
     n_imp = tuple(int(round(q)) for q in np.percentile(counts, INTERVAL))
     cov = np.cov(v, rowvar=False) if len(members) > 1 else np.zeros((len(CONT),) * 2)
     cov = cov + COV_JITTER * np.eye(len(CONT))
     mahal_99 = float(np.percentile(mahalanobis(v, v.mean(axis=0), cov), 99))
     material, distance = nearest_named(draw)
+    z_members = z[members]
+    member_widths = np.array([draws[m].width for m in members], dtype=int)
     return Candidate(STATES[state].edge, STATES[state].pattern, state, draw, len(members) / total, members, intervals,
                      n_imp, v.mean(axis=0), cov, material, distance,
-                     box_edge_warnings(draw), is_realistic(draw), mahal_99)
+                     box_edge_warnings(draw), is_realistic(draw), mahal_99, z_members, member_widths)

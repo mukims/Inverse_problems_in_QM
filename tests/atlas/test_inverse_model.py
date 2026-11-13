@@ -210,3 +210,39 @@ def test_pool_options_build_and_are_recorded(pool, n_linear_in, tmp_path):
     ck = {"cfg": {k: v for k, v in old.cfg.items() if k != "pool"}, "state_dict": old.state_dict()}
     torch.save(ck, tmp_path / "old.pt")
     assert InverseModel.load(tmp_path / "old.pt").cfg["pool"] == "avg13"
+
+
+def test_ensemble_model_combines_seeds_and_masks_dropped_patterns(tmp_path):
+    from shazam.inverse.encoding import STATES
+    from shazam.inverse.model import EnsembleInverseModel
+    from tbribbon.parent import TYPES
+
+    n_states, masks, batch = _problem()
+    m1 = InverseModel(n_states, state_masks=masks)
+    m2 = InverseModel(n_states, state_masks=masks)
+    m1.save(tmp_path / "m1.pt")
+    m2.save(tmp_path / "m2.pt")
+
+    ens = EnsembleInverseModel.load([tmp_path / "m1.pt", tmp_path / "m2.pt"])
+    assert ens.cfg["ensemble"] == 2
+    x = batch(1)[0]
+    states, z = ens.sample(x, 50, steps=4)
+    assert states.shape == (50,) and z.shape == (50, 14)
+    assert torch.all(z[~masks[states]] == 0)
+
+    # Test drop_patterns with full 156-state model
+    n_full = len(STATES)
+    full_masks = torch.ones(n_full, 14, dtype=torch.bool)
+    f1 = InverseModel(n_full, state_masks=full_masks)
+    f2 = InverseModel(n_full, state_masks=full_masks)
+    f1.save(tmp_path / "f1.pt")
+    f2.save(tmp_path / "f2.pt")
+
+    ens_chk = EnsembleInverseModel.load([tmp_path / "f1.pt", tmp_path / "f2.pt"], drop_patterns=("CHK",))
+    chk_states = set(k for k, s in enumerate(STATES) if "".join(t for t, on in zip(TYPES, s.pattern) if on) == "CHK")
+    assert len(chk_states) > 0
+
+    x_full = torch.randn(1, 416)
+    sampled_states, _ = ens_chk.sample(x_full, 200, steps=2)
+    assert not any(int(s) in chk_states for s in sampled_states)
+

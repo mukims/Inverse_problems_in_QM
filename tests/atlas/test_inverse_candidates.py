@@ -227,3 +227,33 @@ def test_the_reported_state_is_the_decoded_medoids_own():
     assert cand.draw.params.delta == 0.0
     assert STATES[cand.state] == state_of(cand.draw) and STATES[cand.state].delta_zero
     assert "delta" not in cand.intervals and "s" in cand.intervals
+
+
+def test_candidates_medoid_respects_modal_family_and_active_intervals():
+    # 800 draws of graphene (delta=0), 200 draws of tiny-delta hbn (delta=0.05).
+    # Since distance is below split threshold, they form one spatial cluster.
+    # Modal family is delta_zero=True. Medoid must belong to modal family (delta=0.0).
+    graphene = Draw(HexParams(False, True, False, "H", 2.3, t_AB=1.0), "armchair", 9, 0.01)
+    hbn = Draw(HexParams(False, True, False, "H", 2.3, delta=0.05, t_AB=1.0), "armchair", 9, 0.01)
+    states, z = samples([(graphene, 800), (hbn, 200)], sigma=0.01, seed=42)
+    cands, p_un = candidates(states, z)
+    assert len(cands) == 1 and p_un == 0.0
+    cand = cands[0]
+    assert cand.draw.params.delta == 0.0
+    assert "delta" not in cand.intervals
+    assert cand.z_members is not None and cand.z_members.shape == (1000, 14)
+
+    # Conversely: 800 draws of hbn with delta=0.5 (active), 200 draws of graphene (delta=0, inactive).
+    # Modal family has delta active. Interval for delta must be computed over active members (delta > 0.4),
+    # not pulled down to ~0 by the 200 delta=0 members.
+    hbn_major = Draw(HexParams(False, True, False, "H", 2.3, delta=0.5, t_AB=1.0), "armchair", 9, 0.01)
+    states2, z2 = samples([(hbn_major, 800), (graphene, 200)], sigma=0.01, seed=43)
+    cands2, _ = candidates(states2, z2)
+    cand2 = cands2[0]
+    assert cand2.draw.params.delta > 0.45
+    assert "delta" in cand2.intervals
+    lo, hi = cand2.intervals["delta"]
+    # If 200 zeros were mixed in (20% of samples), the 5th percentile would be exactly 0.0!
+    # Because inactive members are excluded, lo is ~0.48, well above 0.4.
+    assert lo > 0.4
+

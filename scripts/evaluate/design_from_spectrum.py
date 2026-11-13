@@ -35,7 +35,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--target", required=True, help=".npy of the transmission T(E)")
     ap.add_argument("--energies", required=True, help=".npy of the energies (eV) of --target")
-    ap.add_argument("--model", default=str(DEFAULT_MODEL))
+    ap.add_argument("--model", nargs="+", default=[str(DEFAULT_MODEL)])
+    ap.add_argument("--drop-pattern", action="append", default=[], help="drop pattern at inference time (repeatable)")
     ap.add_argument("--update", default=None, help='JSON {"kappa", "log_L0"}; default update.json next to the model if present')
     ap.add_argument("--out", default=None, help="default: <target stem>_design.json next to the target")
     ap.add_argument("--n-samples", type=int, default=1000)
@@ -54,9 +55,11 @@ def main(argv=None):
     x = target_input(np.load(a.energies), np.load(target))
     out = Path(a.out) if a.out else target.with_name(target.stem + "_design.json")
     out.parent.mkdir(parents=True, exist_ok=True)                  # a bad --out fails now, not after the simulations
-    update_path = Path(a.update) if a.update else Path(a.model).with_name("update.json")
+    model_paths = [Path(p) for p in a.model]
+    primary_model_path = model_paths[0]
+    update_path = Path(a.update) if a.update else primary_model_path.with_name("update.json")
     update, raw, mismatch = None, {}, None
-    sha = sha256_of(a.model)
+    sha = sha256_of(primary_model_path)
     if update_path.exists():
         raw = json.loads(update_path.read_text())
         missing = [k for k in ("kappa", "log_L0") if k not in raw]
@@ -77,10 +80,18 @@ def main(argv=None):
                   flush=True)
     elif a.update:
         raise SystemExit(f"--update file not found: {update_path}")
-    provenance = dict(model=str(a.model), model_sha256=sha, update_file=str(update_path) if update else None,
-                      update_flags=raw.get("flags") if update else None, update_mismatch=mismatch)
-    report = design(x, InverseModel.load(a.model), n_samples=a.n_samples, update=update,
-                    refine_budget=a.refine_budget, n_jobs=a.n_jobs, seed=a.seed, provenance=provenance)
+    model_entry = str(model_paths[0]) if len(model_paths) == 1 else [str(p) for p in model_paths]
+    provenance = dict(model=model_entry, model_sha256=sha, update_file=str(update_path) if update else None,
+                      update_flags=raw.get("flags") if update else None, update_mismatch=mismatch,
+                      drop_patterns=list(a.drop_pattern))
+    if len(model_paths) > 1:
+        from shazam.inverse.model import EnsembleInverseModel
+        model_obj = EnsembleInverseModel.load(model_paths, drop_patterns=tuple(a.drop_pattern))
+    else:
+        model_obj = InverseModel.load(primary_model_path)
+    report = design(x, model_obj, n_samples=a.n_samples, update=update,
+                    refine_budget=a.refine_budget, n_jobs=a.n_jobs, seed=a.seed, provenance=provenance,
+                    drop_patterns=tuple(a.drop_pattern))
     atomic_write_json(out, report, indent=2)
     print(f"[design] {len(report['candidates'])} candidates, p_unassigned {report['p_unassigned']:.3f}, "
           f"{report['n_simulations']} simulations, {report['seconds']:.0f} s -> {out}", flush=True)

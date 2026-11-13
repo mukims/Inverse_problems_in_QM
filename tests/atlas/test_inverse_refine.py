@@ -80,3 +80,36 @@ def test_a_failed_evaluation_is_penalised_not_propagated():
     f = lambda x: float("nan") if x[0] > 0.2 else float(np.sum(x ** 2))       # simulations fail in half the box
     best_x, best_f, history, _ = trust_region_minimise(f, np.array([0.0, 1.0, 0.0]), 10, None, np.random.default_rng(1))
     assert np.all(np.isfinite(history)) and best_f == min(history) and best_x[0] <= 0.2
+
+
+def test_refine_uses_posterior_samples_and_recovers_shifted_host(monkeypatch):
+    # Tests that refine accepts z_samples and scales the search accordingly
+    host = Draw(named_material("hbn"), "zigzag", 6, 0.0125)
+    state, z0, mask = encode(host)
+    target = np.full(416, 0.3, np.float32)
+
+    # Synthetic cluster of z_samples around shifted center (s increased by 0.3)
+    rng = np.random.default_rng(42)
+    z_cluster = np.tile(z0, (50, 1))
+    z_cluster[:, 0] += rng.normal(0.3, 0.08, size=50)
+
+    seen = []
+
+    def spectra(draw, seeds):
+        rng = np.random.default_rng([int(s) for s in seeds])
+        # Minimum misfit when s is near 0.3 above host.params.s
+        diff = (draw.params.s - (host.params.s + 0.3)) ** 2
+        return (0.3 + 0.01 * diff + 0.001 * rng.standard_normal((len(seeds), 416))).astype(np.float32)
+
+    def fake_simulate(draw, n_imp, seeds, n_jobs=1, n_cells=None):
+        seen.append(draw)
+        return spectra(draw, seeds)
+
+    monkeypatch.setattr(refine_mod, "simulate_inputs", fake_simulate)
+    res = refine(host, 3, target, threshold=-1.0, budget=80, rng=np.random.default_rng(0),
+                 z_samples=z_cluster)
+    assert isinstance(res, RefineResult) and not res.stopped_early
+    assert len(seen) == 4  # 80 budget // 20 seeds = 4 evals
+    # The refined draw moves towards the shifted target s
+    assert abs(res.draw.params.s - (host.params.s + 0.3)) < abs(host.params.s - (host.params.s + 0.3))
+

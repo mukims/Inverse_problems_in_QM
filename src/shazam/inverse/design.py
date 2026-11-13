@@ -124,19 +124,47 @@ def _verdict(cand, target_x, n_imp, n_cells, n_jobs, refine_budget, seeds, rng):
     if check.recreated or refine_budget <= 0:                  # a budget of 0 means no refinement at all
         return _check_dict(check, "verify"), log_likelihood(target_x, sims), None, used
     res = refine(cand.draw, n_imp, target_x, check.threshold, budget=refine_budget, seeds=opt_seeds, n_jobs=n_jobs,
-                 n_cells=n_cells, rng=rng)
+                 n_cells=n_cells, rng=rng, z_samples=cand.z_members)
     used += res.n_simulations
-    refined = _parameters(res.draw) | {"optimisation_misfit": float(res.misfit), "stopped_early": bool(res.stopped_early),
-                                       "box_edge_warning": [str(n) for n in box_edge_warnings(res.draw)]}
-    if not res.stopped_early:                                  # R5: the budget ran out; report the original verify check
+    best_res = res
+    best_draw = res.draw
+    best_n_imp = n_imp
+
+    # Adjacent width fallback: if refinement on medoid width did not stop early,
+    # and an adjacent width w' in {w-1, w+1} holds >= 20% of the candidate's members,
+    # try a quick 2-eval check on w' before conceding failure.
+    if not res.stopped_early and cand.member_widths is not None and len(opt_seeds) > 0:
+        w_hat = cand.draw.width
+        for w_alt in (w_hat - 1, w_hat + 1):
+            if w_alt < 4:
+                continue
+            alt_sel = cand.member_widths == w_alt
+            if alt_sel.mean() >= 0.20:
+                alt_draw = cand.draw._replace(width=w_alt)
+                alt_n_cells = n_cells if n_cells is not None else device_cells_for(alt_draw.params, alt_draw.edge)
+                alt_n_imp = n_impurities(alt_draw, alt_n_cells)
+                alt_budget = 2 * len(opt_seeds)
+                alt_z = cand.z_members[alt_sel] if cand.z_members is not None else None
+                res_alt = refine(alt_draw, alt_n_imp, target_x, check.threshold, budget=alt_budget, seeds=opt_seeds,
+                                 n_jobs=n_jobs, n_cells=n_cells, rng=rng, z_samples=alt_z)
+                used += res_alt.n_simulations
+                if res_alt.stopped_early or res_alt.misfit < best_res.misfit:
+                    best_res = res_alt
+                    best_draw = res_alt.draw
+                    best_n_imp = alt_n_imp
+                if best_res.stopped_early:
+                    break
+    refined = _parameters(best_draw) | {"optimisation_misfit": float(best_res.misfit), "stopped_early": bool(best_res.stopped_early),
+                                       "box_edge_warning": [str(n) for n in box_edge_warnings(best_draw)]}
+    if not best_res.stopped_early:                                  # R5: the budget ran out; report the original verify check
         return _check_dict(check, "verify"), log_likelihood(target_x, sims), refined, used
-    final = simulate_inputs(res.draw, n_imp, final_seeds, n_jobs=n_jobs, n_cells=n_cells)
+    final = simulate_inputs(best_draw, best_n_imp, final_seeds, n_jobs=n_jobs, n_cells=n_cells)
     used += len(final_seeds)
     return _check_dict(recreation_check(target_x, final), "final"), log_likelihood(target_x, final), refined, used
 
 
 def design(target_x, model, n_samples=1000, update=None, refine_budget=200, n_jobs=22, seed=0, n_cells=None,
-           seeds_override=None, check="all", provenance=None):
+           seeds_override=None, check="all", provenance=None, drop_patterns=()):
     """The report (a JSON-serialisable dict) for the v4 input `target_x` (416,): see the module docstring.
 
     update      {"kappa", "log_L0"} fitted on validation draws, or None: kappa = 1 and no background mass, so the
@@ -151,7 +179,11 @@ def design(target_x, model, n_samples=1000, update=None, refine_budget=200, n_jo
                 "model_sha256", "update_file", "update_flags" (the fit-update run's flags) and anything else. The report adds
                 the code version, the seeds used (first seed and count of each contiguous tuple), n_samples, seed, check,
                 refine_budget and n_cells.
+    drop_patterns  optional tuple of pattern names (e.g. ("CHK",)) to mask out at inference time.
     """
+    if isinstance(model, (list, tuple)):
+        from shazam.inverse.model import EnsembleInverseModel
+        model = EnsembleInverseModel(model, drop_patterns=drop_patterns)
     if check not in ("all", "top"):
         raise ValueError(f"check must be 'all' or 'top', got {check!r}")
     t0 = time.time()
@@ -167,7 +199,10 @@ def design(target_x, model, n_samples=1000, update=None, refine_budget=200, n_jo
     x_model = model_input(target_x, getattr(model, "cfg", {}).get("input", "log"))
     with torch.random.fork_rng(devices=[]):
         torch.manual_seed(seed)
-        states, z = model.sample(x_model[None, :], n_samples)
+        try:
+            states, z = model.sample(x_model[None, :], n_samples, drop_patterns=drop_patterns)
+        except TypeError:
+            states, z = model.sample(x_model[None, :], n_samples)
     cands, p_unassigned = candidates_mod.candidates(np.asarray(states), np.asarray(z))
 
     rows, n_simulations = [], 0

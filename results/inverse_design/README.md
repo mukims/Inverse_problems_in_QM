@@ -53,3 +53,4 @@ Folders only; what each run found is recorded in [`LOGBOOK.md`](../../LOGBOOK.md
 | `pattern_v2_drop/`, `pattern_v2_noise/`, `pattern_v2_all/` | Model | `pattern_v1` with regularisation: dropout + weight decay + label smoothing, input noise, and both. | `INV-PATTERN-2` |
 | `pattern_v2/` | Study | Runner, evaluation and plotting scripts for the lattice-type models (`plot_loss.py`, `plot_chk_spectra.py`, `plot_pattern_by_width.py`). | `INV-PATTERN-2` |
 | `nochk/` | Study | Runner and evaluation of the no-C+H+K model (`eval_pattern.py --drop-pattern CHK`). | `INV-NOCHK` |
+| `ensemble_compare/` | Study | Full 30,000 validation draw benchmark comparing Seed 0, Seed 1, and the Seed 0 + Seed 1 Ensemble (`compare_reward_all.{txt,json}`). | `INV-GAP-CLOSE` |

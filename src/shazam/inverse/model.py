@@ -77,6 +77,17 @@ def run_encoder(module, kind, x):
     return module(x if kind == "mlp" else x.unsqueeze(1))
 
 
+def dropped_state_mask(drop_patterns, device=None):
+    if not drop_patterns:
+        return None
+    from shazam.inverse.encoding import STATES
+    from tbribbon.parent import TYPES
+    names = ["".join(t for t, on in zip(TYPES, s.pattern) if on) for s in STATES]
+    drop_set = set(drop_patterns)
+    mask = [n in drop_set for n in names]
+    return torch.tensor(mask, dtype=torch.bool, device=device)
+
+
 class InverseModel(nn.Module):
     def __init__(self, n_states, n_cont=14, channels=416, embed=128, state_masks=None, state_embed=32, hidden=256,
                  group_norm=True, input="log", extra_conv=0, encoder="cnn", mlp_hidden=(512, 256), dropout=0.0,
@@ -157,7 +168,7 @@ class InverseModel(nn.Module):
         return (sq.sum(1) * weight).sum() / (m.sum(1) * weight).sum().clamp_min(1e-12)
 
     @torch.no_grad()
-    def sample(self, x, n, steps=64, state=None):
+    def sample(self, x, n, steps=64, state=None, drop_patterns=()):
         """n (state, z) draws for one spectrum x of shape [1, channels]; CPU tensors, inactive slots exactly 0."""
         was_training = self.training
         self.eval()
@@ -169,8 +180,11 @@ class InverseModel(nn.Module):
             h = self.encode(x)
             if state is None:
                 logits = self.discrete(h)[0].masked_fill(~self.mask_known, float("-inf"))
-                if not self.mask_known.any():
-                    raise ValueError("no state masks known: pass state_masks or train with loss() first")
+                if drop_patterns:
+                    dmask = dropped_state_mask(drop_patterns, dev)
+                    logits = logits.masked_fill(dmask, float("-inf"))
+                if not self.mask_known.any() or bool(logits.isneginf().all()):
+                    raise ValueError("no available states: check mask_known and drop_patterns")
                 states = torch.multinomial(F.softmax(logits, -1), n, replacement=True)
             else:
                 if not bool(self.mask_known[state]):
@@ -207,7 +221,9 @@ class InverseModel(nn.Module):
 
     @classmethod
     def load(cls, path):
-        ck = torch.load(Path(path), map_location="cpu", weights_only=True)
+        p = Path(path)
+        p = p / "model.pt" if p.is_dir() else p
+        ck = torch.load(p, map_location="cpu", weights_only=True)
         cfg = dict(ck["cfg"])
         fixed = cfg.pop("masks_fixed")
         sd = ck["state_dict"]
@@ -215,3 +231,101 @@ class InverseModel(nn.Module):
         model.load_state_dict(sd)
         model.cfg["masks_fixed"] = fixed
         return model.eval()
+
+
+class EnsembleInverseModel:
+    """Ensemble of InverseModel checkpoints.
+
+    Averages discrete state prediction probabilities and distributes flow sampling evenly
+    across member checkpoints. Supports optional inference-time pattern dropping (e.g. 'CHK').
+    """
+    def __init__(self, models, drop_patterns=()):
+        if not models:
+            raise ValueError("models list must not be empty")
+        self.models = list(models)
+        self.drop_patterns = tuple(drop_patterns)
+        self.cfg = dict(models[0].cfg)
+        self.cfg["ensemble"] = len(self.models)
+        self.n_states = models[0].n_states
+        self.n_cont = models[0].n_cont
+        self.state_masks = models[0].state_masks
+
+    def eval(self):
+        for m in self.models:
+            m.eval()
+        return self
+
+    def train(self, mode=True):
+        for m in self.models:
+            m.train(mode)
+        return self
+
+    def to(self, device):
+        for m in self.models:
+            m.to(device)
+        self.state_masks = self.models[0].state_masks
+        return self
+
+    @torch.no_grad()
+    def sample(self, x, n, steps=64, state=None, drop_patterns=None):
+        drop_patterns = self.drop_patterns if drop_patterns is None else tuple(drop_patterns)
+        dev = self.models[0].state_masks.device
+        x = torch.as_tensor(x, dtype=torch.float32, device=dev)
+        if x.shape != (1, self.cfg["channels"]):
+            raise ValueError(f"x must have shape (1, {self.cfg['channels']}), got {tuple(x.shape)}")
+
+        dmask = dropped_state_mask(drop_patterns, dev) if drop_patterns else None
+
+        # 1. Discrete state probabilities: average across all member models
+        h_list = []
+        prob_list = []
+        for m in self.models:
+            m_was_training = m.training
+            m.eval()
+            h = m.encode(x)
+            h_list.append(h)
+            if state is None:
+                logits = m.discrete(h)[0].masked_fill(~m.mask_known, float("-inf"))
+                if dmask is not None:
+                    logits = logits.masked_fill(dmask, float("-inf"))
+                prob_list.append(F.softmax(logits, dim=-1))
+            m.train(m_was_training)
+
+        if state is None:
+            avg_probs = torch.stack(prob_list, dim=0).mean(dim=0)
+            states = torch.multinomial(avg_probs, n, replacement=True)
+        else:
+            states = torch.full((n,), int(state), dtype=torch.long, device=dev)
+
+        # 2. Continuous flow sampling: partition n samples evenly among member models
+        n_models = len(self.models)
+        base = n // n_models
+        rem = n % n_models
+        counts = [base + (1 if i < rem else 0) for i in range(n_models)]
+
+        z_full = torch.zeros(n, self.n_cont, dtype=h_list[0].dtype, device=dev)
+        offset = 0
+        for i, (m, count) in enumerate(zip(self.models, counts)):
+            if count == 0:
+                continue
+            idx = slice(offset, offset + count)
+            sub_states = states[idx]
+            sub_mask = m.state_masks[sub_states]
+            sub_m = sub_mask.to(h_list[i].dtype)
+            hn = h_list[i].expand(count, -1)
+            sub_z = torch.randn(count, self.n_cont, dtype=h_list[i].dtype, device=dev) * sub_m
+            dt = 1.0 / steps
+            for s in range(steps):
+                t = torch.full((count, 1), s * dt, dtype=h_list[i].dtype, device=dev)
+                sub_z = (sub_z + dt * m._velocity(sub_z, t, hn, sub_states, sub_mask)) * sub_m
+            z_full[idx] = sub_z
+            offset += count
+
+        return states.cpu(), z_full.cpu()
+
+    @classmethod
+    def load(cls, paths, drop_patterns=()):
+        models = []
+        for p in paths:
+            models.append(InverseModel.load(p))
+        return cls(models, drop_patterns=drop_patterns)

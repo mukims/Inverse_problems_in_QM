@@ -31,7 +31,7 @@ from shazam.inverse import data, reward as rw
 from shazam.inverse.calibration import expected_calibration_error
 from shazam.inverse.design import model_input
 from shazam.inverse.encoding import decode, encode
-from shazam.inverse.model import InverseModel
+from shazam.inverse.model import EnsembleInverseModel, InverseModel
 from shazam.inverse.runio import atomic_write_json, code_version, sha256_of
 from shazam.inverse.verify import VERIFY_SEEDS, recreation_check, simulate_inputs
 from tbribbon import parent_data
@@ -108,16 +108,44 @@ def model_outputs(model, x, n_samples, seed=0, batch=50):
     model.eval()
     probs, st, ph = [], [], []
     gen = torch.Generator().manual_seed(seed)
+    is_ens = hasattr(model, "models")
+    sub_models = model.models if is_ens else [model]
     for i in range(0, len(x), batch):
-        h = model.encode(x[i:i + batch])
-        p = F.softmax(model.discrete(h).masked_fill(~model.mask_known, -torch.inf), 1)
+        xb = x[i:i + batch]
+        if is_ens:
+            p_list = []
+            h_list = []
+            for m in sub_models:
+                h_m = m.encode(xb)
+                h_list.append(h_m)
+                p_m = F.softmax(m.discrete(h_m).masked_fill(~m.mask_known, -torch.inf), 1)
+                p_list.append(p_m)
+            p = torch.stack(p_list, dim=0).mean(dim=0)
+        else:
+            h = model.encode(xb)
+            p = F.softmax(model.discrete(h).masked_fill(~model.mask_known, -torch.inf), 1)
         probs.append(p.numpy())
         if n_samples:
             s = torch.multinomial(p, n_samples, replacement=True, generator=gen).reshape(-1)
-            z0 = torch.randn(len(s), model.n_cont, generator=gen)
-            z = model.sample_batch(h.repeat_interleave(n_samples, 0), s, z0)
-            st.append(s.reshape(len(h), n_samples).numpy())
-            ph.append(rw.physical_torch(s, z).reshape(len(h), n_samples, -1).numpy().astype(np.float32))
+            if is_ens:
+                n_m = len(sub_models)
+                z = torch.zeros(len(s), model.n_cont, dtype=xb.dtype)
+                chunk = (len(s) + n_m - 1) // n_m
+                for m_idx, (m, h_m) in enumerate(zip(sub_models, h_list)):
+                    start = m_idx * chunk
+                    end = min(start + chunk, len(s))
+                    if start >= len(s):
+                        break
+                    s_sub = s[start:end]
+                    h_full = h_m.repeat_interleave(n_samples, 0)
+                    h_sub = h_full[start:end]
+                    z0_sub = torch.randn(len(s_sub), m.n_cont, generator=gen)
+                    z[start:end] = m.sample_batch(h_sub, s_sub, z0_sub)
+            else:
+                z0 = torch.randn(len(s), model.n_cont, generator=gen)
+                z = model.sample_batch(h.repeat_interleave(n_samples, 0), s, z0)
+            st.append(s.reshape(len(xb), n_samples).numpy())
+            ph.append(rw.physical_torch(s, z).reshape(len(xb), n_samples, -1).numpy().astype(np.float32))
     return np.concatenate(probs), (np.concatenate(st) if st else None), (np.concatenate(ph) if ph else None)
 
 
@@ -214,6 +242,8 @@ def main(argv=None):
     ap.add_argument("--samples", type=int, default=200, help="posterior draws per row for width and coverage (0: none)")
     ap.add_argument("--recreation", type=int, default=0,
                     help="also the recreation rate on this many seeded val rows (50 simulations each)")
+    ap.add_argument("--ensemble", action="store_true", help="also evaluate the ensemble of all specified models")
+    ap.add_argument("--drop-pattern", action="append", default=[], help="drop pattern at inference time (repeatable)")
     ap.add_argument("--threads", type=int, default=None)
     ap.add_argument("--out", type=Path, default=paths.results_dir("inverse_design", "reward_compare"))
     a = ap.parse_args(argv)
@@ -231,9 +261,10 @@ def main(argv=None):
     va = {k: v[rows] for k, v in va.items()}
     physics_rows = phys_tab["cost"][rows].astype(np.float32)
     ss = np.load(a.tables / "state_state_physics.npy")
-    results, meta = {}, {}
+    results, meta, loaded_models = {}, {}, {}
     for folder in a.models:
         model = InverseModel.load(folder / "model.pt")
+        loaded_models[folder.name] = model
         results[folder.name] = evaluate(model, va, physics_rows, ss, a.samples, a.decode)
         if rec is not None:
             torch.manual_seed(0)
@@ -243,6 +274,13 @@ def main(argv=None):
                                                       rows=per_row)
         meta[folder.name] = dict(path=str(folder), model_sha256=sha256_of(folder / "model.pt"))
         print(f"[compare] {folder.name} done ({time.time() - t0:.0f} s)", flush=True)
+
+    if a.ensemble and len(a.models) > 1:
+        ens_model = EnsembleInverseModel(list(loaded_models.values()), drop_patterns=tuple(a.drop_pattern))
+        ens_name = "ensemble"
+        results[ens_name] = evaluate(ens_model, va, physics_rows, ss, a.samples, a.decode)
+        meta[ens_name] = dict(models=[str(f) for f in a.models], drop_patterns=list(a.drop_pattern))
+        print(f"[compare] {ens_name} done ({time.time() - t0:.0f} s)", flush=True)
     text = _table(results)
     print(text, flush=True)
     report = dict(results=results, models=meta, rows=a.rows, n_rows=len(rows), samples=a.samples,

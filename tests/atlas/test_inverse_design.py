@@ -359,3 +359,12 @@ def test_update_mismatch_compares_the_settings_and_the_model():
     assert design_mod.update_mismatch(fitted, flags, "bb") == {"model_sha256": ("aa", "bb")}
     assert design_mod.update_mismatch({"kappa": 1.0}, flags, "aa") == {"flags": ("none recorded", "needed"),
                                                                       "model_sha256": ("none recorded", "aa")}
+
+
+def test_design_supports_drop_patterns():
+    model = StubModel([(HOST, 100)])
+    target = np.ones(416, np.float32)
+    rep = design(target, model, n_samples=100, seeds_override=SEEDS, refine_budget=0,
+                 n_cells=N_CELLS, drop_patterns=("CHK",))
+    assert "candidates" in rep and len(rep["candidates"]) >= 1
+

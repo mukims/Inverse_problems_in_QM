@@ -188,10 +188,12 @@ python -m shazam.inverse.design \
 
 ---
 
-## 7. Open Priorities & Next Actions
+## 7. Recent Upgrades & Open Priorities
 
-1. **Post-Processing Fixes (`candidates.py` & `calibration.py`)**:
-   - The clustering and coverage-interval changes listed in the model-v1 review.
+1. **Completed: Posterior-to-Recreation Gap Closure (`INV-GAP-CLOSE`)**:
+   - **Candidate Extraction (`candidates.py`)**: Medoid selection restricted to modal lead-free family and modal width; active-slot 90% intervals computed strictly across active members (eliminating 0.0 point-mass contamination).
+   - **Posterior-Guided Refinement (`refine.py`, `design.py`)**: GP search scaled by posterior member covariance; internal proposals use a 5-channel smoothed objective ($k=5$) while the exact unsmoothed thresholds are kept for stopping and verdicts; adjacent width $w \pm 1$ fallback.
+   - **Seed Ensembling (`model.py`, `compare_reward.py`)**: `EnsembleInverseModel` averages softmax probabilities and partitions continuous flow integration; `compare_reward.py` scores it on the full validation split.
 2. **Dedicated Discrete Width Head**:
    - Extract ribbon width $w \in [4, 22]$ from the continuous flow head into a dedicated 19-class classification head with ordinal smoothing.
 3. **Decouple Clean Host Flow from Defect Density**:
