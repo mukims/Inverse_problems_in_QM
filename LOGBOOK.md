@@ -2882,6 +2882,207 @@ there a part of the sample-to-sample variation that energy averaging cannot remo
 * Not tested: a two-class density head (n_A, n_B, the paper's Fig. 3b). Part B gives no reason to expect a large gain
   from it.
 
+### [2026-11-?? PENDING] INV-600K: Reference Recipe Retrained on 600,000 Draws
+
+> **RESULTS PENDING (user's machine).** Setup drafted from the code on `feat/inverse-design` (commit `2d23ca1`);
+> fill in the date, numbers and reading from `results/inverse_design/model_v2_depth_bandtop_600k/` (`history.json`,
+> `compare_inverse.py` output).
+
+**Setup.** The INV-BANDTOP recipe (`--input bandtop --extra-conv 1`, CNN encoder, 128-wide embedding) trained on all
+600,000 draws of `hexagonal_parent_v1` (540,000 train / 30,000 val, seed split by draw index). Run
+`model_v2_depth_bandtop_600k`; it is the reference model for every run below.
+
+**Result.** PENDING: best epoch, val loss (cross-entropy + flow), `compare_inverse.py model_v2_depth_bandtop
+model_v2_depth_bandtop_600k` (top state, width mode, z).
+
+**Reading.** PENDING.
+
+### [2026-11-?? PENDING] INV-REWARD-1: Truth-Reward Fine-Tuning, Phase 1 (label and physics cost)
+
+> **RESULTS PENDING (user's machine).** From `model_v3_reward_label/`, `model_v3_reward_physics/`,
+> `model_v3_more_ce/`, `reward_sweep/` and `reward_compare/` (`compare_reward_*.{txt,json}`).
+
+**Setup.** `scripts/build/finetune_inverse.py` from `--ref model_v2_depth_bandtop_600k`, every weight fine-tuned, a
+frozen copy of the reference anchoring the classifier. Arms: `--reward label` and `--reward physics` (expected family
+cost over the 156 states from the cost tables of `reward_tables.py`, plus beta KL(p || p_ref) plus lam CE, plus mu
+times flow matching on the true rows and a flow-sample reward: 0.25 width surrogate + 0.15 continuous cost through the
+last `grad_last` Euler steps); `--reward none` is the control `model_v3_more_ce` (original loss, as long). Early
+stopping on family top-1 on a fixed seeded 5,000-row val subset. Scored with `scripts/evaluate/compare_reward.py`
+(family top-1/top-3/NLL/ECE by pattern, physics family cost, width within +-1, 90% coverage per parameter). Settings
+sweep in `reward_sweep/`; band-weight and truth-cost tables in `reward_tables/`. Spec:
+`docs/superpowers/specs/2026-11-04-reward-finetuning-design.md` (local only).
+
+**Result.** PENDING: the `compare_reward.py` table for reference, control and both arms (subset and all rows).
+
+**Reading.** PENDING.
+
+### [2026-11-?? PENDING] INV-AL-0: Active-Learning Set-Up, Controls and the Round-1 Proposal
+
+> **RESULTS PENDING (user's machine).** From `model_v2_depth_bandtop_600k_seed1/`, `model_v2_depth_bandtop_450k/`,
+> `active/` (`cells_round1.json`) and `model_v4_simreward{_pilot,}/`.
+
+**Setup.** `shazam.inverse.active` (cells = family with edge x width bin, empirical-Bayes shrinkage towards the
+site-type pattern, tilted proposal, pooled importance weights). `scripts/build/acquire_round.py --now
+model_v2_depth_bandtop_600k --prev model_v2_depth_bandtop` diagnoses per cell (family error, width error, log s error)
+and the learning slope per doubling of data, and writes the acceptance table `generate_parent.py --proposal` reads.
+`train_inverse.py --extra-data` with a weighted `InverseModel.loss`; `eval_active_round.py` scores a round. Controls:
+training-seed spread (`..._600k_seed1`) and a 450k point on the passive learning curve (`..._450k`). Phase-2
+simulator reward (`finetune_simulator.py`, GRPO style, one fresh simulation per candidate) started from
+`model_v3_more_ce` and stopped with its `STOP` file; `checkpoint.pt` resumes it. Round-1 generation (50,000 draws,
+`active/run_round1.sh`) not started, waiting for approval. Spec:
+`docs/superpowers/specs/2026-11-04-active-learning-design.md` (local only).
+
+**Result.** PENDING: seed-to-seed spread, 450k vs 600k per-cell error, the cells round 1 tilts towards, and how far the
+simulator-reward run got before it was stopped.
+
+**Reading.** PENDING (including whether round 1 goes ahead).
+
+### [2026-11-?? PENDING] INV-EMBED: Wider Encoder Output (832 and 256 instead of 128)
+
+> **RESULTS PENDING (user's machine).** From `model_v2_depth_bandtop_600k_embed832/`, `..._embed256/` and `embed/`.
+
+**Setup.** `train_inverse.py --embed 832` and `--embed 256`, otherwise the INV-600K recipe; the embedding is read by
+both the classifier and the flow head.
+
+**Result.** PENDING: val loss by head, top state, width mode against INV-600K.
+
+**Reading.** PENDING.
+
+### [2026-11-?? PENDING] INV-PATTERN-1: Lattice-Type-Only Classifier
+
+> **RESULTS PENDING (user's machine).** From `pattern_v1/` (`history.json` `val_scores`) and `eval_pattern.py`.
+
+**Setup.** `shazam.inverse.pattern.PatternModel`: the band-top CNN with a 7-way head (C, H, K, C+H, C+K, H+K,
+C+H+K), no state head or flow. `scripts/build/train_pattern.py` (train = index % 20 in 0-17, early stopping on val
+index % 20 == 18, test never read; epochs 200, batch 512, lr 1e-3, weight decay 0.01, patience 10, seed 0).
+`scripts/evaluate/eval_pattern.py`: lattice-type accuracy against the full model's summed state probabilities, 156-state
+top-1, McNemar test.
+
+**Result.** PENDING: lattice-type top-1 (overall and by pattern), confusion matrix, McNemar against INV-600K.
+
+**Reading.** PENDING.
+
+### [2026-11-?? PENDING] INV-PATTERN-2: Regularised Lattice-Type Classifier
+
+> **RESULTS PENDING (user's machine).** From `pattern_v2_drop/`, `pattern_v2_noise/`, `pattern_v2_all/` and `pattern_v2/`
+> (plots by width, C+H+K spectra).
+
+**Setup.** `pattern_v1` with `--dropout` + weight decay + `--label-smoothing` (`pattern_v2_drop`), `--noise` (Gaussian,
+std = noise x spectrum RMS, band-top value untouched; `pattern_v2_noise`), and both (`pattern_v2_all`). Validation and
+early stopping use plain cross-entropy.
+
+**Result.** PENDING.
+
+**Reading.** PENDING.
+
+### [2026-11-?? PENDING] INV-NOCHK: Retraining Without C+H+K vs Masking It
+
+> **RESULTS PENDING (user's machine).** From `model_v2_depth_bandtop_600k_nochk/` and `nochk/`.
+
+**Setup.** `train_inverse.py --drop-pattern CHK` removes every C+H+K draw from train and val; C+H+K states get no
+probability. Compared with masking C+H+K in INV-600K at inference (`--drop-pattern`, also `eval_pattern.py
+--drop-pattern CHK`) on the other six lattice types.
+
+**Result.** PENDING.
+
+**Reading.** PENDING.
+
+### [2026-11-?? PENDING] INV-GAP-CLOSE: Seed Ensemble, Modal Medoid Filtering and Posterior-Guided Refinement
+
+> **RESULTS PENDING (user's machine).** From `ensemble_compare/` (`compare_reward_all.{txt,json}`) and any
+> `design_from_spectrum.py` recreation runs. Code: commit `e26dc58`.
+
+**Setup.** Aimed at the INV-CAL / recreation gap (top-5 medoids never recreated the target).
+* `candidates.py`: medoid pool restricted to the modal lead-free family and the modal width; active-slot 90% intervals
+  over the active members only (no 0.0 point masses).
+* `EnsembleInverseModel`: averages the members' softmax probabilities and splits the flow integration between them;
+  `compare_reward.py --ensemble-sizes` scores it on all 30,000 val rows (seed 0, seed 1, seed 0 + 1).
+* `refine.py` / `design.py`: GP trust-region search scaled by the posterior covariance, warm start from the cluster
+  median and boundary points; internal proposals on a 5-channel smoothed objective, exact unsmoothed thresholds for
+  stopping and verdicts; adjacent-width (w +- 1) fallback.
+
+**Result.** PENDING: seed 0 / seed 1 / ensemble table; recreation rate before and after, if measured.
+
+**Reading.** PENDING.
+
+### [2026-11-?? PENDING] INV-CLOSE: Spectrum-Closeness Scoreboard
+
+> **RESULTS PENDING (user's machine).** From `closeness/` (`closeness.{txt,json}`). Code: commit `ced44c7`.
+
+**Setup.** `scripts/evaluate/eval_closeness.py` (`shazam.inverse.closeness`): 300 seeded val targets, up to 5 hosts
+per method, each simulated once with a fresh disorder seed, misfit (smoothed v4) in units of seed-to-seed noise m0.
+Methods: `truth` (floor; above 1 by construction), `lookup` (nearest 5 train spectra; its `stored` block flatters it),
+`lookup-known`, INV-600K and the distilled model (medoids from `candidates()`, 1,000 posterior draws).
+
+**Result.** PENDING: median and quantiles of misfit / m0 per method.
+
+**Reading.** PENDING.
+
+### [2026-11-?? PENDING] INV-REAL: Realism Criterion for Proposed Hosts
+
+> **RESULTS PENDING (user's machine).** From `closeness/` (realistic share of each method's hosts).
+
+**Setup.** `shazam.inverse.realism`: a host is realistic when it has the site types of one of six known materials and
+every energy and hopping lies within REL_TOL = 0.10 of that material's value (ABS_TOL = 0.10 eV where it has none);
+`candidates.is_realistic` applies it.
+
+**Result.** PENDING: share of realistic hosts per method; closeness of realistic hosts only.
+
+**Reading.** PENDING.
+
+### [2026-11-?? PENDING] INV-SCALE: Band-Top Scale Coordinate for the Flow
+
+> **RESULTS PENDING (user's machine).** From `model_v2_depth_bandtop_600k_scale/`, `scale/` (`scale_error.py`,
+> `paired.py`) and `closeness_known/`.
+
+**Setup.** `train_inverse.py --scale bandtop`: the flow models the band top over the energy scale instead of the
+scale itself; otherwise INV-600K. `scale/scale_error.py`: scale, width and density precision of the flow with the true
+state fixed (no simulation). Closeness scoreboard on 300 val targets near a known material (`eval_closeness.py
+--targets known`).
+
+**Result.** PENDING.
+
+**Reading.** PENDING.
+
+### [2026-11-?? PENDING] INV-SCALE2: Distilled Recipe with the Band-Top Scale
+
+> **RESULTS PENDING (user's machine).** From `model_v2_depth_bandtop_600k_distil_scale/` and `scale/run_distil.sh` logs.
+
+**Setup.** `train_inverse.py --teacher ... --distill-alpha --distill-temp`: teachers seeds 0-3, student seed 4, band-top
+scale coordinate. `eval_pattern.py` scores ensembles and regimes.
+
+**Result.** PENDING: student vs teachers vs ensemble; closeness against INV-SCALE.
+
+**Reading.** PENDING.
+
+### [2026-11-?? PENDING] INV-NEAR: Near-Material Training Data (48,000 draws)
+
+> **RESULTS PENDING (user's machine).** From `near/` (generation log, `paired.py`, `flow_near.py`),
+> `model_v2_depth_bandtop_600k_distil_scale_near/` and `closeness_near/`.
+
+**Setup.** `realism.sample_near` and `generate_parent.py --near NAME=COUNT`: 48,000 ribbons from the prior restricted
+to two tolerances of the six known materials, plan in the manifest and acceptance count per row; data in
+`_generated/hexagonal_parent_near_v1` under `TRANSMISSION_DATA`. The distilled band-top-scale recipe retrained with
+these rows added unweighted (`train_inverse.py --add-data`). Closeness on 300 near-material val targets, with
+`--lookup-extra` as the bar.
+
+**Result.** PENDING: generation cost and acceptance; closeness on the three scoreboards; flow precision on
+near-material val rows.
+
+**Reading.** PENDING.
+
+### [2026-11-?? PENDING] INV-NEAR-2: Teachers and Student Retrained With the Near-Material Rows
+
+> **RESULTS PENDING (user's machine).** From `model_v2_depth_bandtop_600k_near_seed0/` to `..._near_seed3/` and
+> `model_v2_depth_bandtop_600k_near_distil_scale/` (`near/run_teachers.sh`).
+
+**Setup.** Four teachers of the plain 600k recipe with the near-material rows added, and a student distilled from them
+(band-top scale, same added rows).
+
+**Result.** PENDING.
+
+**Reading.** PENDING.
+
 ---
 
 ## 3. Bug History, Architectural Evolutions & Root Cause Fixes
