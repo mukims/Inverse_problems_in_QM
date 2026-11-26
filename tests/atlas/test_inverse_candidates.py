@@ -88,7 +88,7 @@ def test_medoid_is_a_member_and_inside_its_intervals():
         assert c.mean.shape == (14,) and c.cov.shape == (14, 14)
         assert np.all(np.linalg.eigvalsh(c.cov) >= 1e-4 - 1e-12)         # regularised by 1e-4 I
         assert c.nearest_material in ("graphene-ideal", "silicene", "germanene", "hbn", "triangular", "kagome")
-        assert c.realistic is True and c.box_edge == []
+        assert c.realistic is False and c.box_edge == []                  # neither host is near a known material
 
 
 def test_no_candidate_when_every_cluster_is_tiny():
@@ -227,3 +227,50 @@ def test_the_reported_state_is_the_decoded_medoids_own():
     assert cand.draw.params.delta == 0.0
     assert STATES[cand.state] == state_of(cand.draw) and STATES[cand.state].delta_zero
     assert "delta" not in cand.intervals and "s" in cand.intervals
+
+
+def test_candidates_medoid_respects_modal_family_and_active_intervals():
+    # 800 draws of graphene (delta=0), 200 draws of tiny-delta hbn (delta=0.05).
+    # Since distance is below split threshold, they form one spatial cluster.
+    # Modal family is delta_zero=True. Medoid must belong to modal family (delta=0.0).
+    graphene = Draw(HexParams(False, True, False, "H", 2.3, t_AB=1.0), "armchair", 9, 0.01)
+    hbn = Draw(HexParams(False, True, False, "H", 2.3, delta=0.05, t_AB=1.0), "armchair", 9, 0.01)
+    states, z = samples([(graphene, 800), (hbn, 200)], sigma=0.01, seed=42)
+    cands, p_un = candidates(states, z)
+    assert len(cands) == 1 and p_un == 0.0
+    cand = cands[0]
+    assert cand.draw.params.delta == 0.0
+    assert "delta" not in cand.intervals
+    assert cand.z_members is not None and cand.z_members.shape == (1000, 14)
+
+    # Conversely: 800 draws of hbn with delta=0.5 (active), 200 draws of graphene (delta=0, inactive).
+    # Modal family has delta active. Interval for delta must be computed over active members (delta > 0.4),
+    # not pulled down to ~0 by the 200 delta=0 members.
+    hbn_major = Draw(HexParams(False, True, False, "H", 2.3, delta=0.5, t_AB=1.0), "armchair", 9, 0.01)
+    states2, z2 = samples([(hbn_major, 800), (graphene, 200)], sigma=0.01, seed=43)
+    cands2, _ = candidates(states2, z2)
+    cand2 = cands2[0]
+    assert cand2.draw.params.delta > 0.45
+    assert "delta" in cand2.intervals
+    lo, hi = cand2.intervals["delta"]
+    # If 200 zeros were mixed in (20% of samples), the 5th percentile would be exactly 0.0!
+    # Because inactive members are excluded, lo is ~0.48, well above 0.4.
+    assert lo > 0.4
+
+
+
+def test_realistic_means_near_a_known_material():
+    assert is_realistic(Draw(named_material("graphene-ideal"), "zigzag", 20, 0.04)) is True
+    assert is_realistic(Draw(replace(named_material("graphene-ideal"), s=2.9), "zigzag", 20, 0.04)) is True     # 7% off
+    assert is_realistic(Draw(replace(named_material("graphene-ideal"), s=3.1), "zigzag", 20, 0.04)) is False    # 15% off
+    assert is_realistic(HOST_A) is False and is_realistic(HOST_B) is False
+    two_types = HexParams(True, True, False, "H", 2.7, t_AB=1.0, t_CC=0.5, t_CH=0.3)
+    assert is_realistic(Draw(two_types, "armchair", 9, 0.01)) is False
+
+
+def test_each_candidate_carries_its_own_realistic_flag():
+    hbn = Draw(named_material("hbn"), "zigzag", 9, 0.01)
+    states, z = samples([(hbn, 600), (HOST_B, 400)], seed=5)
+    cands, _ = candidates(states, z)
+    assert [c.realistic for c in cands] == [True, False]
+    assert cands[0].nearest_material == "hbn"

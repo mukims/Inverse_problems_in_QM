@@ -79,3 +79,8 @@ def draws(arrays, rows):
                            **{name: float(v) for name, v in zip(PARAM_COLUMNS, arrays["params"][r])})
         out.append(Draw(params, EDGES[int(arrays["edge"][r])], int(arrays["width"][r]), float(arrays["density"][r])))
     return out
+
+
+def seeded_rows(n, k, seed=0):
+    """A sorted, reproducible choice of min(k, n) of n row positions (the fixed val subsets of model selection)."""
+    return np.sort(np.random.default_rng(seed).choice(n, min(k, n), replace=False))
